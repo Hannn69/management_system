@@ -88,13 +88,13 @@ const statusBars = [
 
 export function DashboardContent() {
   return (
-    <main className="flex-1 px-6 pb-6 pt-5">
-      <div className="mx-auto flex max-w-[1380px] flex-col gap-6">
+    <main className="px-6 pb-6 pt-5">
+      <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {summaryCards.map((card) => (
             <article
               key={card.label}
-              className={`${card.tone} rounded-[26px] border border-white/6 px-5 py-5 shadow-[0_25px_55px_-35px_rgba(0,0,0,0.8)]`}
+              className={`${card.tone} rounded-[28px] border border-white/6 px-5 py-5 shadow-[0_25px_55px_-35px_rgba(0,0,0,0.8)]`}
             >
               <p className="text-sm font-medium text-[#7993a1]">{card.label}</p>
               <p className={`mt-3 text-4xl font-semibold ${card.accent}`}>
@@ -106,7 +106,7 @@ export function DashboardContent() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
-          <div className="overflow-hidden rounded-[30px] border border-white/6 bg-[linear-gradient(135deg,#142737_0%,#19384f_50%,#1f5962_100%)] px-7 py-7 text-white shadow-[0_35px_80px_-45px_rgba(0,0,0,0.82)]">
+          <div className="overflow-hidden rounded-[28px] border border-white/6 bg-[linear-gradient(135deg,#142737_0%,#19384f_50%,#1f5962_100%)] px-7 py-7 text-white shadow-[0_35px_80px_-45px_rgba(0,0,0,0.82)]">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/62">
               Live Workspace
             </p>
@@ -120,19 +120,19 @@ export function DashboardContent() {
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/8 bg-black/12 px-4 py-4 backdrop-blur">
+              <div className="rounded-[28px] border border-white/8 bg-black/12 px-4 py-4 backdrop-blur">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/60">
                   Active items
                 </p>
                 <p className="mt-2 text-2xl font-semibold">2.6k</p>
               </div>
-              <div className="rounded-2xl border border-white/8 bg-black/12 px-4 py-4 backdrop-blur">
+              <div className="rounded-[28px] border border-white/8 bg-black/12 px-4 py-4 backdrop-blur">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/60">
                   Pending actions
                 </p>
                 <p className="mt-2 text-2xl font-semibold">18</p>
               </div>
-              <div className="rounded-2xl border border-white/8 bg-black/12 px-4 py-4 backdrop-blur">
+              <div className="rounded-[28px] border border-white/8 bg-black/12 px-4 py-4 backdrop-blur">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/60">
                   Team coverage
                 </p>
@@ -141,7 +141,7 @@ export function DashboardContent() {
             </div>
           </div>
 
-          <div className="rounded-[30px] border border-white/6 bg-[#121f29] px-6 py-6 shadow-[0_28px_60px_-40px_rgba(0,0,0,0.8)]">
+          <div className="rounded-[28px] border border-white/6 bg-[#121f29] px-6 py-6 shadow-[0_28px_60px_-40px_rgba(0,0,0,0.8)]">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7690a0]">
@@ -179,7 +179,7 @@ export function DashboardContent() {
                 {statusBars.map((item) => (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between rounded-2xl bg-[#182732] px-4 py-3"
+                    className="flex items-center justify-between rounded-[28px] bg-[#182732] px-4 py-3"
                   >
                     <div className="flex items-center gap-3">
                       <span
@@ -199,7 +199,7 @@ export function DashboardContent() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <div className="rounded-[30px] border border-white/6 bg-[#121f29] px-6 py-6 shadow-[0_28px_60px_-40px_rgba(0,0,0,0.82)]">
+          <div className="rounded-[28px] border border-white/6 bg-[#121f29] px-6 py-6 shadow-[0_28px_60px_-40px_rgba(0,0,0,0.82)]">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7792a1]">
@@ -228,9 +228,9 @@ export function DashboardContent() {
               {activityFeed.map((item) => (
                 <div
                   key={`${item.time}-${item.title}`}
-                  className="flex gap-4 rounded-2xl border border-white/5 bg-[#182732] px-4 py-4"
+                  className="flex gap-4 rounded-[28px] border border-white/5 bg-[#182732] px-4 py-4"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#223948] text-xs font-bold text-white">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[28px] bg-[#223948] text-xs font-bold text-white">
                     {item.time.replace(":", "")}
                   </div>
                   <div>
@@ -244,7 +244,7 @@ export function DashboardContent() {
             </div>
           </div>
 
-          <div className="rounded-[30px] border border-white/6 bg-[#121f29] px-6 py-6 shadow-[0_28px_60px_-40px_rgba(0,0,0,0.82)]">
+          <div className="rounded-[28px] border border-white/6 bg-[#121f29] px-6 py-6 shadow-[0_28px_60px_-40px_rgba(0,0,0,0.82)]">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7792a1]">
@@ -262,7 +262,7 @@ export function DashboardContent() {
               </button>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-2xl border border-white/6">
+            <div className="mt-6 overflow-hidden rounded-[28px] border border-white/6">
               <table className="w-full border-collapse text-left">
                 <thead className="bg-[#17242d] text-sm text-[#7d97a7]">
                   <tr>

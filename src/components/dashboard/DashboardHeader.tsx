@@ -51,8 +51,9 @@ export function DashboardHeader({
   return (
     <>
       <header className="px-6 pt-6">
-        <div className="rounded-[28px] border border-white/7 bg-[#121e28] px-6 py-5 shadow-[0_30px_70px_-38px_rgba(0,0,0,0.78)]">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <div className="mx-auto w-full max-w-[1380px]">
+          <div className="rounded-[28px] border border-white/7 bg-[#121e28] px-6 py-5 shadow-[0_30px_70px_-38px_rgba(0,0,0,0.78)]">
+            <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6f8c9c]">
                 Control Center
@@ -139,7 +140,8 @@ export function DashboardHeader({
             </div>
           </div>
         </div>
-      </header>
+      </div>
+    </header>
 
       <CreateTaskModal
         open={createOpen}

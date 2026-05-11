@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased overflow-y-scroll`}
     >
       <body className="min-h-full bg-black text-white">
         <ClientProviders>{children}</ClientProviders>
