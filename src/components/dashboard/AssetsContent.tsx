@@ -12,16 +12,39 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
-import { ChevronDown, MoreHorizontal, Search, MapPin, Copy, Edit2, Trash, Image as ImageIcon, Check } from "lucide-react";
+import { 
+  ChevronDown, 
+  MoreHorizontal, 
+  Search, 
+  Package, 
+  Copy, 
+  Edit2, 
+  Trash, 
+  Check, 
+  Image as ImageIcon, 
+  Tag, 
+  Hash, 
+  Barcode, 
+  Cpu, 
+  Box, 
+  Info, 
+  User, 
+  MapPin, 
+  DollarSign, 
+  TrendingUp, 
+  ArrowLeftRight, 
+  ClipboardCheck,
+  History
+} from "lucide-react";
 
 const accentClasses = [
-  "from-cyan-400 to-teal-500",
-  "from-teal-400 to-emerald-500",
-  "from-emerald-400 to-green-500",
-  "from-sky-400 to-cyan-500",
+  "from-emerald-400 to-teal-500",
+  "from-cyan-400 to-sky-500",
+  "from-indigo-400 to-blue-500",
+  "from-amber-400 to-orange-500",
 ];
 
-export function LocationsContent() {
+export function AssetsContent() {
   const router = useRouter();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
   const [search, setSearch] = useState("");
@@ -30,7 +53,7 @@ export function LocationsContent() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [sort, setSort] = useState("name");
+  const [sort, setSort] = useState("assetTag");
   const [order, setOrder] = useState("asc");
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -69,7 +92,7 @@ export function LocationsContent() {
       setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
       setItemToDelete(null);
     } catch (err) {
-      setError("Failed to delete location.");
+      setError("Failed to delete asset.");
     } finally {
       setDeleteLoading(false);
     }
@@ -83,110 +106,89 @@ export function LocationsContent() {
       const allRecords = [
         { 
           id: 1, 
-          name: "New York Office", 
-          slug: "new-york-office", 
-          isActive: true,
+          assetTag: "AST-00124", 
+          name: "MacBook Pro 14 (Silver)", 
           image: null,
-          parent: "USA Region",
-          people: 45,
-          currentLocation: "Manhattan",
-          assignAsset: 120,
-          accessories: 85,
-          assignAccessories: 65,
-          components: 45,
-          consumables: 200,
-          childLocation: 3,
-          currency: "USD",
-          address: "350 Fifth Avenue",
-          city: "New York",
-          state: "NY"
+          serial: "C02G1234Q05F",
+          model: "MacBook Pro 14",
+          category: "Laptops",
+          status: "Checked Out",
+          checkedOutTo: "John Doe",
+          location: "New York Office",
+          purchaseCost: 2499.00,
+          currentValue: 2100.00,
+          isActive: true
         },
         { 
           id: 2, 
-          name: "London Studio", 
-          slug: "london-studio", 
-          isActive: true,
+          assetTag: "AST-00125", 
+          name: "Dell XPS 15 (9520)", 
           image: null,
-          parent: "Europe Region",
-          people: 32,
-          currentLocation: "West End",
-          assignAsset: 95,
-          accessories: 62,
-          assignAccessories: 48,
-          components: 38,
-          consumables: 150,
-          childLocation: 2,
-          currency: "GBP",
-          address: "42 Greek Street",
-          city: "London",
-          state: "England"
+          serial: "5X7Y2Z1",
+          model: "Dell XPS 15",
+          category: "Laptops",
+          status: "Ready to Deploy",
+          checkedOutTo: null,
+          location: "London Studio",
+          purchaseCost: 1899.00,
+          currentValue: 1650.00,
+          isActive: true
         },
         { 
           id: 3, 
-          name: "Tokyo Branch", 
-          slug: "tokyo-branch", 
-          isActive: true,
+          assetTag: "AST-00126", 
+          name: "iPhone 13 Pro (Sierra Blue)", 
           image: null,
-          parent: "Asia Region",
-          people: 28,
-          currentLocation: "Shibuya",
-          assignAsset: 78,
-          accessories: 55,
-          assignAccessories: 42,
-          components: 32,
-          consumables: 180,
-          childLocation: 1,
-          currency: "JPY",
-          address: "1-2-3 Shibuya",
-          city: "Tokyo",
-          state: "Tokyo"
+          serial: "F8Y6H5J4K3L2",
+          model: "iPhone 13 Pro",
+          category: "Phones",
+          status: "Checked Out",
+          checkedOutTo: "Sarah Chen",
+          location: "Tokyo Branch",
+          purchaseCost: 1099.00,
+          currentValue: 850.00,
+          isActive: true
         },
         { 
           id: 4, 
-          name: "Berlin Hub", 
-          slug: "berlin-hub", 
-          isActive: false,
+          assetTag: "AST-00127", 
+          name: "Samsung Odyssey G7 (32\")", 
           image: null,
-          parent: "Europe Region",
-          people: 25,
-          currentLocation: "Mitte",
-          assignAsset: 65,
-          accessories: 48,
-          assignAccessories: 35,
-          components: 28,
-          consumables: 120,
-          childLocation: 1,
-          currency: "EUR",
-          address: "123 Unter den Linden",
-          city: "Berlin",
-          state: "Berlin"
+          serial: "SAM-G7-123456",
+          model: "Odyssey G7",
+          category: "Monitors",
+          status: "Broken",
+          checkedOutTo: null,
+          location: "Berlin Hub",
+          purchaseCost: 799.00,
+          currentValue: 150.00,
+          isActive: false
         },
         { 
           id: 5, 
-          name: "Remote", 
-          slug: "remote", 
-          isActive: true,
+          assetTag: "AST-00128", 
+          name: "Logitech MX Master 3", 
           image: null,
-          parent: "Global",
-          people: 18,
-          currentLocation: "Distributed",
-          assignAsset: 35,
-          accessories: 22,
-          assignAccessories: 15,
-          components: 12,
-          consumables: 85,
-          childLocation: 0,
-          currency: "USD",
-          address: "N/A",
-          city: "N/A",
-          state: "N/A"
+          serial: "LOGI-MX3-987",
+          model: "MX Master 3",
+          category: "Peripherals",
+          status: "In Storage",
+          checkedOutTo: null,
+          location: "Remote",
+          purchaseCost: 99.00,
+          currentValue: 75.00,
+          isActive: true
         },
       ];
       
       let filtered = [...allRecords];
       if (search.trim()) {
         const s = search.toLowerCase();
-        filtered = filtered.filter(r => r.name.toLowerCase().includes(s) || r.city.toLowerCase().includes(s));
+        filtered = filtered.filter(r => 
+          r.name.toLowerCase().includes(s) || 
+          r.assetTag.toLowerCase().includes(s) || 
+          r.serial.toLowerCase().includes(s)
+        );
       }
 
       filtered.sort((a, b) => {
@@ -215,8 +217,8 @@ export function LocationsContent() {
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto w-full max-w-full flex flex-1 flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#6e8a99]">Settings</p>
-          <h2 className="text-3xl font-bold text-white">Locations</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#6e8a99]">Inventory</p>
+          <h2 className="text-3xl font-bold text-white">Assets</h2>
         </div>
 
         <DataTableToolbar 
@@ -224,12 +226,13 @@ export function LocationsContent() {
           onSearchChange={setSearch}
           viewType={viewType}
           onViewToggle={setViewType}
-          onCreateClick={() => router.push("/locations/create")}
+          onCreateClick={() => router.push("/assets/create")}
           onRefreshClick={loadRecords}
+          showAdvancedSearch={true}
         />
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
-          <Table className="min-w-[2000px]">
+          <Table className="min-w-[2400px]">
             <TableHeader className="bg-white/5 sticky top-0 z-10">
               <TableRow className="border-white/10 hover:bg-transparent">
                 <TableHead className="w-[50px] px-4 py-3">
@@ -240,22 +243,19 @@ export function LocationsContent() {
                     {selectedIds.size === records.length && records.length > 0 && <Check className="h-3 w-3 text-black font-bold" />}
                   </div>
                 </TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Name</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Asset Tag</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Asset Name</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Parent</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">People</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Current Location</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assign Asset</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Accessories</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assign Accessories</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Components</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Consumables</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Child Location</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Currency</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Address</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">City</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">State</TableHead>
-                <TableHead className="w-[100px] px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Serial</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Model</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Category</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Status</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Checked Out To</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Location</TableHead>
+                <TableHead className="px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Purchase Cost</TableHead>
+                <TableHead className="px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Current Value</TableHead>
+                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Checkin/Checkout</TableHead>
+                <TableHead className="w-[180px] px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-white/5">
@@ -273,13 +273,18 @@ export function LocationsContent() {
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-4">
+                    <div className="flex items-center gap-2">
+                      <Barcode className="h-3.5 w-3.5 text-zinc-500" />
+                      <span className="text-xs font-mono font-bold text-cyan-400">{record.assetTag}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${record.accent} text-black shadow-[0_10px_20px_-5px_rgba(0,0,0,0.5)]`}>
-                        <MapPin className="h-5 w-5" />
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${record.accent} text-black shadow-lg`}>
+                        <Package className="h-5 w-5" />
                       </div>
                       <div>
                         <p className="text-sm font-bold text-zinc-100">{record.name}</p>
-                        <p className="text-[10px] text-zinc-500 font-mono tracking-tight">{record.slug}</p>
                       </div>
                     </div>
                   </TableCell>
@@ -294,54 +299,86 @@ export function LocationsContent() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400 font-medium">{record.parent}</TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-bold text-indigo-400 border border-indigo-500/20">
-                      {record.people}
-                    </span>
+                  <TableCell className="px-4 py-4">
+                    <div className="flex items-center gap-2">
+                      <Cpu className="h-3.5 w-3.5 text-zinc-600" />
+                      <span className="text-xs font-mono text-zinc-400">{record.serial}</span>
+                    </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400">{record.currentLocation}</TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/20">
-                      {record.assignAsset}
-                    </span>
+                  <TableCell className="px-4 py-4">
+                    <div className="flex items-center gap-2">
+                      <Box className="h-3.5 w-3.5 text-indigo-500" />
+                      <span className="text-xs text-zinc-300 font-medium">{record.model}</span>
+                    </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-400 border border-amber-500/20">
-                      {record.accessories}
-                    </span>
+                  <TableCell className="px-4 py-4">
+                    <div className="flex items-center gap-2">
+                      <Tag className="h-3.5 w-3.5 text-amber-500" />
+                      <span className="text-xs text-zinc-400">{record.category}</span>
+                    </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-orange-500/10 px-2.5 py-1 text-xs font-bold text-orange-400 border border-orange-500/20">
-                      {record.assignAccessories}
-                    </span>
+                  <TableCell className="px-4 py-4">
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                        record.status === "Checked Out" ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" :
+                        record.status === "Ready to Deploy" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
+                        record.status === "Broken" ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" :
+                        "bg-zinc-500/10 text-zinc-400 border border-white/5"
+                      }`}>
+                        {record.status}
+                      </span>
+                    </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-purple-500/10 px-2.5 py-1 text-xs font-bold text-purple-400 border border-purple-500/20">
-                      {record.components}
-                    </span>
+                  <TableCell className="px-4 py-4">
+                    <div className="flex items-center gap-2 text-xs text-zinc-300">
+                      {record.checkedOutTo ? (
+                        <>
+                          <User className="h-3.5 w-3.5 text-indigo-400" />
+                          <span>{record.checkedOutTo}</span>
+                        </>
+                      ) : (
+                        <span className="text-zinc-600">—</span>
+                      )}
+                    </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-400 border border-rose-500/20">
-                      {record.consumables}
-                    </span>
+                  <TableCell className="px-4 py-4">
+                    <div className="flex items-center gap-2 text-xs text-zinc-400">
+                      <MapPin className="h-3.5 w-3.5 text-rose-500" />
+                      <span>{record.location}</span>
+                    </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-400 border border-blue-500/20">
-                      {record.childLocation}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs font-black text-zinc-300">{record.currency}</TableCell>
-                  <TableCell className="px-4 py-4 text-xs text-zinc-500 italic">{record.address}</TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400">{record.city}</TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400">{record.state}</TableCell>
                   <TableCell className="px-4 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-2 rounded-xl text-zinc-500 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all active:scale-90" title="Clone Item">
+                    <div className="flex items-center justify-end gap-1 text-sm font-bold text-zinc-200 font-mono">
+                      <DollarSign className="h-3 w-3 text-zinc-500" />
+                      {record.purchaseCost.toFixed(2)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-right">
+                    <div className="flex items-center justify-end gap-1 text-sm font-bold text-emerald-400 font-mono">
+                      <TrendingUp className="h-3 w-3 text-emerald-500/50" />
+                      {record.currentValue.toFixed(2)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-center">
+                    <button className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all active:scale-95 ${
+                      record.status === "Checked Out" 
+                        ? "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20" 
+                        : "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20"
+                    }`}>
+                      <ArrowLeftRight className="h-3.5 w-3.5" />
+                      {record.status === "Checked Out" ? "Checkin" : "Checkout"}
+                    </button>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button className="p-2 rounded-xl text-zinc-500 hover:bg-white/10 hover:text-white transition-all active:scale-90" title="Clone Item">
                         <Copy className="h-4 w-4" />
                       </button>
+                      <button className="p-2 rounded-xl text-zinc-500 hover:bg-indigo-500/10 hover:text-indigo-400 transition-all active:scale-90" title="Audit">
+                        <ClipboardCheck className="h-4 w-4" />
+                      </button>
                       <button 
-                        onClick={() => router.push(`/locations/edit/${record.id}`)}
+                        onClick={() => router.push(`/assets/edit/${record.id}`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >
@@ -358,6 +395,13 @@ export function LocationsContent() {
                   </TableCell>
                 </TableRow>
               ))}
+              {decoratedRecords.length === 0 && (
+                <TableRow className="border-white/10">
+                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={14}>
+                    {loading ? "Loading..." : "No assets found."}
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
@@ -366,7 +410,7 @@ export function LocationsContent() {
           open={!!itemToDelete}
           onClose={() => setItemToDelete(null)}
           onConfirm={handleDelete}
-          title="Delete Location"
+          title="Delete Asset"
           itemName={itemToDelete?.name}
           loading={deleteLoading}
         />

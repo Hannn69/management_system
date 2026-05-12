@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Users, 
@@ -18,9 +18,29 @@ import {
   ChevronDown
 } from "lucide-react";
 
-export function CreateDepartmentContent() {
+interface UpdateDepartmentContentProps {
+  id: string;
+}
+
+export function UpdateDepartmentContent({ id }: UpdateDepartmentContentProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Initial mock data based on the ID or general defaults
+  const [formData, setFormData] = useState({
+    name: "Engineering",
+    company: "Tech Corp",
+    phone: "+1 212-555-0200",
+    fax: "+1 212-555-0201",
+    manager: "Alice Johnson",
+    location: "New York Office",
+    notes: "Core software engineering and systems architecture department."
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +62,8 @@ export function CreateDepartmentContent() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Register New Department</h2>
-            <p className="text-zinc-400 text-sm">Create a new department and assign its organizational hierarchy.</p>
+            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Update Department</h2>
+            <p className="text-zinc-400 text-sm">Modify existing department details for {formData.name}.</p>
           </div>
         </div>
 
@@ -57,7 +77,15 @@ export function CreateDepartmentContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Name</label>
                   <div className="relative">
                     <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-violet-500" />
-                    <input required type="text" placeholder="e.g. Quality Assurance, Human Resources" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all shadow-inner" />
+                    <input 
+                      required 
+                      type="text" 
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="e.g. Quality Assurance, Human Resources" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all shadow-inner" 
+                    />
                   </div>
                 </div>
 
@@ -65,7 +93,12 @@ export function CreateDepartmentContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Company</label>
                   <div className="relative">
                     <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
-                    <select className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    <select 
+                      name="company"
+                      value={formData.company}
+                      onChange={handleChange}
+                      className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    >
                       <option>Select Company</option>
                       <option>Tech Corp</option>
                       <option>Nexus Industries</option>
@@ -79,14 +112,28 @@ export function CreateDepartmentContent() {
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
                     <div className="relative">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
-                      <input type="tel" placeholder="+1..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                      <input 
+                        type="tel" 
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="+1..." 
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" 
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Fax</label>
                     <div className="relative">
                       <Printer className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
-                      <input type="tel" placeholder="Fax..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                      <input 
+                        type="tel" 
+                        name="fax"
+                        value={formData.fax}
+                        onChange={handleChange}
+                        placeholder="Fax..." 
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" 
+                      />
                     </div>
                   </div>
                 </div>
@@ -99,7 +146,12 @@ export function CreateDepartmentContent() {
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
-                      <select className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none">
+                      <select 
+                        name="manager"
+                        value={formData.manager}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none"
+                      >
                         <option>Select Manager</option>
                         <option>Alice Johnson</option>
                         <option>Bob Wilson</option>
@@ -117,7 +169,12 @@ export function CreateDepartmentContent() {
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
-                      <select className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none">
+                      <select 
+                        name="location"
+                        value={formData.location}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none"
+                      >
                         <option>Select Location</option>
                         <option>New York Office</option>
                         <option>London Studio</option>
@@ -137,7 +194,7 @@ export function CreateDepartmentContent() {
                       <Upload className="h-5 w-5 text-zinc-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-zinc-400 mb-2 font-medium">Select photo...</p>
+                      <p className="text-xs text-zinc-400 mb-2 font-medium">Update photo...</p>
                       <button type="button" className="px-4 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[11px] font-bold text-zinc-200 hover:bg-white/10 transition-all">
                         Select File...
                       </button>
@@ -151,7 +208,14 @@ export function CreateDepartmentContent() {
               <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes</label>
               <div className="relative">
                 <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-600" />
-                <textarea rows={3} placeholder="Additional department notes, hierarchy details or instructions..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" />
+                <textarea 
+                  rows={3} 
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  placeholder="Additional department notes, hierarchy details or instructions..." 
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" 
+                />
               </div>
             </div>
           </div>
@@ -175,7 +239,7 @@ export function CreateDepartmentContent() {
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              <span>{loading ? 'Processing...' : 'Save Department'}</span>
+              <span>{loading ? 'Updating...' : 'Update Department'}</span>
             </button>
           </div>
         </form>

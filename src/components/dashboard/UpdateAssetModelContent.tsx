@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Package, 
@@ -22,9 +22,38 @@ import {
   ChevronDown
 } from "lucide-react";
 
-export function CreateAssetModelContent() {
+interface UpdateAssetModelContentProps {
+  id: string;
+}
+
+export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Initial mock data based on the ID or general defaults
+  const [formData, setFormData] = useState({
+    name: "MacBook Pro 14",
+    category: "Laptops",
+    manufacturer: "Apple",
+    model_number: "A2442",
+    depreciation: "Computer Hardware (20%)",
+    min_qty: "5",
+    eol: "36",
+    fieldset: "Apple Fieldset",
+    require_serial: true,
+    user_can_request: true,
+    notes: "High-performance laptop for development and design teams. Features M1 Pro/Max chips."
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target as HTMLInputElement;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,8 +75,8 @@ export function CreateAssetModelContent() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Register Asset Model</h2>
-            <p className="text-zinc-400 text-sm">Define a template for new assets, including manufacturer and depreciation rules.</p>
+            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Update Asset Model</h2>
+            <p className="text-zinc-400 text-sm">Modify existing asset model template for {formData.name}.</p>
           </div>
         </div>
 
@@ -61,7 +90,15 @@ export function CreateAssetModelContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Name</label>
                   <div className="relative">
                     <Package className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
-                    <input required type="text" placeholder="e.g. MacBook Pro M3, ThinkPad X1" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20" />
+                    <input 
+                      required 
+                      type="text" 
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="e.g. MacBook Pro M3, ThinkPad X1" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20" 
+                    />
                   </div>
                 </div>
 
@@ -70,7 +107,12 @@ export function CreateAssetModelContent() {
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
-                      <select className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none">
+                      <select 
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none"
+                      >
                         <option>Select Category</option>
                         <option>Laptops</option>
                         <option>Monitors</option>
@@ -89,7 +131,12 @@ export function CreateAssetModelContent() {
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <Factory className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
-                      <select className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none">
+                      <select 
+                        name="manufacturer"
+                        value={formData.manufacturer}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none"
+                      >
                         <option>Select Manufacturer</option>
                         <option>Apple</option>
                         <option>Dell</option>
@@ -107,7 +154,14 @@ export function CreateAssetModelContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Model Number</label>
                   <div className="relative">
                     <Hash className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                    <input type="text" placeholder="Model No." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                    <input 
+                      type="text" 
+                      name="model_number"
+                      value={formData.model_number}
+                      onChange={handleChange}
+                      placeholder="Model No." 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" 
+                    />
                   </div>
                 </div>
               </div>
@@ -119,7 +173,12 @@ export function CreateAssetModelContent() {
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Depreciation</label>
                     <div className="relative">
                       <TrendingDown className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <select className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none">
+                      <select 
+                        name="depreciation"
+                        value={formData.depreciation}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none"
+                      >
                         <option>No Depreciation</option>
                         <option>Computer Hardware (20%)</option>
                         <option>Office Equipment (10%)</option>
@@ -131,12 +190,24 @@ export function CreateAssetModelContent() {
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Min. QTY</label>
                     <div className="relative">
                       <Inbox className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <input type="number" placeholder="0" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none" />
+                      <input 
+                        type="number" 
+                        name="min_qty"
+                        value={formData.min_qty}
+                        onChange={handleChange}
+                        placeholder="0" 
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none" 
+                      />
                     </div>
-                    {/* Tick box below Min QTY */}
                     <label className="flex items-center gap-3 cursor-pointer group mt-3 ml-1">
                       <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-                        <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-white/5 text-amber-600 focus:ring-amber-500/20" />
+                        <input 
+                          type="checkbox" 
+                          name="require_serial"
+                          checked={formData.require_serial}
+                          onChange={handleChange}
+                          className="w-4 h-4 rounded border-white/10 bg-white/5 text-amber-600 focus:ring-amber-500/20" 
+                        />
                       </div>
                       <div className="flex items-center gap-2">
                         <Barcode className="h-3.5 w-3.5 text-zinc-500" />
@@ -151,7 +222,14 @@ export function CreateAssetModelContent() {
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">EOL (End of Life)</label>
                     <div className="relative">
                       <CalendarClock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <input type="number" placeholder="Months" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none" />
+                      <input 
+                        type="number" 
+                        name="eol"
+                        value={formData.eol}
+                        onChange={handleChange}
+                        placeholder="Months" 
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none" 
+                      />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">Months</span>
                     </div>
                   </div>
@@ -159,8 +237,14 @@ export function CreateAssetModelContent() {
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Fieldset</label>
                     <div className="relative">
                       <ClipboardList className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <select className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none">
+                      <select 
+                        name="fieldset"
+                        value={formData.fieldset}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none"
+                      >
                         <option>None</option>
+                        <option>Apple Fieldset</option>
                         <option>Computer Fieldset</option>
                         <option>Mobile Phone Fieldset</option>
                       </select>
@@ -170,13 +254,13 @@ export function CreateAssetModelContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Model Image</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Update Model Image</label>
                   <div className="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-white/5">
-                    <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
+                    <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden">
                       <Upload className="h-5 w-5 text-zinc-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-zinc-400 mb-2 font-medium">Select model photo...</p>
+                      <p className="text-xs text-zinc-400 mb-2 font-medium">Select new photo...</p>
                       <button type="button" className="px-4 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[11px] font-bold text-zinc-200 hover:bg-white/10 transition-all">
                         Select File...
                       </button>
@@ -190,12 +274,24 @@ export function CreateAssetModelContent() {
               <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes</label>
               <div className="relative">
                 <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-600" />
-                <textarea rows={3} placeholder="Technical specifications, model variations or other info..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" />
+                <textarea 
+                  rows={3} 
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  placeholder="Technical specifications, model variations or other info..." 
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" 
+                />
               </div>
-              {/* Tick box below Notes */}
               <label className="flex items-center gap-3 cursor-pointer group pt-2 ml-1">
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-                  <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-white/5 text-amber-600 focus:ring-amber-500/20" />
+                  <input 
+                    type="checkbox" 
+                    name="user_can_request"
+                    checked={formData.user_can_request}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded border-white/10 bg-white/5 text-amber-600 focus:ring-amber-500/20" 
+                  />
                 </div>
                 <div className="flex items-center gap-2">
                   <UserCheck className="h-3.5 w-3.5 text-zinc-500" />
@@ -224,7 +320,7 @@ export function CreateAssetModelContent() {
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              <span>{loading ? 'Processing...' : 'Save Asset Model'}</span>
+              <span>{loading ? 'Updating...' : 'Update Asset Model'}</span>
             </button>
           </div>
         </form>

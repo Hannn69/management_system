@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Tag, 
@@ -16,9 +16,34 @@ import {
   ChevronDown
 } from "lucide-react";
 
-export function CreateCategoryContent() {
+interface UpdateCategoryContentProps {
+  id: string;
+}
+
+export function UpdateCategoryContent({ id }: UpdateCategoryContentProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Initial mock data based on the ID or general defaults
+  const [formData, setFormData] = useState({
+    name: "Laptops",
+    type: "Asset",
+    eula: "Default Enterprise Hardware Agreement v2.1",
+    use_default_eula: true,
+    require_confirmation: true,
+    email_notification: true,
+    notes: "Core hardware category for workstation-class portable computers."
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target as HTMLInputElement;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,8 +65,8 @@ export function CreateCategoryContent() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Add New Category</h2>
-            <p className="text-zinc-400 text-sm">Classify your assets and define specific licensing and notification rules.</p>
+            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Update Category</h2>
+            <p className="text-zinc-400 text-sm">Modify classification rules and notification settings for {formData.name}.</p>
           </div>
         </div>
 
@@ -55,7 +80,15 @@ export function CreateCategoryContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Name</label>
                   <div className="relative">
                     <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
-                    <input required type="text" placeholder="e.g. Laptops, Software, Furniture" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                    <input 
+                      required 
+                      type="text" 
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="e.g. Laptops, Software, Furniture" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" 
+                    />
                   </div>
                 </div>
 
@@ -63,7 +96,12 @@ export function CreateCategoryContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Category Type</label>
                   <div className="relative">
                     <Layers className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-violet-500" />
-                    <select className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none">
+                    <select 
+                      name="type"
+                      value={formData.type}
+                      onChange={handleChange}
+                      className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none"
+                    >
                       <option>Select Type</option>
                       <option>Asset</option>
                       <option>Accessory</option>
@@ -79,7 +117,14 @@ export function CreateCategoryContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Category EULA</label>
                   <div className="relative">
                     <FileCheck className="absolute left-4 top-4 h-4 w-4 text-zinc-600" />
-                    <textarea rows={8} placeholder="Enter specific End User License Agreement for this category..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" />
+                    <textarea 
+                      name="eula"
+                      value={formData.eula}
+                      onChange={handleChange}
+                      rows={8} 
+                      placeholder="Enter specific End User License Agreement for this category..." 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" 
+                    />
                   </div>
                 </div>
               </div>
@@ -91,7 +136,13 @@ export function CreateCategoryContent() {
                   
                   <label className="flex items-start gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all cursor-pointer group">
                     <div className="mt-1">
-                      <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-white/5 text-indigo-600 focus:ring-indigo-500/20" />
+                      <input 
+                        type="checkbox" 
+                        name="use_default_eula"
+                        checked={formData.use_default_eula}
+                        onChange={handleChange}
+                        className="w-4 h-4 rounded border-white/10 bg-white/5 text-indigo-600 focus:ring-indigo-500/20" 
+                      />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-zinc-200 group-hover:text-white">Use Default EULA</p>
@@ -101,7 +152,13 @@ export function CreateCategoryContent() {
 
                   <label className="flex items-start gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all cursor-pointer group">
                     <div className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center">
-                      <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-white/5 text-indigo-600 focus:ring-indigo-500/20" />
+                      <input 
+                        type="checkbox" 
+                        name="require_confirmation"
+                        checked={formData.require_confirmation}
+                        onChange={handleChange}
+                        className="w-4 h-4 rounded border-white/10 bg-white/5 text-indigo-600 focus:ring-indigo-500/20" 
+                      />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-zinc-200 group-hover:text-white">Require Confirmation</p>
@@ -111,7 +168,13 @@ export function CreateCategoryContent() {
 
                   <label className="flex items-start gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all cursor-pointer group">
                     <div className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center">
-                      <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-white/5 text-indigo-600 focus:ring-indigo-500/20" />
+                      <input 
+                        type="checkbox" 
+                        name="email_notification"
+                        checked={formData.email_notification}
+                        onChange={handleChange}
+                        className="w-4 h-4 rounded border-white/10 bg-white/5 text-indigo-600 focus:ring-indigo-500/20" 
+                      />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-zinc-200 group-hover:text-white">Email Notifications</p>
@@ -121,13 +184,13 @@ export function CreateCategoryContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Category Image</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Update Category Image</label>
                   <div className="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-white/5">
                     <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
                       <Upload className="h-5 w-5 text-zinc-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-zinc-400 mb-2 font-medium">Select category icon...</p>
+                      <p className="text-xs text-zinc-400 mb-2 font-medium">Select new icon...</p>
                       <button type="button" className="px-4 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[11px] font-bold text-zinc-200 hover:bg-white/10 transition-all">
                         Select File...
                       </button>
@@ -139,7 +202,14 @@ export function CreateCategoryContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes</label>
                   <div className="relative">
                     <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-600" />
-                    <textarea rows={4} placeholder="Internal classification notes..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" />
+                    <textarea 
+                      name="notes"
+                      value={formData.notes}
+                      onChange={handleChange}
+                      rows={4} 
+                      placeholder="Internal classification notes..." 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" 
+                    />
                   </div>
                 </div>
               </div>
@@ -165,7 +235,7 @@ export function CreateCategoryContent() {
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              <span>{loading ? 'Adding...' : 'Save Category'}</span>
+              <span>{loading ? 'Updating...' : 'Update Category'}</span>
             </button>
           </div>
         </form>

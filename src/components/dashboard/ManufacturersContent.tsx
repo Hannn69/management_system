@@ -10,7 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronDown, MoreHorizontal, Search, Factory } from "lucide-react";
+import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
+import { ChevronDown, MoreHorizontal, Search, Factory, Copy, Edit2, Trash, Check, Image as ImageIcon, Link as LinkIcon, LifeBuoy, Phone, Mail } from "lucide-react";
 
 const accentClasses = [
   "from-rose-400 to-red-500",
@@ -19,25 +21,22 @@ const accentClasses = [
   "from-orange-400 to-amber-500",
 ];
 
-const statusFilters = ["All status", "Active", "Inactive"];
-const sortOptions = [
-  { label: "Name", value: "name" },
-  { label: "Created", value: "createdAt" },
-];
-
 export function ManufacturersContent() {
   const router = useRouter();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState(statusFilters[0]);
   const [records, setRecords] = useState<any[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [sort, setSort] = useState("name");
   const [order, setOrder] = useState("asc");
   const [loading, setLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [viewType, setViewType] = useState<"list" | "grid">("list");
 
   const decoratedRecords = useMemo(() => {
     return records.map((record, index) => ({
@@ -46,36 +45,133 @@ export function ManufacturersContent() {
     }));
   }, [records]);
 
+  const toggleAll = () => {
+    if (selectedIds.size === records.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(records.map(r => r.id)));
+    }
+  };
+
+  const toggleOne = (id: number) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+    setDeleteLoading(true);
+    try {
+      // Mock delete logic
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
+      setItemToDelete(null);
+    } catch (err) {
+      setError("Failed to delete manufacturer.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const loadRecords = async () => {
     setLoading(true);
     setError(null);
     try {
-      /*
-      const res = await fetch(`${apiBase}/manufacturers`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to load manufacturers.");
-      const data = await res.json();
-      const allRecords = data.records || [];
-      */
-
       // Mock data for development
       const allRecords = [
-        { id: 1, name: "Apple", slug: "apple", isActive: true, createdAt: new Date().toISOString() },
-        { id: 2, name: "Dell", slug: "dell", isActive: true, createdAt: new Date().toISOString() },
-        { id: 3, name: "HP", slug: "hp", isActive: true, createdAt: new Date().toISOString() },
-        { id: 4, name: "Logitech", slug: "logitech", isActive: false, createdAt: new Date().toISOString() },
-        { id: 5, name: "Samsung", slug: "samsung", isActive: true, createdAt: new Date().toISOString() },
+        { 
+          id: 1, 
+          name: "Apple", 
+          slug: "apple", 
+          isActive: true, 
+          createdAt: new Date().toISOString(),
+          url: "https://apple.com",
+          supportUrl: "https://support.apple.com",
+          supportPhone: "1-800-APL-CARE",
+          supportEmail: "business@apple.com",
+          assets: 450,
+          licenses: 120,
+          consumables: 300,
+          accessories: 850,
+          components: 0,
+          image: null
+        },
+        { 
+          id: 2, 
+          name: "Dell", 
+          slug: "dell", 
+          isActive: true, 
+          createdAt: new Date().toISOString(),
+          url: "https://dell.com",
+          supportUrl: "https://dell.com/support",
+          supportPhone: "1-800-456-3355",
+          supportEmail: "support@dell.com",
+          assets: 320,
+          licenses: 45,
+          consumables: 150,
+          accessories: 240,
+          components: 120,
+          image: null
+        },
+        { 
+          id: 3, 
+          name: "HP", 
+          slug: "hp", 
+          isActive: true, 
+          createdAt: new Date().toISOString(),
+          url: "https://hp.com",
+          supportUrl: "https://support.hp.com",
+          supportPhone: "1-800-474-6836",
+          supportEmail: "support@hp.com",
+          assets: 280,
+          licenses: 32,
+          consumables: 400,
+          accessories: 180,
+          components: 95,
+          image: null
+        },
+        { 
+          id: 4, 
+          name: "Logitech", 
+          slug: "logitech", 
+          isActive: false, 
+          createdAt: new Date().toISOString(),
+          url: "https://logitech.com",
+          supportUrl: "https://support.logi.com",
+          supportPhone: "1-646-454-3200",
+          supportEmail: "sales@logi.com",
+          assets: 15,
+          licenses: 0,
+          consumables: 0,
+          accessories: 1250,
+          components: 15,
+          image: null
+        },
+        { 
+          id: 5, 
+          name: "Samsung", 
+          slug: "samsung", 
+          isActive: true, 
+          createdAt: new Date().toISOString(),
+          url: "https://samsung.com",
+          supportUrl: "https://samsung.com/support",
+          supportPhone: "1-800-SAMSUNG",
+          supportEmail: "business@samsung.com",
+          assets: 180,
+          licenses: 15,
+          consumables: 0,
+          accessories: 420,
+          components: 65,
+          image: null
+        },
       ];
       
       let filtered = [...allRecords];
       if (search.trim()) {
         const s = search.toLowerCase();
         filtered = filtered.filter(r => r.name.toLowerCase().includes(s));
-      }
-      if (statusFilter !== "All status") {
-        const active = statusFilter === "Active";
-        filtered = filtered.filter(r => r.isActive === active);
       }
 
       filtered.sort((a, b) => {
@@ -98,93 +194,159 @@ export function ManufacturersContent() {
 
   useEffect(() => {
     loadRecords();
-  }, [apiBase, page, limit, search, statusFilter, sort, order]);
+  }, [apiBase, page, limit, search, sort, order]);
 
   return (
     <main className="px-6 pb-6 pt-5">
-      <div className="mx-auto w-full max-w-[1380px] flex flex-1 flex-col gap-6 rounded-[28px] border border-white/10 bg-white/[0.04] p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-zinc-400">Settings / Manufacturers</p>
-            <h2 className="text-lg font-semibold text-zinc-100">Manufacturers</h2>
-          </div>
-          <button 
-            onClick={() => router.push("/manufacturers/create")}
-            className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-500 shadow-lg shadow-rose-900/20"
-          >
-            Add Manufacturer
-          </button>
+      <div className="mx-auto w-full max-w-full flex flex-1 flex-col gap-6">
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#6e8a99]">Settings</p>
+          <h2 className="text-3xl font-bold text-white">Manufacturers</h2>
         </div>
 
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-2">
-            {statusFilters.map((item) => (
-              <button
-                key={item}
-                className={`rounded-full border border-white/10 px-4 py-1.5 text-xs font-medium transition ${
-                  statusFilter === item ? "bg-white/10 text-white" : "text-zinc-300 hover:bg-white/5"
-                }`}
-                onClick={() => { setStatusFilter(item); setPage(1); }}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-1 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-300 sm:max-w-[320px]">
-            <Search className="h-4 w-4 text-zinc-500" />
-            <input
-              className="w-full bg-transparent text-sm text-zinc-200 placeholder:text-zinc-500 focus:outline-none"
-              placeholder="Search manufacturers"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
+        <DataTableToolbar 
+          search={search}
+          onSearchChange={setSearch}
+          viewType={viewType}
+          onViewToggle={setViewType}
+          onCreateClick={() => router.push("/manufacturers/create")}
+          onRefreshClick={loadRecords}
+        />
 
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#111216]">
-          <Table className="min-w-[700px]">
-            <TableHeader className="bg-white/5">
-              <TableRow className="border-white/10">
-                <TableHead className="px-4 py-3 text-zinc-100">Manufacturer Name</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100">Status</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100">Created At</TableHead>
-                <TableHead className="w-[80px] px-4 py-3 text-right text-zinc-100">Actions</TableHead>
+        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
+          <Table className="min-w-[1800px]">
+            <TableHeader className="bg-white/5 sticky top-0 z-10">
+              <TableRow className="border-white/10 hover:bg-transparent">
+                <TableHead className="w-[50px] px-4 py-3">
+                  <div 
+                    onClick={toggleAll}
+                    className={`flex h-5 w-5 cursor-pointer items-center justify-center rounded border transition-all ${selectedIds.size === records.length && records.length > 0 ? "border-cyan-500 bg-cyan-500" : "border-white/20 bg-white/5 hover:border-white/40"}`}
+                  >
+                    {selectedIds.size === records.length && records.length > 0 && <Check className="h-3 w-3 text-black font-bold" />}
+                  </div>
+                </TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Name</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">URL</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Support URL</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Support Phone</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Support Email</TableHead>
+                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assets</TableHead>
+                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Licenses</TableHead>
+                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Consumables</TableHead>
+                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Accessories</TableHead>
+                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Components</TableHead>
+                <TableHead className="w-[100px] px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-white/10">
+            <TableBody className="divide-y divide-white/5">
               {decoratedRecords.map((record) => (
-                <TableRow key={record.id} className="border-white/10 transition-colors hover:bg-white/5">
-                  <TableCell className="px-4 py-3">
+                <TableRow 
+                  key={record.id} 
+                  className={`border-white/5 transition-colors hover:bg-white/[0.03] ${selectedIds.has(record.id) ? "bg-cyan-500/5" : ""}`}
+                >
+                  <TableCell className="px-4 py-4">
+                    <div 
+                      onClick={() => toggleOne(record.id)}
+                      className={`flex h-5 w-5 cursor-pointer items-center justify-center rounded border transition-all ${selectedIds.has(record.id) ? "border-cyan-500 bg-cyan-500" : "border-white/10 bg-white/5 hover:border-white/30"}`}
+                    >
+                      {selectedIds.has(record.id) && <Check className="h-3 w-3 text-black font-bold" />}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${record.accent} text-black shadow-lg`}>
-                        <Factory className="h-4 w-4" />
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${record.accent} text-black shadow-lg`}>
+                        <Factory className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-zinc-100">{record.name}</p>
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{record.slug}</p>
+                        <p className="text-sm font-bold text-zinc-100">{record.name}</p>
+                        <p className="text-[10px] text-zinc-500 font-mono tracking-tight">{record.slug}</p>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-center">
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase ${
-                      record.isActive ? "bg-emerald-500/10 text-emerald-400" : "bg-zinc-500/10 text-zinc-400"
-                    }`}>
-                      {record.isActive ? "Active" : "Inactive"}
+                  <TableCell className="px-4 py-4">
+                    <div className="flex items-center justify-center">
+                      {record.image ? (
+                        <img src={record.image} alt={record.name} className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/10" />
+                      ) : (
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10`}>
+                          <ImageIcon className="h-5 w-5 text-zinc-600" />
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-4">
+                    <a href={record.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
+                      <LinkIcon className="h-3 w-3" />
+                      <span>Website</span>
+                    </a>
+                  </TableCell>
+                  <TableCell className="px-4 py-4">
+                    <a href={record.supportUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 transition-colors">
+                      <LifeBuoy className="h-3 w-3" />
+                      <span>Support</span>
+                    </a>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-xs text-zinc-400">
+                    <div className="flex items-center gap-1.5">
+                      <Phone className="h-3 w-3 text-blue-500" />
+                      {record.supportPhone}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-xs text-zinc-400">
+                    <div className="flex items-center gap-1.5">
+                      <Mail className="h-3 w-3 text-amber-500" />
+                      {record.supportEmail}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-center">
+                    <span className="inline-flex rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-bold text-indigo-400 border border-indigo-500/20">
+                      {record.assets}
                     </span>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-xs text-zinc-500">
-                    {new Date(record.createdAt).toLocaleDateString()}
+                  <TableCell className="px-4 py-4 text-center">
+                    <span className="inline-flex rounded-lg bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-400 border border-amber-500/20">
+                      {record.licenses}
+                    </span>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-right">
-                    <button className="rounded-lg p-2 text-zinc-500 hover:bg-white/5 hover:text-zinc-200">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </button>
+                  <TableCell className="px-4 py-4 text-center">
+                    <span className="inline-flex rounded-lg bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-400 border border-rose-500/20">
+                      {record.consumables}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-center">
+                    <span className="inline-flex rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/20">
+                      {record.accessories}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-center">
+                    <span className="inline-flex rounded-lg bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-400 border border-blue-500/20">
+                      {record.components}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button 
+                        onClick={() => router.push(`/manufacturers/edit/${record.id}`)}
+                        className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
+                        title="Edit"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button 
+                        onClick={() => setItemToDelete(record)}
+                        className="p-2 rounded-xl text-zinc-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all active:scale-90" 
+                        title="Delete"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
               {decoratedRecords.length === 0 && (
                 <TableRow className="border-white/10">
-                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={4}>
+                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={13}>
                     {loading ? "Loading..." : "No manufacturers found."}
                   </TableCell>
                 </TableRow>
@@ -192,6 +354,15 @@ export function ManufacturersContent() {
             </TableBody>
           </Table>
         </div>
+
+        <DeleteConfirmDialog 
+          open={!!itemToDelete}
+          onClose={() => setItemToDelete(null)}
+          onConfirm={handleDelete}
+          title="Delete Manufacturer"
+          itemName={itemToDelete?.name}
+          loading={deleteLoading}
+        />
 
         <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">

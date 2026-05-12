@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, LayoutDashboard, Settings } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutDashboard, Settings, Package as AssetsIcon } from "lucide-react";
+
+const assetsItems = [
+  { label: "List All", href: "/assets" },
+];
 
 const settingsItems = [
   { label: "Asset Models", href: "/asset-models" },
@@ -17,12 +21,18 @@ const settingsItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
+  const [isAssetsOpen, setIsAssetsOpen] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Auto-open settings if we are on a settings page
+  // Auto-open groups based on current path
   useEffect(() => {
-    const isSubPage = settingsItems.some(item => pathname.startsWith(item.href));
-    if (isSubPage) {
+    const isAssetPage = assetsItems.some(item => pathname.startsWith(item.href));
+    if (isAssetPage) {
+      setIsAssetsOpen(true);
+    }
+    
+    const isSettingsPage = settingsItems.some(item => pathname.startsWith(item.href));
+    if (isSettingsPage) {
       setIsSettingsOpen(true);
     }
   }, [pathname]);
@@ -70,19 +80,67 @@ export function DashboardSidebar() {
               <span>Dashboard</span>
             </Link>
 
-            {/* Settings Toggle Group */}
+            {/* Assets Toggle Group */}
             <div className="flex flex-col gap-1">
               <button
-                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                onClick={() => setIsAssetsOpen(!isAssetsOpen)}
                 className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-[15px] transition ${
-                  pathname !== "/dashboard"
+                  assetsItems.some(item => pathname.startsWith(item.href))
                     ? "bg-[#213847] text-white shadow-[0_18px_35px_-26px_rgba(0,0,0,0.8)]"
                     : "text-[#9eb6c3] hover:bg-[#17242d] hover:text-white"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className={`inline-flex w-8 justify-center rounded-xl px-2 py-1 text-[10px] font-bold ${
-                    pathname !== "/dashboard" ? "bg-white/16 text-white" : "bg-[#1f3442] text-[#8ec8e6]"
+                    assetsItems.some(item => pathname.startsWith(item.href)) ? "bg-white/16 text-white" : "bg-[#1f3442] text-[#8ec8e6]"
+                  }`}>
+                    <AssetsIcon className="h-4 w-4" />
+                  </span>
+                  <span>Assets</span>
+                </div>
+                {isAssetsOpen ? (
+                  <ChevronDown className="h-4 w-4 text-zinc-500" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-zinc-500" />
+                )}
+              </button>
+
+              {/* Dropdown Items */}
+              {isAssetsOpen && (
+                <div className="mt-1 ml-4 flex flex-col gap-1 overflow-hidden border-l border-white/5 pl-4 transition-all duration-300">
+                  {assetsItems.map((item) => {
+                    const active = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className={`rounded-xl px-4 py-2.5 text-sm transition-all ${
+                          active
+                            ? "text-emerald-400 font-bold bg-white/5 shadow-inner"
+                            : "text-[#9eb6c3] hover:bg-[#1d2d38] hover:text-white"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Settings Toggle Group */}
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-[15px] transition ${
+                  settingsItems.some(item => pathname.startsWith(item.href))
+                    ? "bg-[#213847] text-white shadow-[0_18px_35px_-26px_rgba(0,0,0,0.8)]"
+                    : "text-[#9eb6c3] hover:bg-[#17242d] hover:text-white"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`inline-flex w-8 justify-center rounded-xl px-2 py-1 text-[10px] font-bold ${
+                    settingsItems.some(item => pathname.startsWith(item.href)) ? "bg-white/16 text-white" : "bg-[#1f3442] text-[#8ec8e6]"
                   }`}>
                     <Settings className="h-4 w-4" />
                   </span>

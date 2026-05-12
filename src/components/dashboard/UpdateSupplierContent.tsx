@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Truck, 
@@ -19,9 +19,34 @@ import {
   ChevronDown
 } from "lucide-react";
 
-export function CreateSupplierContent() {
+interface UpdateSupplierContentProps {
+  id: string;
+}
+
+export function UpdateSupplierContent({ id }: UpdateSupplierContentProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Initial mock data based on the ID or general defaults
+  const [formData, setFormData] = useState({
+    name: "Amazon Business",
+    contact_name: "Jane Smith",
+    phone: "+1 888-281-3847",
+    fax: "+1 888-281-3848",
+    email: "business@amazon.com",
+    url: "https://amazon.com",
+    address: "123 Amazon Way",
+    city: "Seattle",
+    state: "WA",
+    country: "United States",
+    zip: "98101",
+    notes: "Primary supplier for office electronics and cloud infrastructure peripherals."
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +68,8 @@ export function CreateSupplierContent() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Register New Supplier</h2>
-            <p className="text-zinc-400 text-sm">Add a new supply partner to the system for procurement tracking.</p>
+            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Update Supplier</h2>
+            <p className="text-zinc-400 text-sm">Modify existing supplier details for {formData.name}.</p>
           </div>
         </div>
 
@@ -58,7 +83,15 @@ export function CreateSupplierContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Name</label>
                   <div className="relative">
                     <Truck className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
-                    <input required type="text" placeholder="e.g. Amazon Business, Global Tech Parts" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+                    <input 
+                      required 
+                      type="text" 
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="e.g. Amazon Business, Global Tech Parts" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20" 
+                    />
                   </div>
                 </div>
 
@@ -66,7 +99,14 @@ export function CreateSupplierContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Contact Name</label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
-                    <input type="text" placeholder="Primary contact person" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                    <input 
+                      type="text" 
+                      name="contact_name"
+                      value={formData.contact_name}
+                      onChange={handleChange}
+                      placeholder="Primary contact person" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" 
+                    />
                   </div>
                 </div>
 
@@ -75,14 +115,28 @@ export function CreateSupplierContent() {
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
                     <div className="relative">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
-                      <input type="tel" placeholder="+1..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                      <input 
+                        type="tel" 
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="+1..." 
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" 
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Fax</label>
                     <div className="relative">
                       <Printer className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
-                      <input type="tel" placeholder="Fax..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                      <input 
+                        type="tel" 
+                        name="fax"
+                        value={formData.fax}
+                        onChange={handleChange}
+                        placeholder="Fax..." 
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" 
+                      />
                     </div>
                   </div>
                 </div>
@@ -91,7 +145,14 @@ export function CreateSupplierContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Email Address</label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
-                    <input type="email" placeholder="sales@supplier.com" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                    <input 
+                      type="email" 
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="sales@supplier.com" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" 
+                    />
                   </div>
                 </div>
 
@@ -99,7 +160,14 @@ export function CreateSupplierContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Website URL</label>
                   <div className="relative">
                     <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-sky-500" />
-                    <input type="url" placeholder="https://www.supplier.com" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                    <input 
+                      type="url" 
+                      name="url"
+                      value={formData.url}
+                      onChange={handleChange}
+                      placeholder="https://www.supplier.com" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" 
+                    />
                   </div>
                 </div>
               </div>
@@ -110,18 +178,39 @@ export function CreateSupplierContent() {
                   <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Office Address</label>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-4 h-4 w-4 text-zinc-600" />
-                    <textarea rows={1} placeholder="Street address" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" />
+                    <textarea 
+                      rows={1} 
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Street address" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" 
+                    />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">City</label>
-                    <input type="text" placeholder="City" className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-zinc-100 focus:outline-none" />
+                    <input 
+                      type="text" 
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      placeholder="City" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-zinc-100 focus:outline-none" 
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">State</label>
-                    <input type="text" placeholder="State" className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-zinc-100 focus:outline-none" />
+                    <input 
+                      type="text" 
+                      name="state"
+                      value={formData.state}
+                      onChange={handleChange}
+                      placeholder="State" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-zinc-100 focus:outline-none" 
+                    />
                   </div>
                 </div>
 
@@ -130,7 +219,12 @@ export function CreateSupplierContent() {
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Country</label>
                     <div className="relative">
                       <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <select className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none">
+                      <select 
+                        name="country"
+                        value={formData.country}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none"
+                      >
                         <option>Select Country</option>
                         <option>United States</option>
                         <option>United Kingdom</option>
@@ -141,7 +235,14 @@ export function CreateSupplierContent() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Zip Code</label>
-                    <input type="text" placeholder="Zip" className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-zinc-100 focus:outline-none" />
+                    <input 
+                      type="text" 
+                      name="zip"
+                      value={formData.zip}
+                      onChange={handleChange}
+                      placeholder="Zip" 
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-zinc-100 focus:outline-none" 
+                    />
                   </div>
                 </div>
 
@@ -152,7 +253,7 @@ export function CreateSupplierContent() {
                       <Upload className="h-5 w-5 text-zinc-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-zinc-400 mb-2 font-medium">Supplier logo or document...</p>
+                      <p className="text-xs text-zinc-400 mb-2 font-medium">Update logo...</p>
                       <button type="button" className="px-4 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[11px] font-bold text-zinc-200 hover:bg-white/10 transition-all">
                         Select File...
                       </button>
@@ -166,7 +267,14 @@ export function CreateSupplierContent() {
               <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes</label>
               <div className="relative">
                 <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-600" />
-                <textarea rows={3} placeholder="Terms of service, delivery details or other notes..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" />
+                <textarea 
+                  rows={3} 
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  placeholder="Terms of service, delivery details or other notes..." 
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" 
+                />
               </div>
             </div>
           </div>
@@ -190,7 +298,7 @@ export function CreateSupplierContent() {
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              <span>{loading ? 'Processing...' : 'Save Supplier'}</span>
+              <span>{loading ? 'Updating...' : 'Update Supplier'}</span>
             </button>
           </div>
         </form>
