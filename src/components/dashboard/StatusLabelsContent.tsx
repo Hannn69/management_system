@@ -12,16 +12,17 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
-import { ChevronDown, MoreHorizontal, Search, Truck, Copy, Edit2, Trash, Check, Image as ImageIcon } from "lucide-react";
+import { ChevronDown, MoreHorizontal, Search, Tag, Copy, Edit2, Trash, Check, Activity } from "lucide-react";
 
 const accentClasses = [
-  "from-blue-400 to-sky-500",
-  "from-cyan-400 to-blue-500",
-  "from-indigo-400 to-blue-600",
-  "from-sky-400 to-indigo-500",
+  "from-rose-400 to-red-500",
+  "from-amber-400 to-orange-500",
+  "from-emerald-400 to-teal-500",
+  "from-blue-400 to-indigo-500",
+  "from-violet-400 to-purple-500",
 ];
 
-export function SuppliersContent() {
+export function StatusLabelsContent() {
   const router = useRouter();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
   const [search, setSearch] = useState("");
@@ -53,7 +54,7 @@ export function SuppliersContent() {
       setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
       setItemToDelete(null);
     } catch (err) {
-      setError("Failed to delete supplier.");
+      setError("Failed to delete status label.");
     } finally {
       setDeleteLoading(false);
     }
@@ -65,17 +66,19 @@ export function SuppliersContent() {
     try {
       // Mock data for development
       const allRecords = [
-        { id: 1, name: "Amazon Business", slug: "amazon-business", isActive: true, createdAt: new Date().toISOString(), assets: 156, accessories: 42, licenses: 28, components: 12, consumables: 200, url: "https://amazon.com", address: "123 Amazon Way", city: "Seattle", state: "WA", image: null },
-        { id: 2, name: "CDW", slug: "cdw", isActive: true, createdAt: new Date().toISOString(), assets: 84, accessories: 15, licenses: 12, components: 8, consumables: 50, url: "https://cdw.com", address: "200 N Milwaukee Ave", city: "Vernon Hills", state: "IL", image: null },
-        { id: 3, name: "Newegg", slug: "newegg", isActive: true, createdAt: new Date().toISOString(), assets: 42, accessories: 28, licenses: 15, components: 6, consumables: 80, url: "https://newegg.com", address: "16839 E Gale Ave", city: "City of Industry", state: "CA", image: null },
-        { id: 4, name: "B&H Photo Video", slug: "bh-photo", isActive: false, createdAt: new Date().toISOString(), assets: 28, accessories: 12, licenses: 8, components: 4, consumables: 30, url: "https://bhphotovideo.com", address: "420 9th Ave", city: "New York", state: "NY", image: null },
-        { id: 5, name: "Best Buy Business", slug: "best-buy", isActive: true, createdAt: new Date().toISOString(), assets: 210, accessories: 84, licenses: 42, components: 24, consumables: 150, url: "https://bestbuy.com", address: "7601 Penn Ave S", city: "Richfield", state: "MN", image: null },
+        { id: 1, name: "Pending", type: "Deployable", color: "amber", assets: 42 },
+        { id: 2, name: "Ready to Deploy", type: "Deployable", color: "emerald", assets: 156 },
+        { id: 3, name: "Archive", type: "Archived", color: "zinc", assets: 85 },
+        { id: 4, name: "Broken - Not Fixable", type: "Undeployable", color: "rose", assets: 12 },
+        { id: 5, name: "Lost/Stolen", type: "Undeployable", color: "orange", assets: 5 },
+        { id: 6, name: "Out of Diagnostic", type: "Pending", color: "blue", assets: 8 },
+        { id: 7, name: "Out for Repair", type: "Pending", color: "indigo", assets: 15 },
       ];
       
       let filtered = [...allRecords];
       if (search.trim()) {
         const s = search.toLowerCase();
-        filtered = filtered.filter(r => r.name.toLowerCase().includes(s) || r.city.toLowerCase().includes(s));
+        filtered = filtered.filter(r => r.name.toLowerCase().includes(s));
       }
 
       filtered.sort((a, b) => {
@@ -105,7 +108,7 @@ export function SuppliersContent() {
       <div className="mx-auto w-full max-w-full flex flex-1 flex-col gap-6">
         <div className="flex flex-col gap-1">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#6e8a99]">Settings</p>
-          <h2 className="text-3xl font-bold text-white">Suppliers</h2>
+          <h2 className="text-3xl font-bold text-white">Status Labels</h2>
         </div>
 
         <DataTableToolbar 
@@ -113,25 +116,17 @@ export function SuppliersContent() {
           onSearchChange={setSearch}
           viewType={viewType}
           onViewToggle={setViewType}
-          onCreateClick={() => router.push("/suppliers/create")}
+          onCreateClick={() => router.push("/status-labels/create")}
           onRefreshClick={loadRecords}
         />
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
-          <Table className="min-w-[1800px]">
+          <Table className="min-w-[800px]">
             <TableHeader className="bg-white/5 sticky top-0 z-10">
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Name</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Status Name</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Type</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assets</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Accessories</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Licenses</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Components</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Consumables</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">URL</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Address</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">City</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">State</TableHead>
                 <TableHead className="w-[100px] px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -144,60 +139,28 @@ export function SuppliersContent() {
                   <TableCell className="px-4 py-4">
                     <div className="flex items-center gap-3">
                       <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${record.accent} text-black shadow-lg`}>
-                        <Truck className="h-5 w-5" />
+                        <Activity className="h-5 w-5" />
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-zinc-100">{record.name}</p>
-                        <p className="text-[10px] text-zinc-500 font-mono tracking-tight">{record.slug}</p>
-                      </div>
+                      <p className="text-sm font-bold text-zinc-100">{record.name}</p>
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-4">
-                    <div className="flex items-center justify-center">
-                      {record.image ? (
-                        <img src={record.image} alt={record.name} className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/10" />
-                      ) : (
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10`}>
-                          <ImageIcon className="h-5 w-5 text-zinc-600" />
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-bold text-indigo-400 border border-indigo-500/20">
-                      {record.assets}
+                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      record.type === "Deployable" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
+                      record.type === "Undeployable" ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" :
+                      record.type === "Archived" ? "bg-zinc-500/30 text-zinc-400 border border-white/5" :
+                      "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                    }`}>
+                      {record.type}
                     </span>
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-400 border border-amber-500/20">
-                      {record.accessories}
-                    </span>
+                    <span className="text-xs font-bold text-zinc-300">{record.assets}</span>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-purple-500/10 px-2.5 py-1 text-xs font-bold text-purple-400 border border-purple-500/20">
-                      {record.licenses}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-400 border border-blue-500/20">
-                      {record.components}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-400 border border-rose-500/20">
-                      {record.consumables}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-xs font-medium text-cyan-400">
-                    <a href={record.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{record.url}</a>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-xs text-zinc-500 italic">{record.address}</TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400">{record.city}</TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400">{record.state}</TableCell>
                   <TableCell className="px-4 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
-                        onClick={() => router.push(`/suppliers/edit/${record.id}`)}
+                        onClick={() => router.push(`/status-labels/edit/${record.id}`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >
@@ -214,13 +177,6 @@ export function SuppliersContent() {
                   </TableCell>
                 </TableRow>
               ))}
-              {decoratedRecords.length === 0 && (
-                <TableRow className="border-white/10">
-                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={12}>
-                    {loading ? "Loading..." : "No suppliers found."}
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </div>
@@ -229,7 +185,7 @@ export function SuppliersContent() {
           open={!!itemToDelete}
           onClose={() => setItemToDelete(null)}
           onConfirm={handleDelete}
-          title="Delete Supplier"
+          title="Delete Status Label"
           itemName={itemToDelete?.name}
           loading={deleteLoading}
         />
@@ -257,7 +213,7 @@ export function SuppliersContent() {
               >
                 &lt;
               </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg">
+              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-600 text-white shadow-lg">
                 {page}
               </button>
               <button

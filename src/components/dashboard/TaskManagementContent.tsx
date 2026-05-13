@@ -14,6 +14,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+export type Task = {
+  key: string;
+  slug: string;
+  summary: string;
+  status: string;
+  priority: string;
+  assignee: string;
+  updated: string;
+  space: string;
+  workType: string;
+  description: string;
+  reporter: string;
+  labels: string;
+  dueDate: string;
+  startDate: string;
+  category: string;
+  team: string;
+};
+
 const seedTasks = [
   {
     key: "TASK-101",
@@ -133,7 +152,7 @@ export function TaskManagementContent({
 }: TaskManagementContentProps) {
   const searchParams = useSearchParams();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-  const [tasks, setTasks] = useState<typeof seedTasks>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -148,13 +167,8 @@ export function TaskManagementContent({
   const [spaces, setSpaces] = useState<Array<{ name: string; key: string }>>(
     []
   );
-  const [spacesLoaded, setSpacesLoaded] = useState(false);
-  const [editTask, setEditTask] = useState<(typeof seedTasks)[number] | null>(
-    null
-  );
-  const [deleteTask, setDeleteTask] = useState<
-    (typeof seedTasks)[number] | null
-  >(null);
+  const [editTask, setEditTask] = useState<Task | null>(null);
+  const [deleteTask, setDeleteTask] = useState<Task | null>(null);
 
   useEffect(() => {
     const handle = window.setTimeout(() => {
@@ -185,34 +199,8 @@ export function TaskManagementContent({
   }, [spaceFilter, spaces, spaceName, spaceKey]);
 
   useEffect(() => {
-    if (spacesLoaded) {
-      return;
-    }
-    const loadSpaces = async () => {
-      try {
-        const res = await fetch(`${apiBase}/spaces?limit=50`, {
-          credentials: "include",
-        });
-        if (!res.ok) {
-          return;
-        }
-        const data = await res.json();
-        if (!Array.isArray(data.spaces)) {
-          return;
-        }
-        setSpaces(
-          data.spaces.map((space: any) => ({
-            name: space.name,
-            key: space.key,
-          }))
-        );
-        setSpacesLoaded(true);
-      } catch {
-        // ignore
-      }
-    };
-    loadSpaces();
-  }, [apiBase, spacesLoaded]);
+    setSpaces([]);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -245,7 +233,7 @@ export function TaskManagementContent({
         if (!Array.isArray(data.tasks)) {
           throw new Error("Invalid tasks response.");
         }
-        const mapped = data.tasks.map((task: any) => ({
+        const mapped: Task[] = data.tasks.map((task: any) => ({
           key: task.key,
           slug: task.slug,
           summary: task.summary,
@@ -312,6 +300,7 @@ export function TaskManagementContent({
       return "just now";
     }
     const date = new Date(value);
+    if (isNaN(date.getTime())) return "recently";
     const diffMs = Date.now() - date.getTime();
     const minutes = Math.floor(diffMs / 60000);
     if (minutes < 60) {

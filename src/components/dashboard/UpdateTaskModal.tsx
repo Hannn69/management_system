@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Task } from "./TaskManagementContent";
 import {
   Dialog,
   DialogContent,
@@ -10,28 +11,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type TaskRow = {
-  key: string;
-  slug: string;
-  summary: string;
-  status: string;
-  priority: string;
-  assignee: string;
-  updated: string;
-  space?: string;
-  workType?: string;
-  description?: string;
-  reporter?: string;
-  labels?: string;
-  dueDate?: string;
-  startDate?: string;
-  category?: string;
-  team?: string;
-};
-
 type UpdateTaskModalProps = {
   open: boolean;
-  task: TaskRow | null;
+  task: Task | null;
   onClose: () => void;
 };
 
@@ -284,7 +266,7 @@ export function UpdateTaskModal({ open, task, onClose }: UpdateTaskModalProps) {
                   <input
                     className="mt-2 w-full rounded-xl border border-white/10 bg-[#23252a] px-3 py-2 text-sm text-zinc-100"
                     type="date"
-                    value={form.dueDate?.slice(0, 10)}
+                    value={form.dueDate ? form.dueDate.split('T')[0] : ""}
                     onChange={(event) =>
                       updateForm("dueDate", event.target.value)
                     }
@@ -307,7 +289,7 @@ export function UpdateTaskModal({ open, task, onClose }: UpdateTaskModalProps) {
                   <input
                     className="mt-2 w-full rounded-xl border border-white/10 bg-[#23252a] px-3 py-2 text-sm text-zinc-100"
                     type="date"
-                    value={form.startDate?.slice(0, 10)}
+                    value={form.startDate ? form.startDate.split('T')[0] : ""}
                     onChange={(event) =>
                       updateForm("startDate", event.target.value)
                     }

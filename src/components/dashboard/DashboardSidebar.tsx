@@ -6,10 +6,20 @@ import { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, LayoutDashboard, Settings, Package as AssetsIcon } from "lucide-react";
 
 const assetsItems = [
-  { label: "List All", href: "/assets" },
+  { label: "List All", href: "/assets", count: 9 },
+  { label: "Deployed", href: "/assets/deployed", count: 2 },
+  { label: "Ready to Deploy", href: "/assets/ready-to-deploy", count: 1 },
+  { label: "Pending", href: "/assets/pending", count: 1 },
+  { label: "Un-deployable", href: "/assets/undeployable", count: 2 },
+  { label: "BYOD", href: "/assets/byod", count: 2 },
+  { label: "Archive", href: "/assets/archive", count: 1 },
+  { label: "Requestable", href: "/assets/requestable", count: 4 },
+  { label: "Due for Audit", href: "/assets/due-for-audit", count: 2 },
+  { label: "Due for Checkin", href: "/assets/due-for-checkin", count: 2 },
 ];
 
 const settingsItems = [
+  { label: "Status Labels", href: "/status-labels" },
   { label: "Asset Models", href: "/asset-models" },
   { label: "Categories", href: "/categories" },
   { label: "Manufacturers", href: "/manufacturers" },
@@ -22,9 +32,9 @@ const settingsItems = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const [isAssetsOpen, setIsAssetsOpen] = useState(true);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
 
-  // Auto-open groups based on current path
+  // Ensure groups are open if we are on a corresponding page
   useEffect(() => {
     const isAssetPage = assetsItems.some(item => pathname.startsWith(item.href));
     if (isAssetPage) {
@@ -113,14 +123,21 @@ export function DashboardSidebar() {
                     return (
                       <Link
                         key={item.label}
-                        href={item.href}
-                        className={`rounded-xl px-4 py-2.5 text-sm transition-all ${
+                        href={(item as any).href}
+                        className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-sm transition-all ${
                           active
                             ? "text-emerald-400 font-bold bg-white/5 shadow-inner"
                             : "text-[#9eb6c3] hover:bg-[#1d2d38] hover:text-white"
                         }`}
                       >
-                        {item.label}
+                        <span>{item.label}</span>
+                        {(item as any).count !== undefined && (
+                          <span className={`inline-flex items-center justify-center rounded-lg px-2 py-0.5 text-[10px] font-black ${
+                            active ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-[#4e6c7c]"
+                          }`}>
+                            {(item as any).count}
+                          </span>
+                        )}
                       </Link>
                     );
                   })}
@@ -161,14 +178,21 @@ export function DashboardSidebar() {
                     return (
                       <Link
                         key={item.label}
-                        href={item.href}
-                        className={`rounded-xl px-4 py-2.5 text-sm transition-all ${
+                        href={(item as any).href}
+                        className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-sm transition-all ${
                           active
                             ? "text-emerald-400 font-bold bg-white/5 shadow-inner"
                             : "text-[#9eb6c3] hover:bg-[#1d2d38] hover:text-white"
                         }`}
                       >
-                        {item.label}
+                        <span>{item.label}</span>
+                        {(item as any).count !== undefined && (
+                          <span className={`inline-flex items-center justify-center rounded-lg px-2 py-0.5 text-[10px] font-black ${
+                            active ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-[#4e6c7c]"
+                          }`}>
+                            {(item as any).count}
+                          </span>
+                        )}
                       </Link>
                     );
                   })}

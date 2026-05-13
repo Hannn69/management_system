@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -26,7 +26,6 @@ export function ManufacturersContent() {
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -45,21 +44,6 @@ export function ManufacturersContent() {
     }));
   }, [records]);
 
-  const toggleAll = () => {
-    if (selectedIds.size === records.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(records.map(r => r.id)));
-    }
-  };
-
-  const toggleOne = (id: number) => {
-    const next = new Set(selectedIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedIds(next);
-  };
-
   const handleDelete = async () => {
     if (!itemToDelete) return;
     setDeleteLoading(true);
@@ -75,7 +59,7 @@ export function ManufacturersContent() {
     }
   };
 
-  const loadRecords = async () => {
+  const loadRecords = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -175,8 +159,8 @@ export function ManufacturersContent() {
       }
 
       filtered.sort((a, b) => {
-        const valA = a[sort] || "";
-        const valB = b[sort] || "";
+        const valA = (a as any)[sort] || "";
+        const valB = (b as any)[sort] || "";
         if (order === "asc") return valA > valB ? 1 : -1;
         return valA < valB ? 1 : -1;
       });
@@ -190,11 +174,11 @@ export function ManufacturersContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, page, limit, sort, order]);
 
   useEffect(() => {
     loadRecords();
-  }, [apiBase, page, limit, search, sort, order]);
+  }, [loadRecords]);
 
   return (
     <main className="px-6 pb-6 pt-5">
@@ -217,14 +201,6 @@ export function ManufacturersContent() {
           <Table className="min-w-[1800px]">
             <TableHeader className="bg-white/5 sticky top-0 z-10">
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="w-[50px] px-4 py-3">
-                  <div 
-                    onClick={toggleAll}
-                    className={`flex h-5 w-5 cursor-pointer items-center justify-center rounded border transition-all ${selectedIds.size === records.length && records.length > 0 ? "border-cyan-500 bg-cyan-500" : "border-white/20 bg-white/5 hover:border-white/40"}`}
-                  >
-                    {selectedIds.size === records.length && records.length > 0 && <Check className="h-3 w-3 text-black font-bold" />}
-                  </div>
-                </TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Name</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">URL</TableHead>
@@ -243,16 +219,8 @@ export function ManufacturersContent() {
               {decoratedRecords.map((record) => (
                 <TableRow 
                   key={record.id} 
-                  className={`border-white/5 transition-colors hover:bg-white/[0.03] ${selectedIds.has(record.id) ? "bg-cyan-500/5" : ""}`}
+                  className="border-white/5 transition-colors hover:bg-white/[0.03]"
                 >
-                  <TableCell className="px-4 py-4">
-                    <div 
-                      onClick={() => toggleOne(record.id)}
-                      className={`flex h-5 w-5 cursor-pointer items-center justify-center rounded border transition-all ${selectedIds.has(record.id) ? "border-cyan-500 bg-cyan-500" : "border-white/10 bg-white/5 hover:border-white/30"}`}
-                    >
-                      {selectedIds.has(record.id) && <Check className="h-3 w-3 text-black font-bold" />}
-                    </div>
-                  </TableCell>
                   <TableCell className="px-4 py-4">
                     <div className="flex items-center gap-3">
                       <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${record.accent} text-black shadow-lg`}>
@@ -346,7 +314,7 @@ export function ManufacturersContent() {
               ))}
               {decoratedRecords.length === 0 && (
                 <TableRow className="border-white/10">
-                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={13}>
+                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={12}>
                     {loading ? "Loading..." : "No manufacturers found."}
                   </TableCell>
                 </TableRow>

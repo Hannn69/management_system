@@ -95,33 +95,8 @@ export function CreateTaskModal({
   }, [open, derivedDefaultSpace, spaceTouched]);
 
   useEffect(() => {
-    if (spaces.length || internalSpaces.length) {
-      return;
-    }
-    const loadSpaces = async () => {
-      try {
-        const res = await fetch(`${apiBase}/spaces?limit=50`, {
-          credentials: "include",
-        });
-        if (!res.ok) {
-          return;
-        }
-        const data = await res.json();
-        if (!Array.isArray(data.spaces)) {
-          return;
-        }
-        setInternalSpaces(
-          data.spaces.map((space: any) => ({
-            name: space.name,
-            key: space.key,
-          }))
-        );
-      } catch {
-        // ignore
-      }
-    };
-    loadSpaces();
-  }, [apiBase, spaces.length, internalSpaces.length]);
+    setInternalSpaces([]);
+  }, []);
 
   const handleSubmit = async () => {
     if (!form.summary.trim()) {
