@@ -24,7 +24,7 @@ const accentClasses = [
 
 export function StatusLabelsContent() {
   const router = useRouter();
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -49,12 +49,15 @@ export function StatusLabelsContent() {
     if (!itemToDelete) return;
     setDeleteLoading(true);
     try {
-      // Mock delete logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch(`${apiBase}/status-labels/${itemToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to delete status label");
       setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
       setItemToDelete(null);
     } catch (err) {
-      setError("Failed to delete status label.");
+      setError(err instanceof Error ? err.message : "Failed to delete status label.");
     } finally {
       setDeleteLoading(false);
     }
@@ -64,40 +67,28 @@ export function StatusLabelsContent() {
     setLoading(true);
     setError(null);
     try {
-      // Mock data for development
-      const allRecords = [
-        { id: 1, name: "Pending", type: "Deployable", color: "amber", assets: 42 },
-        { id: 2, name: "Ready to Deploy", type: "Deployable", color: "emerald", assets: 156 },
-        { id: 3, name: "Archive", type: "Archived", color: "zinc", assets: 85 },
-        { id: 4, name: "Broken - Not Fixable", type: "Undeployable", color: "rose", assets: 12 },
-        { id: 5, name: "Lost/Stolen", type: "Undeployable", color: "orange", assets: 5 },
-        { id: 6, name: "Out of Diagnostic", type: "Pending", color: "blue", assets: 8 },
-        { id: 7, name: "Out for Repair", type: "Pending", color: "indigo", assets: 15 },
-      ];
-      
-      let filtered = [...allRecords];
-      if (search.trim()) {
-        const s = search.toLowerCase();
-        filtered = filtered.filter(r => r.name.toLowerCase().includes(s));
-      }
-
-      filtered.sort((a, b) => {
-        const valA = (a as any)[sort] || "";
-        const valB = (b as any)[sort] || "";
-        if (order === "asc") return valA > valB ? 1 : -1;
-        return valA < valB ? 1 : -1;
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort,
+        order,
+        search,
       });
-
-      setTotal(filtered.length);
-      const start = (page - 1) * limit;
-      setRecords(filtered.slice(start, start + limit));
+      
+      const res = await fetch(`${apiBase}/status-labels?${params}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch data");
+      const data = await res.json();
+      
+      setRecords(data.records || []);
+      setTotal(data.total || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error loading records.");
       setRecords([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [search, page, limit, sort, order]);
+  }, [apiBase, page, limit, sort, order, search]);
 
   useEffect(() => {
     loadRecords();
@@ -177,6 +168,13 @@ export function StatusLabelsContent() {
                   </TableCell>
                 </TableRow>
               ))}
+              {decoratedRecords.length === 0 && (
+                <TableRow className="border-white/10">
+                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={4}>
+                    {loading ? "Loading..." : "No status labels found."}
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>

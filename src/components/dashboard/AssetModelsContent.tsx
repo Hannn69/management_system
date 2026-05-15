@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
-import { ChevronDown, MoreHorizontal, Search, Package, Copy, Edit2, Trash, Image as ImageIcon, Tag, Factory, Hash, TrendingDown, ClipboardList } from "lucide-react";
+import { Package, Copy, Edit2, Trash, Image as ImageIcon, Tag, Hash, TrendingDown, ClipboardList } from "lucide-react";
 
 const accentClasses = [
   "from-amber-400 to-orange-500",
@@ -23,7 +23,7 @@ const accentClasses = [
 
 export function AssetModelsContent() {
   const router = useRouter();
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -63,123 +63,28 @@ export function AssetModelsContent() {
     setLoading(true);
     setError(null);
     try {
-      // Mock data for development
-      const allRecords = [
-        { 
-          id: 1, 
-          name: "MacBook Pro 14", 
-          slug: "macbook-pro-14", 
-          isActive: true, 
-          createdAt: new Date().toISOString(),
-          modelNo: "A2442",
-          minQty: 5,
-          assets: 120,
-          assigned: 85,
-          remaining: 35,
-          percentRemaining: 29.1,
-          archived: 2,
-          category: "Laptops",
-          eol: 36,
-          fieldset: "Apple Fieldset",
-          image: null
-        },
-        { 
-          id: 2, 
-          name: "Dell XPS 15", 
-          slug: "dell-xps-15", 
-          isActive: true, 
-          createdAt: new Date().toISOString(),
-          modelNo: "XPS15-9520",
-          minQty: 10,
-          assets: 85,
-          assigned: 78,
-          remaining: 7,
-          percentRemaining: 8.2,
-          archived: 5,
-          category: "Laptops",
-          eol: 48,
-          fieldset: "Dell Fieldset",
-          image: null
-        },
-        { 
-          id: 3, 
-          name: "iPhone 13 Pro", 
-          slug: "iphone-13-pro", 
-          isActive: true, 
-          createdAt: new Date().toISOString(),
-          modelNo: "A2638",
-          minQty: 2,
-          assets: 45,
-          assigned: 42,
-          remaining: 3,
-          percentRemaining: 6.7,
-          archived: 0,
-          category: "Phones",
-          eol: 24,
-          fieldset: "Mobile Fieldset",
-          image: null
-        },
-        { 
-          id: 4, 
-          name: "Logitech MX Master 3", 
-          slug: "mx-master-3", 
-          isActive: false, 
-          createdAt: new Date().toISOString(),
-          modelNo: "910-005620",
-          minQty: 20,
-          assets: 250,
-          assigned: 210,
-          remaining: 40,
-          percentRemaining: 16.0,
-          archived: 15,
-          category: "Peripherals",
-          eol: 60,
-          fieldset: "Standard Fieldset",
-          image: null
-        },
-        { 
-          id: 5, 
-          name: "Samsung Odyssey G7", 
-          slug: "odyssey-g7", 
-          isActive: true, 
-          createdAt: new Date().toISOString(),
-          modelNo: "LC32G75TQSNXZA",
-          minQty: 4,
-          assets: 15,
-          assigned: 12,
-          remaining: 3,
-          percentRemaining: 20.0,
-          archived: 1,
-          category: "Monitors",
-          eol: 72,
-          fieldset: "Monitor Fieldset",
-          image: null
-        },
-      ];
-      
-      let filtered = [...allRecords];
-      if (search.trim()) {
-        const s = search.toLowerCase();
-        filtered = filtered.filter(r => r.name.toLowerCase().includes(s) || r.modelNo.toLowerCase().includes(s));
-      }
-
-      filtered.sort((a, b) => {
-        const valA = (a as any)[sort] || "";
-        const valB = (b as any)[sort] || "";
-        if (order === "asc") return valA > valB ? 1 : -1;
-        return valA < valB ? 1 : -1;
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort,
+        order,
+        search,
       });
 
-      setTotal(filtered.length);
-      const start = (page - 1) * limit;
-      setRecords(filtered.slice(start, start + limit));
+      const res = await fetch(`${apiBase}/asset-models?${params}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch data");
+      const data = await res.json();
+
+      setRecords(data.records || []);
+      setTotal(data.total || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error loading records.");
       setRecords([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [search, page, limit, sort, order]);
+  }, [apiBase, page, limit, sort, order, search]);
 
   useEffect(() => {
     loadRecords();
@@ -319,7 +224,7 @@ export function AssetModelsContent() {
                         <Copy className="h-4 w-4" />
                       </button>
                       <button 
-                        onClick={() => router.push(`/asset-models/edit/${record.id}`)}
+                        onClick={() => router.push(`/asset-models/edit/${record.slug}`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >

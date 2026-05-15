@@ -16,17 +16,43 @@ import {
 
 export function CreateCompanyContent() {
   const router = useRouter();
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    fax: "",
+    email: "",
+    notes: "",
+    logo: null as string | null,
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Mock save logic
-    console.log("Saving company data...");
-    setTimeout(() => {
-      setLoading(false);
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/companies`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to create company");
+      }
+
       router.push("/companies");
-    }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,12 +71,16 @@ export function CreateCompanyContent() {
           </div>
         </div>
 
+        {error && (
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Form Container */}
           <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-8 shadow-2xl backdrop-blur-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
-              {/* Left Column: Basic Info */}
               <div className="space-y-5">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Company Name</label>
@@ -61,6 +91,8 @@ export function CreateCompanyContent() {
                       type="text" 
                       placeholder="Enter company legal name"
                       className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
                   </div>
                 </div>
@@ -73,6 +105,8 @@ export function CreateCompanyContent() {
                       type="tel" 
                       placeholder="+1 (555) 000-0000"
                       className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
                     />
                   </div>
                 </div>
@@ -85,6 +119,8 @@ export function CreateCompanyContent() {
                       type="tel" 
                       placeholder="Fax contact number"
                       className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
+                      value={form.fax}
+                      onChange={(e) => setForm({ ...form, fax: e.target.value })}
                     />
                   </div>
                 </div>
@@ -97,12 +133,13 @@ export function CreateCompanyContent() {
                       type="email" 
                       placeholder="contact@company.com"
                       className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Image & Notes */}
               <div className="space-y-5">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Company Logo</label>
@@ -125,6 +162,8 @@ export function CreateCompanyContent() {
                       rows={4}
                       placeholder="Additional information about the company..."
                       className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
+                      value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
                     ></textarea>
                   </div>
                 </div>
@@ -132,7 +171,6 @@ export function CreateCompanyContent() {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center justify-end gap-4 pt-2">
             <button 
               type="button"

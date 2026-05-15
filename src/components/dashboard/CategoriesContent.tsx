@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
-import { ChevronDown, MoreHorizontal, Search, Tag, Copy, Edit2, Trash, Check, Image as ImageIcon, Layers, Mail, ShieldAlert } from "lucide-react";
+import { Tag, Edit2, Trash, Check, Image as ImageIcon, Layers, Mail, ShieldAlert } from "lucide-react";
 
 const accentClasses = [
   "from-indigo-400 to-violet-500",
@@ -23,7 +23,7 @@ const accentClasses = [
 
 export function CategoriesContent() {
   const router = useRouter();
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -63,93 +63,28 @@ export function CategoriesContent() {
     setLoading(true);
     setError(null);
     try {
-      // Mock data for development
-      const allRecords = [
-        { 
-          id: 1, 
-          name: "Laptops", 
-          slug: "laptops", 
-          isActive: true, 
-          createdAt: new Date().toISOString(),
-          type: "Asset",
-          qty: 450,
-          sendEmail: true,
-          acceptance: true,
-          image: null
-        },
-        { 
-          id: 2, 
-          name: "Desktop PCs", 
-          slug: "desktops", 
-          isActive: true, 
-          createdAt: new Date().toISOString(),
-          type: "Asset",
-          qty: 210,
-          sendEmail: true,
-          acceptance: false,
-          image: null
-        },
-        { 
-          id: 3, 
-          name: "Monitors", 
-          slug: "monitors", 
-          isActive: true, 
-          createdAt: new Date().toISOString(),
-          type: "Asset",
-          qty: 320,
-          sendEmail: false,
-          acceptance: false,
-          image: null
-        },
-        { 
-          id: 4, 
-          name: "Tablets", 
-          slug: "tablets", 
-          isActive: false, 
-          createdAt: new Date().toISOString(),
-          type: "Asset",
-          qty: 85,
-          sendEmail: true,
-          acceptance: true,
-          image: null
-        },
-        { 
-          id: 5, 
-          name: "Printers", 
-          slug: "printers", 
-          isActive: true, 
-          createdAt: new Date().toISOString(),
-          type: "Asset",
-          qty: 42,
-          sendEmail: false,
-          acceptance: false,
-          image: null
-        },
-      ];
-      
-      let filtered = [...allRecords];
-      if (search.trim()) {
-        const s = search.toLowerCase();
-        filtered = filtered.filter(r => r.name.toLowerCase().includes(s));
-      }
-
-      filtered.sort((a, b) => {
-        const valA = (a as any)[sort] || "";
-        const valB = (b as any)[sort] || "";
-        if (order === "asc") return valA > valB ? 1 : -1;
-        return valA < valB ? 1 : -1;
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort,
+        order,
+        search,
       });
 
-      setTotal(filtered.length);
-      const start = (page - 1) * limit;
-      setRecords(filtered.slice(start, start + limit));
+      const res = await fetch(`${apiBase}/categories?${params}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch data");
+      const data = await res.json();
+
+      setRecords(data.records || []);
+      setTotal(data.total || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error loading records.");
       setRecords([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [search, page, limit, sort, order]);
+  }, [apiBase, page, limit, sort, order, search]);
 
   useEffect(() => {
     loadRecords();
@@ -251,7 +186,7 @@ export function CategoriesContent() {
                   <TableCell className="px-4 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
-                        onClick={() => router.push(`/categories/edit/${record.id}`)}
+                        onClick={() => router.push(`/categories/edit/${record.slug}`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >

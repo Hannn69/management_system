@@ -3,10 +3,10 @@
 import { use } from "react";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { UpdateCategoryContent } from "@/components/dashboard/UpdateCategoryContent";
+import { UpdateAssetModelContent } from "@/components/dashboard/UpdateAssetModelContent";
 
-export default function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function EditAssetModelPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
 
   return (
     <div className="min-h-screen bg-[#0f1720] text-[#e6f0f7]">
@@ -14,8 +14,8 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
         <DashboardSidebar />
 
         <div className="flex flex-1 flex-col min-w-0">
-          <DashboardHeader title="Edit Category" />
-          <UpdateCategoryContent id={id} />
+          <DashboardHeader title="Edit Asset Model" />
+          <UpdateAssetModelContent id={slug} />
         </div>
       </div>
     </div>

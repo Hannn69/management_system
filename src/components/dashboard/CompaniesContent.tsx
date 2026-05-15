@@ -39,7 +39,7 @@ const accentClasses = [
 
 export function CompaniesContent() {
   const router = useRouter();
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -64,12 +64,15 @@ export function CompaniesContent() {
     if (!itemToDelete) return;
     setDeleteLoading(true);
     try {
-      // Mock delete logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch(`${apiBase}/companies/${itemToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to delete company");
       setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
       setItemToDelete(null);
     } catch (err) {
-      setError("Failed to delete company.");
+      setError(err instanceof Error ? err.message : "Failed to delete company.");
     } finally {
       setDeleteLoading(false);
     }
@@ -79,38 +82,28 @@ export function CompaniesContent() {
     setLoading(true);
     setError(null);
     try {
-      // Mock data for development
-      const allRecords = [
-        { id: 1, name: "Tech Corp", slug: "tech-corp", code: "TC001", isActive: true, createdAt: new Date().toISOString(), email: "contact@techcorp.com", users: 156, assets: 450, licenses: 85, accessories: 120, consumables: 500, components: 240, image: null },
-        { id: 2, name: "Global Solutions", slug: "global-solutions", code: "GS002", isActive: true, createdAt: new Date().toISOString(), email: "info@globalsolutions.com", users: 84, assets: 320, licenses: 42, accessories: 85, consumables: 300, components: 150, image: null },
-        { id: 3, name: "Future Systems", slug: "future-systems", code: "FS003", isActive: false, createdAt: new Date().toISOString(), email: "support@futuresys.com", users: 32, assets: 180, licenses: 15, accessories: 42, consumables: 150, components: 85, image: null },
-        { id: 4, name: "Nexus Industries", slug: "nexus-industries", code: "NI004", isActive: true, createdAt: new Date().toISOString(), email: "hello@nexus.com", users: 210, assets: 850, licenses: 120, accessories: 250, consumables: 1200, components: 450, image: null },
-        { id: 5, name: "Innovate Ltd", slug: "innovate-ltd", code: "IL005", isActive: true, createdAt: new Date().toISOString(), email: "contact@innovate.com", users: 45, assets: 150, licenses: 28, accessories: 65, consumables: 200, components: 120, image: null },
-      ];
-      
-      let filtered = [...allRecords];
-      if (search.trim()) {
-        const s = search.toLowerCase();
-        filtered = filtered.filter(r => r.name.toLowerCase().includes(s) || r.email.toLowerCase().includes(s));
-      }
-
-      filtered.sort((a, b) => {
-        const valA = (a as any)[sort] || "";
-        const valB = (b as any)[sort] || "";
-        if (order === "asc") return valA > valB ? 1 : -1;
-        return valA < valB ? 1 : -1;
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort,
+        order,
+        search,
       });
-
-      setTotal(filtered.length);
-      const start = (page - 1) * limit;
-      setRecords(filtered.slice(start, start + limit).map((r, i) => ({ ...r, accent: accentClasses[i % accentClasses.length] })));
+      
+      const res = await fetch(`${apiBase}/companies?${params}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch data");
+      const data = await res.json();
+      
+      setRecords(data.records || []);
+      setTotal(data.total || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error loading records.");
       setRecords([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [search, page, limit, sort, order]);
+  }, [apiBase, page, limit, sort, order, search]);
 
   useEffect(() => {
     loadRecords();
@@ -150,7 +143,7 @@ export function CompaniesContent() {
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-white/5">
-              {records.map((record) => (
+              {decoratedRecords.map((record) => (
                 <TableRow 
                   key={record.id} 
                   className="border-white/5 transition-colors hover:bg-white/[0.03]"
@@ -216,7 +209,7 @@ export function CompaniesContent() {
                   <TableCell className="px-4 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
-                        onClick={() => router.push(`/companies/edit?id=${record.id}`)}
+                        onClick={() => router.push(`/companies/edit?slug=${record.slug}`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >

@@ -18,15 +18,44 @@ import {
 
 export function CreateManufacturerContent() {
   const router = useRouter();
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [form, setForm] = useState({
+    name: "",
+    url: "",
+    supportUrl: "",
+    warrantyLookupUrl: "",
+    supportPhone: "",
+    supportEmail: "",
+    notes: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/manufacturers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to create manufacturer");
+      }
+
       router.push("/manufacturers");
-    }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,92 +69,122 @@ export function CreateManufacturerContent() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Add New Manufacturer</h2>
-            <p className="text-zinc-400 text-sm">Register a hardware or software manufacturer for asset categorization.</p>
+            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Register Manufacturer</h2>
+            <p className="text-zinc-400 text-sm">Add a new hardware or software creator to your database.</p>
           </div>
         </div>
 
+        {error && (
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-8 shadow-2xl backdrop-blur-xl">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
-              {/* Left Column: Core Identity & Links */}
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Name</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Manufacturer Name</label>
                   <div className="relative">
-                    <Factory className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
-                    <input required type="text" placeholder="e.g. Apple, Dell, Microsoft" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20" />
+                    <Factory className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
+                    <input 
+                      required
+                      type="text" 
+                      placeholder="e.g. Apple, Dell, Microsoft"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Website URL</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Website URL</label>
                   <div className="relative">
-                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
-                    <input type="url" placeholder="https://www.manufacturer.com" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
+                    <input 
+                      type="url" 
+                      placeholder="https://www.manufacturer.com"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner"
+                      value={form.url}
+                      onChange={(e) => setForm({ ...form, url: e.target.value })}
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Support URL</label>
-                  <div className="relative">
-                    <LifeBuoy className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
-                    <input type="url" placeholder="https://support.manufacturer.com" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Support URL</label>
+                    <div className="relative">
+                      <LifeBuoy className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
+                      <input 
+                        type="url" 
+                        placeholder="Support portal"
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
+                        value={form.supportUrl}
+                        onChange={(e) => setForm({ ...form, supportUrl: e.target.value })}
+                      />
+                    </div>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Warranty Lookup URL</label>
-                  <div className="relative">
-                    <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
-                    <input type="url" placeholder="https://warranty.manufacturer.com" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" />
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Warranty URL</label>
+                    <div className="relative">
+                      <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
+                      <input 
+                        type="url" 
+                        placeholder="Serial lookup"
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
+                        value={form.warrantyLookupUrl}
+                        onChange={(e) => setForm({ ...form, warrantyLookupUrl: e.target.value })}
+                      />
+                    </div>
                   </div>
-                  <p className="px-2 text-[10px] leading-normal text-zinc-500">
-                    Variables <span className="text-zinc-300 font-mono">{"{LOCALE}, {SERIAL}, {MODEL_NUMBER}"}</span>, and <span className="text-zinc-300 font-mono">{"{MODEL_NAME}"}</span> may be used in your URL to have those values auto-populate when viewing assets - for example <span className="text-emerald-500/80 italic">https://checkcoverage.apple.com/{"{LOCALE}"}/{"{SERIAL}"}</span>.
-                  </p>
                 </div>
               </div>
 
-              {/* Right Column: Support & Media */}
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Support Phone</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Support Phone</label>
                     <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
-                      <input type="tel" placeholder="+1..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none" />
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
+                      <input 
+                        type="tel" 
+                        placeholder="Contact number"
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner"
+                        value={form.supportPhone}
+                        onChange={(e) => setForm({ ...form, supportPhone: e.target.value })}
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Support Email</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Support Email</label>
                     <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
-                      <input type="email" placeholder="support@mfr.com" className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none" />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
+                      <input 
+                        type="email" 
+                        placeholder="Support email"
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
+                        value={form.supportEmail}
+                        onChange={(e) => setForm({ ...form, supportEmail: e.target.value })}
+                      />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Manufacturer Logo</label>
-                  <div className="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-white/5">
-                    <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                      <Upload className="h-5 w-5 text-zinc-500" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-zinc-400 mb-2 font-medium">Select brand logo...</p>
-                      <button type="button" className="px-4 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[11px] font-bold text-zinc-200 hover:bg-white/10 transition-all">
-                        Select File...
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Internal Notes</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes</label>
                   <div className="relative">
-                    <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-600" />
-                    <textarea rows={6} placeholder="Support tiers, account managers, or other internal references..." className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" />
+                    <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-500" />
+                    <textarea 
+                      rows={4}
+                      placeholder="Additional information..."
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
+                      value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    ></textarea>
                   </div>
                 </div>
               </div>
@@ -144,7 +203,7 @@ export function CreateManufacturerContent() {
             <button 
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(225,29,72,0.5)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.5)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
             >
               {loading ? (
                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

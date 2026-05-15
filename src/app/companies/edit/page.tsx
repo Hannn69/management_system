@@ -5,8 +5,8 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { UpdateCompanyContent } from "@/components/dashboard/UpdateCompanyContent";
 
-export default function EditCompanyPage({ searchParams }: { searchParams: Promise<{ id: string }> }) {
-  const { id } = use(searchParams);
+export default function EditCompanyPage({ searchParams }: { searchParams: Promise<{ slug: string }> }) {
+  const { slug } = use(searchParams);
 
   return (
     <div className="min-h-screen bg-[#0f1720] text-[#e6f0f7]">
@@ -15,7 +15,7 @@ export default function EditCompanyPage({ searchParams }: { searchParams: Promis
 
         <div className="flex flex-1 flex-col min-w-0">
           <DashboardHeader title="Edit Company" />
-          <UpdateCompanyContent companyId={id} />
+          <UpdateCompanyContent companyId={slug} />
         </div>
       </div>
     </div>

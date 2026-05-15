@@ -6,16 +6,16 @@ import { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, LayoutDashboard, Settings, Package as AssetsIcon } from "lucide-react";
 
 const assetsItems = [
-  { label: "List All", href: "/assets", count: 9 },
-  { label: "Deployed", href: "/assets/deployed", count: 2 },
-  { label: "Ready to Deploy", href: "/assets/ready-to-deploy", count: 1 },
-  { label: "Pending", href: "/assets/pending", count: 1 },
-  { label: "Un-deployable", href: "/assets/undeployable", count: 2 },
-  { label: "BYOD", href: "/assets/byod", count: 2 },
-  { label: "Archive", href: "/assets/archive", count: 1 },
-  { label: "Requestable", href: "/assets/requestable", count: 4 },
-  { label: "Due for Audit", href: "/assets/due-for-audit", count: 2 },
-  { label: "Due for Checkin", href: "/assets/due-for-checkin", count: 2 },
+  { label: "List All", href: "/assets" },
+  { label: "Deployed", href: "/assets/deployed" },
+  { label: "Ready to Deploy", href: "/assets/ready-to-deploy" },
+  { label: "Pending", href: "/assets/pending" },
+  { label: "Un-deployable", href: "/assets/undeployable" },
+  { label: "BYOD", href: "/assets/byod" },
+  { label: "Archive", href: "/assets/archive" },
+  { label: "Requestable", href: "/assets/requestable" },
+  { label: "Due for Audit", href: "/assets/due-for-audit" },
+  { label: "Due for Checkin", href: "/assets/due-for-checkin" },
 ];
 
 const settingsItems = [

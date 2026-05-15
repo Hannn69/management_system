@@ -23,7 +23,7 @@ const accentClasses = [
 
 export function LocationsContent() {
   const router = useRouter();
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -71,133 +71,28 @@ export function LocationsContent() {
     setLoading(true);
     setError(null);
     try {
-      // Mock data for development
-      const allRecords = [
-        { 
-          id: 1, 
-          name: "New York Office", 
-          slug: "new-york-office", 
-          isActive: true,
-          image: null,
-          parent: "USA Region",
-          people: 45,
-          currentLocation: "Manhattan",
-          assignAsset: 120,
-          accessories: 85,
-          assignAccessories: 65,
-          components: 45,
-          consumables: 200,
-          childLocation: 3,
-          currency: "USD",
-          address: "350 Fifth Avenue",
-          city: "New York",
-          state: "NY"
-        },
-        { 
-          id: 2, 
-          name: "London Studio", 
-          slug: "london-studio", 
-          isActive: true,
-          image: null,
-          parent: "Europe Region",
-          people: 32,
-          currentLocation: "West End",
-          assignAsset: 95,
-          accessories: 62,
-          assignAccessories: 48,
-          components: 38,
-          consumables: 150,
-          childLocation: 2,
-          currency: "GBP",
-          address: "42 Greek Street",
-          city: "London",
-          state: "England"
-        },
-        { 
-          id: 3, 
-          name: "Tokyo Branch", 
-          slug: "tokyo-branch", 
-          isActive: true,
-          image: null,
-          parent: "Asia Region",
-          people: 28,
-          currentLocation: "Shibuya",
-          assignAsset: 78,
-          accessories: 55,
-          assignAccessories: 42,
-          components: 32,
-          consumables: 180,
-          childLocation: 1,
-          currency: "JPY",
-          address: "1-2-3 Shibuya",
-          city: "Tokyo",
-          state: "Tokyo"
-        },
-        { 
-          id: 4, 
-          name: "Berlin Hub", 
-          slug: "berlin-hub", 
-          isActive: false,
-          image: null,
-          parent: "Europe Region",
-          people: 25,
-          currentLocation: "Mitte",
-          assignAsset: 65,
-          accessories: 48,
-          assignAccessories: 35,
-          components: 28,
-          consumables: 120,
-          childLocation: 1,
-          currency: "EUR",
-          address: "123 Unter den Linden",
-          city: "Berlin",
-          state: "Berlin"
-        },
-        { 
-          id: 5, 
-          name: "Remote", 
-          slug: "remote", 
-          isActive: true,
-          image: null,
-          parent: "Global",
-          people: 18,
-          currentLocation: "Distributed",
-          assignAsset: 35,
-          accessories: 22,
-          assignAccessories: 15,
-          components: 12,
-          consumables: 85,
-          childLocation: 0,
-          currency: "USD",
-          address: "N/A",
-          city: "N/A",
-          state: "N/A"
-        },
-      ];
-      
-      let filtered = [...allRecords];
-      if (search.trim()) {
-        const s = search.toLowerCase();
-        filtered = filtered.filter(r => r.name.toLowerCase().includes(s) || r.city.toLowerCase().includes(s));
-      }
-
-      filtered.sort((a, b) => {
-        const valA = (a as any)[sort] || "";
-        const valB = (b as any)[sort] || "";
-        if (order === "asc") return valA > valB ? 1 : -1;
-        return valA < valB ? 1 : -1;
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort,
+        order,
+        search,
       });
 
-      setTotal(filtered.length);
-      const start = (page - 1) * limit;
-      setRecords(filtered.slice(start, start + limit));
+      const res = await fetch(`${apiBase}/locations?${params}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch data");
+      const data = await res.json();
+
+      setRecords(data.records || []);
+      setTotal(data.total || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error loading records.");
       setRecords([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [search, page, limit, sort, order]);
+  }, [apiBase, page, limit, sort, order, search]);
 
   useEffect(() => {
     loadRecords();
@@ -317,7 +212,7 @@ export function LocationsContent() {
                         <Copy className="h-4 w-4" />
                       </button>
                       <button 
-                        onClick={() => router.push(`/locations/edit/${record.id}`)}
+                        onClick={() => router.push(`/locations/edit/${record.slug}`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >

@@ -1,33 +1,6 @@
-const summaryCards = [
-  {
-    label: "Inventory Tracked",
-    value: "2,608",
-    detail: "+8.4% this month",
-    tone: "bg-[#121f29]",
-    accent: "text-[#43d3cf]",
-  },
-  {
-    label: "Open Licenses",
-    value: "50",
-    detail: "12 renewals soon",
-    tone: "bg-[#121f29]",
-    accent: "text-[#ff5b9a]",
-  },
-  {
-    label: "Accessories Ready",
-    value: "4",
-    detail: "1 awaiting assignment",
-    tone: "bg-[#121f29]",
-    accent: "text-[#ffb24d]",
-  },
-  {
-    label: "Supply Alerts",
-    value: "3",
-    detail: "Low-stock watchlist",
-    tone: "bg-[#121f29]",
-    accent: "text-[#9c8cff]",
-  },
-];
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
 
 const activityFeed = [
   {
@@ -87,6 +60,61 @@ const statusBars = [
 ];
 
 export function DashboardContent() {
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const [summary, setSummary] = useState({
+    inventoryTracked: 0,
+    openLicenses: 0,
+    accessoriesReady: 0,
+    supplyAlerts: 0,
+  });
+
+  const fetchSummary = useCallback(async () => {
+    try {
+      const res = await fetch(`${apiBase}/dashboard/summary`, { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setSummary(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch dashboard summary", err);
+    }
+  }, [apiBase]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
+
+  const summaryCards = [
+    {
+      label: "Inventory Tracked",
+      value: summary.inventoryTracked.toLocaleString(),
+      detail: "+8.4% this month",
+      tone: "bg-[#121f29]",
+      accent: "text-[#43d3cf]",
+    },
+    {
+      label: "Open Licenses",
+      value: summary.openLicenses.toLocaleString(),
+      detail: "12 renewals soon",
+      tone: "bg-[#121f29]",
+      accent: "text-[#ff5b9a]",
+    },
+    {
+      label: "Accessories Ready",
+      value: summary.accessoriesReady.toLocaleString(),
+      detail: "1 awaiting assignment",
+      tone: "bg-[#121f29]",
+      accent: "text-[#ffb24d]",
+    },
+    {
+      label: "Supply Alerts",
+      value: summary.supplyAlerts.toLocaleString(),
+      detail: "Low-stock watchlist",
+      tone: "bg-[#121f29]",
+      accent: "text-[#9c8cff]",
+    },
+  ];
+
   return (
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
@@ -124,7 +152,7 @@ export function DashboardContent() {
                 <p className="text-xs uppercase tracking-[0.2em] text-white/60">
                   Active items
                 </p>
-                <p className="mt-2 text-2xl font-semibold">2.6k</p>
+                <p className="mt-2 text-2xl font-semibold">{summary.inventoryTracked}</p>
               </div>
               <div className="rounded-[28px] border border-white/8 bg-black/12 px-4 py-4 backdrop-blur">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/60">

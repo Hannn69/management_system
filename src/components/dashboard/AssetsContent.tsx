@@ -13,28 +13,21 @@ import {
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { 
-  ChevronDown, 
-  MoreHorizontal, 
-  Search, 
   Package, 
   Copy, 
   Edit2, 
   Trash, 
   Image as ImageIcon, 
   Tag, 
-  Hash, 
   Barcode, 
   Cpu, 
   Box, 
-  Info, 
   User, 
   MapPin, 
   DollarSign, 
   TrendingUp, 
   ArrowLeftRight, 
   ClipboardCheck,
-  History,
-  Check
 } from "lucide-react";
 
 const accentClasses = [
@@ -56,7 +49,7 @@ export function AssetsContent({
   categoryFilter = "all" 
 }: AssetsContentProps) {
   const router = useRouter();
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -96,68 +89,32 @@ export function AssetsContent({
     setLoading(true);
     setError(null);
     try {
-      // Mock data for development with various statuses
-      const allRecords = [
-        { id: 1, assetTag: "AST-00124", name: "MacBook Pro 14", image: null, serial: "C02G1234Q05F", model: "MacBook Pro 14", category: "Laptops", status: "Deployed", checkedOutTo: "John Doe", location: "New York Office", purchaseCost: 2499.00, currentValue: 2100.00, requestable: true, byod: false, nextAudit: "2026-05-01", expectedCheckin: "2026-05-10" },
-        { id: 2, assetTag: "AST-00125", name: "Dell XPS 15", image: null, serial: "5X7Y2Z1", model: "Dell XPS 15", category: "Laptops", status: "Ready to Deploy", checkedOutTo: null, location: "London Studio", purchaseCost: 1899.00, currentValue: 1650.00, requestable: true, byod: false, nextAudit: "2026-08-15", expectedCheckin: null },
-        { id: 3, assetTag: "AST-00126", name: "iPhone 13 Pro", image: null, serial: "F8Y6H5J4K3L2", model: "iPhone 13 Pro", category: "Phones", status: "Deployed", checkedOutTo: "Sarah Chen", location: "Tokyo Branch", purchaseCost: 1099.00, currentValue: 850.00, requestable: false, byod: true, nextAudit: "2026-04-20", expectedCheckin: "2026-05-05" },
-        { id: 4, assetTag: "AST-00127", name: "Samsung Odyssey G7", image: null, serial: "SAM-G7-123456", model: "Odyssey G7", category: "Monitors", status: "Broken - Not Fixable", checkedOutTo: null, location: "Berlin Hub", purchaseCost: 799.00, currentValue: 150.00, requestable: false, byod: false, nextAudit: "2026-01-01", expectedCheckin: null },
-        { id: 5, assetTag: "AST-00128", name: "Logitech MX Master 3", image: null, serial: "LOGI-MX3-987", model: "MX Master 3", category: "Peripherals", status: "Pending", checkedOutTo: null, location: "Remote", purchaseCost: 99.00, currentValue: 75.00, requestable: true, byod: false, nextAudit: "2026-10-10", expectedCheckin: null },
-        { id: 6, assetTag: "AST-00129", name: "iPad Air", image: null, serial: "DLXG123456", model: "iPad Air 5", category: "Tablets", status: "Archive", checkedOutTo: null, location: "Warehouse", purchaseCost: 599.00, currentValue: 100.00, requestable: false, byod: false, nextAudit: "2025-12-12", expectedCheckin: null },
-        { id: 7, assetTag: "AST-00130", name: "User Phone", image: null, serial: "USER-998877", model: "Pixel 6", category: "Phones", status: "Lost/Stolen", checkedOutTo: "Mike Ross", location: "Remote", purchaseCost: 0.00, currentValue: 0.00, requestable: false, byod: true, nextAudit: "2026-06-01", expectedCheckin: null },
-        { id: 8, assetTag: "AST-00131", name: "Network Switch", image: null, serial: "CISCO-123", model: "Cisco Catalyst", category: "Network", status: "Out of Diagnostic", checkedOutTo: null, location: "Data Center", purchaseCost: 4500.00, currentValue: 4200.00, requestable: false, byod: false, nextAudit: "2026-07-01", expectedCheckin: null },
-        { id: 9, assetTag: "AST-00132", name: "Laser Printer", image: null, serial: "HP-LJ-445", model: "HP LaserJet", category: "Printers", status: "Out for Repair", checkedOutTo: null, location: "Office A", purchaseCost: 450.00, currentValue: 300.00, requestable: true, byod: false, nextAudit: "2026-09-01", expectedCheckin: null },
-      ];
-      
-      let filtered = [...allRecords];
-
-      // Apply category filtering
-      if (categoryFilter === "deployed") {
-        filtered = filtered.filter(r => r.status === "Deployed");
-      } else if (categoryFilter === "ready") {
-        filtered = filtered.filter(r => r.status === "Ready to Deploy");
-      } else if (categoryFilter === "pending") {
-        filtered = filtered.filter(r => r.status === "Pending");
-      } else if (categoryFilter === "undeployable") {
-        filtered = filtered.filter(r => r.status === "Broken - Not Fixable" || r.status === "Lost/Stolen");
-      } else if (categoryFilter === "byod") {
-        filtered = filtered.filter(r => r.byod === true);
-      } else if (categoryFilter === "archive") {
-        filtered = filtered.filter(r => r.status === "Archive");
-      } else if (categoryFilter === "requestable") {
-        filtered = filtered.filter(r => r.requestable === true);
-      } else if (categoryFilter === "audit") {
-        filtered = filtered.filter(r => new Date(r.nextAudit) < new Date("2026-05-13"));
-      } else if (categoryFilter === "checkin") {
-        filtered = filtered.filter(r => r.expectedCheckin && new Date(r.expectedCheckin) < new Date("2026-05-13"));
-      }
-
-      if (search.trim()) {
-        const s = search.toLowerCase();
-        filtered = filtered.filter(r => 
-          r.name.toLowerCase().includes(s) || 
-          r.assetTag.toLowerCase().includes(s) || 
-          r.serial.toLowerCase().includes(s)
-        );
-      }
-
-      filtered.sort((a, b) => {
-        const valA = (a as any)[sort] || "";
-        const valB = (b as any)[sort] || "";
-        if (order === "asc") return valA > valB ? 1 : -1;
-        return valA < valB ? 1 : -1;
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort,
+        order,
+        search,
       });
+      // Add categoryFilter if it exists in the component props
+      if (categoryFilter && categoryFilter !== "all") {
+        params.append("category", categoryFilter);
+      }
 
-      setTotal(filtered.length);
-      const start = (page - 1) * limit;
-      setRecords(filtered.slice(start, start + limit));
+      const res = await fetch(`${apiBase}/assets?${params}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch data");
+      const data = await res.json();
+
+      setRecords(data.records || []);
+      setTotal(data.total || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error loading records.");
       setRecords([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [search, page, limit, sort, order, categoryFilter]);
+  }, [apiBase, page, limit, sort, order, search, categoryFilter]);
 
   useEffect(() => {
     loadRecords();
@@ -327,7 +284,7 @@ export function AssetsContent({
                         <ClipboardCheck className="h-4 w-4" />
                       </button>
                       <button 
-                        onClick={() => router.push(`/assets/edit/${record.id}`)}
+                        onClick={() => router.push(`/assets/edit/${record.slug}`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Building2, 
@@ -18,43 +18,47 @@ interface UpdateCompanyContentProps {
   companyId: string | null;
 }
 
-// Mock company data - replace with API call
-const getMockCompanyData = (id: string | null) => {
-  const companies: { [key: string]: any } = {
-    "1": { id: 1, name: "Tech Corp", phone: "+1 (555) 123-4567", fax: "+1 (555) 123-4568", email: "contact@techcorp.com", notes: "Leading technology solutions provider" },
-    "2": { id: 2, name: "Global Solutions", phone: "+1 (555) 234-5678", fax: "+1 (555) 234-5679", email: "info@globalsolutions.com", notes: "International consulting firm" },
-    "3": { id: 3, name: "Future Systems", phone: "+1 (555) 345-6789", fax: "+1 (555) 345-6790", email: "support@futuresystems.com", notes: "Innovative software development" },
-    "4": { id: 4, name: "Nexus Industries", phone: "+1 (555) 456-7890", fax: "+1 (555) 456-7891", email: "hello@nexus.com", notes: "Manufacturing and logistics" },
-    "5": { id: 5, name: "Innovate Ltd", phone: "+1 (555) 567-8901", fax: "+1 (555) 567-8902", email: "contact@innovate.com", notes: "Research and development" },
-  };
-
-  return companies[id || "1"] || companies["1"];
-};
-
 export function UpdateCompanyContent({ companyId }: UpdateCompanyContentProps) {
   const router = useRouter();
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     fax: "",
     email: "",
     notes: "",
-    image: null as File | null,
+    logo: null as string | null,
   });
 
+  const fetchCompany = useCallback(async () => {
+    if (!companyId) return;
+    try {
+      const res = await fetch(`${apiBase}/companies/${companyId}`, { credentials: "include" });
+      if (res.ok) {
+        const { record } = await res.json();
+        setFormData({
+          name: record.name || "",
+          phone: record.phone || "",
+          fax: record.fax || "",
+          email: record.email || "",
+          notes: record.notes || "",
+          logo: record.logo || null,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch company", err);
+    } finally {
+      setFetching(false);
+    }
+  }, [apiBase, companyId]);
+
   useEffect(() => {
-    // Load company data
-    const company = getMockCompanyData(companyId);
-    setFormData({
-      name: company.name,
-      phone: company.phone,
-      fax: company.fax,
-      email: company.email,
-      notes: company.notes,
-      image: null,
-    });
-  }, [companyId]);
+    fetchCompany();
+  }, [fetchCompany]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -64,26 +68,40 @@ export function UpdateCompanyContent({ companyId }: UpdateCompanyContentProps) {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData(prev => ({
-        ...prev,
-        image: file
-      }));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!companyId) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/companies/${companyId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to update company");
+      }
+
+      router.push("/companies");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    // Mock save logic
-    console.log("Updating company data...", formData);
-    setTimeout(() => {
-      setLoading(false);
-      router.push("/companies");
-    }, 1000);
-  };
+  if (fetching) {
+    return (
+      <div className="flex h-[400px] w-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <main className="px-6 pb-6 pt-5">
@@ -101,12 +119,16 @@ export function UpdateCompanyContent({ companyId }: UpdateCompanyContentProps) {
           </div>
         </div>
 
+        {error && (
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Form Container */}
           <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-8 shadow-2xl backdrop-blur-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
-              {/* Left Column: Basic Info */}
               <div className="space-y-5">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Company Name</label>
@@ -170,28 +192,18 @@ export function UpdateCompanyContent({ companyId }: UpdateCompanyContentProps) {
                 </div>
               </div>
 
-              {/* Right Column: Image & Notes */}
               <div className="space-y-5">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Company Logo</label>
-                  <label className="group relative h-[180px] rounded-3xl border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/[0.08] hover:border-emerald-500/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 overflow-hidden shadow-inner">
+                  <div className="group relative h-[180px] rounded-3xl border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/[0.08] hover:border-emerald-500/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 overflow-hidden shadow-inner">
                     <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <UploadCloud className="h-6 w-6 text-emerald-400" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-bold text-zinc-200">Click or drag to upload</p>
+                      <p className="text-sm font-bold text-zinc-200">Logo update via upload</p>
                       <p className="text-[11px] text-zinc-500 mt-1">PNG, JPG or SVG (Max. 2MB)</p>
                     </div>
-                    <input 
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                  </label>
-                  {formData.image && (
-                    <p className="text-xs text-emerald-400 mt-2">✓ {formData.image.name}</p>
-                  )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -212,7 +224,6 @@ export function UpdateCompanyContent({ companyId }: UpdateCompanyContentProps) {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center justify-end gap-4 pt-2">
             <button 
               type="button"

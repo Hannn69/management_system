@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { 
   ChevronDown, 
@@ -27,34 +27,45 @@ import {
 } from "lucide-react";
 
 interface UpdateAssetContentProps {
-  id: string;
+  id: string; // This is the slug or ID from the URL
 }
 
 export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
   const router = useRouter();
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
+  
   const [isOptionalOpen, setIsOptionalOpen] = useState(false);
   const [isOrderOpen, setIsOrderOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [afterSaveAction, setAfterSaveAction] = useState("all-assets");
+  const [error, setError] = useState<string | null>(null);
+
+  // Dropdown data
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [models, setModels] = useState<any[]>([]);
+  const [statuses, setStatuses] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
+  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
 
   const [form, setForm] = useState({
-    company: "",
+    companyId: "",
     assetTag: "",
     serial: "",
     modelId: "",
     statusId: "",
-    checkedOutTo: "",
+    checkedOutUserId: "",
     notes: "",
     locationId: "",
-    requestable: false,
-    image: null as File | null,
+    isRequestable: false,
+    image: null as string | null,
     // Optional
-    assetName: "",
-    warranty: "",
+    name: "",
+    warrantyMonths: "",
     expectedCheckin: "",
-    nextAudit: "",
-    byod: false,
+    nextAuditDate: "",
+    isByod: false,
     // Order Related
     orderNumber: "",
     purchaseDate: "",
@@ -63,58 +74,107 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
     purchaseCost: "",
   });
 
-  // Mock fetching existing data
-  useEffect(() => {
-    const fetchAsset = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        // Mock data based on ID
+  const fetchData = useCallback(async () => {
+    try {
+      const fetchOpts = { credentials: "include" as const };
+      const [compRes, modRes, statRes, locRes, supRes, assetRes] = await Promise.all([
+        fetch(`${apiBase}/companies`, fetchOpts),
+        fetch(`${apiBase}/asset-models`, fetchOpts),
+        fetch(`${apiBase}/status-labels`, fetchOpts),
+        fetch(`${apiBase}/locations`, fetchOpts),
+        fetch(`${apiBase}/suppliers`, fetchOpts),
+        fetch(`${apiBase}/assets/${id}`, fetchOpts), // Fetch current asset
+      ]);
+
+      if (compRes.ok) setCompanies((await compRes.json()).records || []);
+      if (modRes.ok) setModels((await modRes.json()).records || []);
+      if (statRes.ok) setStatuses((await statRes.json()).records || []);
+      if (locRes.ok) setLocations((await locRes.json()).records || []);
+      if (supRes.ok) setSuppliers((await supRes.json()).records || []);
+      
+      if (assetRes.ok) {
+        const { record } = await assetRes.json();
         setForm({
-          company: "1",
-          assetTag: `AST-${id.padStart(5, '0')}`,
-          serial: "SN-MOCK-123456",
-          modelId: "1",
-          statusId: "1",
-          checkedOutTo: "1",
-          notes: "Existing asset record.",
-          locationId: "1",
-          requestable: true,
-          image: null,
-          assetName: "Standard Workstation",
-          warranty: "24",
-          expectedCheckin: "2026-12-31",
-          nextAudit: "2026-06-15",
-          byod: false,
-          orderNumber: "PO-887766",
-          purchaseDate: "2024-01-10",
-          eolDate: "2028-01-10",
-          supplierId: "1",
-          purchaseCost: "1200.00",
+          companyId: record.companyId?.toString() || "",
+          assetTag: record.assetTag || "",
+          serial: record.serial || "",
+          modelId: record.modelId?.toString() || "",
+          statusId: record.statusId?.toString() || "",
+          checkedOutUserId: record.checkedOutUserId?.toString() || "",
+          notes: record.notes || "",
+          locationId: record.locationId?.toString() || "",
+          isRequestable: record.isRequestable || false,
+          image: record.image || null,
+          name: record.name || "",
+          warrantyMonths: record.warrantyMonths?.toString() || "",
+          expectedCheckin: record.expectedCheckin ? record.expectedCheckin.split("T")[0] : "",
+          nextAuditDate: record.nextAuditDate ? record.nextAuditDate.split("T")[0] : "",
+          isByod: record.isByod || false,
+          orderNumber: record.orderNumber || "",
+          purchaseDate: record.purchaseDate ? record.purchaseDate.split("T")[0] : "",
+          eolDate: record.eolDate ? record.eolDate.split("T")[0] : "",
+          supplierId: record.supplierId?.toString() || "",
+          purchaseCost: record.purchaseCost?.toString() || "",
         });
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setFetching(false);
       }
-    };
-    fetchAsset();
-  }, [id]);
+
+      setUsers([
+        { id: 1, email: "admin@example.com" },
+        { id: 4, email: "sonvirak@example.com" }
+      ]);
+    } catch (err) {
+      console.error("Failed to fetch data", err);
+    } finally {
+      setFetching(false);
+    }
+  }, [apiBase, id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+
     try {
-      // Mock API call (PATCH)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log("Updating asset:", id, form);
-      
+      const payload = {
+        ...form,
+        companyId: form.companyId ? Number(form.companyId) : null,
+        modelId: Number(form.modelId),
+        statusId: Number(form.statusId),
+        locationId: form.locationId ? Number(form.locationId) : null,
+        supplierId: form.supplierId ? Number(form.supplierId) : null,
+        checkedOutUserId: form.checkedOutUserId ? Number(form.checkedOutUserId) : null,
+        warrantyMonths: form.warrantyMonths ? Number(form.warrantyMonths) : null,
+        purchaseCost: form.purchaseCost ? Number(form.purchaseCost) : null,
+        purchaseDate: form.purchaseDate ? new Date(form.purchaseDate).toISOString() : null,
+        expectedCheckin: form.expectedCheckin ? new Date(form.expectedCheckin).toISOString() : null,
+        nextAuditDate: form.nextAuditDate ? new Date(form.nextAuditDate).toISOString() : null,
+        eolDate: form.eolDate ? new Date(form.eolDate).toISOString() : null,
+      };
+
+      const res = await fetch(`${apiBase}/assets/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to update asset");
+      }
+
       // Handle navigation based on selection
       if (afterSaveAction === "all-assets") router.push("/assets");
       else if (afterSaveAction === "previous") router.back();
+      else if (afterSaveAction === "view-asset") router.push(`/assets/edit/${id}`);
       else router.push("/assets"); 
 
     } catch (err) {
-      console.error(err);
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -136,6 +196,12 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
           <h2 className="text-3xl font-bold text-white">Update Asset: <span className="text-cyan-400">#{id}</span></h2>
         </div>
 
+        {error && (
+          <div className="mb-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           {/* Main Section */}
           <div className="rounded-3xl border border-white/10 bg-[#111216] p-8 shadow-2xl">
@@ -147,12 +213,11 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 </label>
                 <select 
                   className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                  value={form.company}
-                  onChange={(e) => setForm({...form, company: e.target.value})}
+                  value={form.companyId}
+                  onChange={(e) => setForm({...form, companyId: e.target.value})}
                 >
                   <option value="" className="bg-[#111216]">Select Company</option>
-                  <option value="1" className="bg-[#111216]">Tech Corp</option>
-                  <option value="2" className="bg-[#111216]">Global Solutions</option>
+                  {companies.map(c => <option key={c.id} value={c.id} className="bg-[#111216]">{c.name}</option>)}
                 </select>
               </div>
 
@@ -169,7 +234,11 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                     value={form.assetTag}
                     onChange={(e) => setForm({...form, assetTag: e.target.value})}
                   />
-                  <button type="button" className="flex items-center justify-center rounded-xl bg-cyan-600 px-4 text-white hover:bg-cyan-500 transition-colors shadow-lg active:scale-95">
+                  <button 
+                    type="button" 
+                    onClick={() => setForm({...form, assetTag: `AST-${Date.now().toString().slice(-6)}`})}
+                    className="flex items-center justify-center rounded-xl bg-cyan-600 px-4 text-white hover:bg-cyan-500 transition-colors shadow-lg active:scale-95"
+                  >
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
@@ -201,10 +270,9 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                     onChange={(e) => setForm({...form, modelId: e.target.value})}
                   >
                     <option value="" className="bg-[#111216]">Select Model</option>
-                    <option value="1" className="bg-[#111216]">MacBook Pro 14</option>
-                    <option value="2" className="bg-[#111216]">Dell XPS 15</option>
+                    {models.map(m => <option key={m.id} value={m.id} className="bg-[#111216]">{m.name}</option>)}
                   </select>
-                  <button type="button" className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button type="button" onClick={() => router.push("/asset-models/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
@@ -222,13 +290,7 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                     onChange={(e) => setForm({...form, statusId: e.target.value})}
                   >
                     <option value="" className="bg-[#111216]">Select Status</option>
-                    <option value="1" className="bg-[#111216]">Pending</option>
-                    <option value="2" className="bg-[#111216]">Ready to Deploy</option>
-                    <option value="3" className="bg-[#111216]">Archive</option>
-                    <option value="4" className="bg-[#111216]">Broken - Not Fixable</option>
-                    <option value="5" className="bg-[#111216]">Lost/Stolen</option>
-                    <option value="6" className="bg-[#111216]">Out of Diagnostic</option>
-                    <option value="7" className="bg-[#111216]">Out for Repair</option>
+                    {statuses.map(s => <option key={s.id} value={s.id} className="bg-[#111216]">{s.name}</option>)}
                   </select>
                   <button 
                     type="button" 
@@ -248,12 +310,11 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 <div className="flex gap-2">
                   <select 
                     className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                    value={form.checkedOutTo}
-                    onChange={(e) => setForm({...form, checkedOutTo: e.target.value})}
+                    value={form.checkedOutUserId}
+                    onChange={(e) => setForm({...form, checkedOutUserId: e.target.value})}
                   >
                     <option value="" className="bg-[#111216]">Select User</option>
-                    <option value="1" className="bg-[#111216]">John Doe</option>
-                    <option value="2" className="bg-[#111216]">Sarah Chen</option>
+                    {users.map(u => <option key={u.id} value={u.id} className="bg-[#111216]">{u.email}</option>)}
                   </select>
                   <button type="button" className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
@@ -273,10 +334,9 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                     onChange={(e) => setForm({...form, locationId: e.target.value})}
                   >
                     <option value="" className="bg-[#111216]">Select Location</option>
-                    <option value="1" className="bg-[#111216]">New York Office</option>
-                    <option value="2" className="bg-[#111216]">London Studio</option>
+                    {locations.map(l => <option key={l.id} value={l.id} className="bg-[#111216]">{l.name}</option>)}
                   </select>
-                  <button type="button" className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button type="button" onClick={() => router.push("/locations/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
@@ -288,8 +348,8 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                   type="checkbox" 
                   id="requestable"
                   className="h-5 w-5 rounded-lg border-white/10 bg-white/5 text-cyan-600 focus:ring-cyan-500/50"
-                  checked={form.requestable}
-                  onChange={(e) => setForm({...form, requestable: e.target.checked})}
+                  checked={form.isRequestable}
+                  onChange={(e) => setForm({...form, isRequestable: e.target.checked})}
                 />
                 <label htmlFor="requestable" className="text-sm font-medium text-zinc-300 cursor-pointer">
                   Requestable
@@ -352,8 +412,8 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                     type="text" 
                     placeholder="Enter unique name"
                     className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                    value={form.assetName}
-                    onChange={(e) => setForm({...form, assetName: e.target.value})}
+                    value={form.name}
+                    onChange={(e) => setForm({...form, name: e.target.value})}
                   />
                 </div>
 
@@ -365,8 +425,8 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                     type="number" 
                     placeholder="e.g. 12"
                     className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                    value={form.warranty}
-                    onChange={(e) => setForm({...form, warranty: e.target.value})}
+                    value={form.warrantyMonths}
+                    onChange={(e) => setForm({...form, warrantyMonths: e.target.value})}
                   />
                 </div>
 
@@ -389,8 +449,8 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                   <input 
                     type="date" 
                     className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all [color-scheme:dark]"
-                    value={form.nextAudit}
-                    onChange={(e) => setForm({...form, nextAudit: e.target.value})}
+                    value={form.nextAuditDate}
+                    onChange={(e) => setForm({...form, nextAuditDate: e.target.value})}
                   />
                 </div>
 
@@ -400,8 +460,8 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                       type="checkbox" 
                       id="byod"
                       className="h-5 w-5 rounded-lg border-white/10 bg-white/5 text-cyan-600 focus:ring-cyan-500/50"
-                      checked={form.byod}
-                      onChange={(e) => setForm({...form, byod: e.target.checked})}
+                      checked={form.isByod}
+                      onChange={(e) => setForm({...form, isByod: e.target.checked})}
                     />
                     <label htmlFor="byod" className="text-sm font-medium text-zinc-300 cursor-pointer">
                       BYOD
@@ -479,10 +539,9 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                       onChange={(e) => setForm({...form, supplierId: e.target.value})}
                     >
                       <option value="" className="bg-[#111216]">Select Supplier</option>
-                      <option value="1" className="bg-[#111216]">Amazon Business</option>
-                      <option value="2" className="bg-[#111216]">CDW</option>
+                      {suppliers.map(s => <option key={s.id} value={s.id} className="bg-[#111216]">{s.name}</option>)}
                     </select>
-                    <button type="button" className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                    <button type="button" onClick={() => router.push("/suppliers/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                       NEW
                     </button>
                   </div>

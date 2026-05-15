@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
-import { ChevronDown, MoreHorizontal, Search, Users, Copy, Edit2, Trash, Check } from "lucide-react";
+import { Users, Edit2, Trash } from "lucide-react";
 
 const accentClasses = [
   "from-violet-400 to-purple-500",
@@ -23,7 +23,7 @@ const accentClasses = [
 
 export function DepartmentsContent() {
   const router = useRouter();
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -63,38 +63,28 @@ export function DepartmentsContent() {
     setLoading(true);
     setError(null);
     try {
-      // Mock data for development
-      const allRecords = [
-        { id: 1, name: "Engineering", slug: "engineering", isActive: true, createdAt: new Date().toISOString(), manager: "Alice Johnson", location: "New York Office", people: 156 },
-        { id: 2, name: "Marketing", slug: "marketing", isActive: true, createdAt: new Date().toISOString(), manager: "Bob Wilson", location: "London Studio", people: 42 },
-        { id: 3, name: "Human Resources", slug: "human-resources", isActive: true, createdAt: new Date().toISOString(), manager: "Sarah Chen", location: "Tokyo Branch", people: 28 },
-        { id: 4, name: "Operations", slug: "operations", isActive: false, createdAt: new Date().toISOString(), manager: "Michael Brown", location: "Berlin Hub", people: 84 },
-        { id: 5, name: "Sales", slug: "sales", isActive: true, createdAt: new Date().toISOString(), manager: "Emma Davis", location: "Remote", people: 210 },
-      ];
-      
-      let filtered = [...allRecords];
-      if (search.trim()) {
-        const s = search.toLowerCase();
-        filtered = filtered.filter(r => r.name.toLowerCase().includes(s));
-      }
-
-      filtered.sort((a, b) => {
-        const valA = (a as any)[sort] || "";
-        const valB = (b as any)[sort] || "";
-        if (order === "asc") return valA > valB ? 1 : -1;
-        return valA < valB ? 1 : -1;
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort,
+        order,
+        search,
       });
 
-      setTotal(filtered.length);
-      const start = (page - 1) * limit;
-      setRecords(filtered.slice(start, start + limit));
+      const res = await fetch(`${apiBase}/departments?${params}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch data");
+      const data = await res.json();
+
+      setRecords(data.records || []);
+      setTotal(data.total || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error loading records.");
       setRecords([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [search, page, limit, sort, order]);
+  }, [apiBase, page, limit, sort, order, search]);
 
   useEffect(() => {
     loadRecords();
@@ -155,7 +145,7 @@ export function DepartmentsContent() {
                   <TableCell className="px-4 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
-                        onClick={() => router.push(`/departments/edit/${record.id}`)}
+                        onClick={() => router.push(`/departments/edit/${record.slug}`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all active:scale-90" 
                         title="Edit"
                       >
