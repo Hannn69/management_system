@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import {
   Table,
   TableBody,
@@ -26,6 +27,7 @@ import {
   Mail,
   Edit2,
   Trash,
+  Eye,
   Check,
   Image as ImageIcon
 } from "lucide-react";
@@ -39,14 +41,15 @@ const accentClasses = [
 
 export function CompaniesContent() {
   const router = useRouter();
+  const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [sort, setSort] = useState("name");
-  const [order, setOrder] = useState("asc");
+  const [sort, setSort] = useState("createdAt");
+  const [order, setOrder] = useState("desc");
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any | null>(null);
@@ -71,8 +74,11 @@ export function CompaniesContent() {
       if (!res.ok) throw new Error("Failed to delete company");
       setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
       setItemToDelete(null);
+      push("Company deleted successfully!", "success");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete company.");
+      const errorMsg = err instanceof Error ? err.message : "Failed to delete company.";
+      setError(errorMsg);
+      push(errorMsg, "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -124,14 +130,19 @@ export function CompaniesContent() {
           onViewToggle={setViewType}
           onCreateClick={() => router.push("/companies/create")}
           onRefreshClick={loadRecords}
+          sortOrder={order as "asc" | "desc"}
+          onSortOrderChange={(newOrder) => {
+            setSort("createdAt");
+            setOrder(newOrder);
+          }}
         />
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <Table className="min-w-[1600px]">
             <TableHeader className="bg-white/5 sticky top-0 z-10">
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Company Name</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Email</TableHead>
+                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-emerald-400">Company Name</TableHead>
+                <TableHead onClick={() => setSort("email")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-emerald-400">Email</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Users</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assets</TableHead>
@@ -155,7 +166,6 @@ export function CompaniesContent() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-zinc-100">{record.name}</p>
-                        <p className="text-[10px] text-zinc-500 font-mono tracking-tight">{record.code}</p>
                       </div>
                     </div>
                   </TableCell>
@@ -209,7 +219,14 @@ export function CompaniesContent() {
                   <TableCell className="px-4 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
-                        onClick={() => router.push(`/companies/edit?slug=${record.slug}`)}
+                        onClick={() => router.push(`/companies/${record.id}`)}
+                        className="p-2 rounded-xl text-zinc-500 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all active:scale-90" 
+                        title="View Details"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button 
+                        onClick={() => router.push(`/companies/${record.id}/edit`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >

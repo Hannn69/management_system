@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import {
   Table,
   TableBody,
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
-import { Factory, Edit2, Trash, Image as ImageIcon, Link as LinkIcon, LifeBuoy, Phone, Mail } from "lucide-react";
+import { Factory, Edit2, Trash, Image as ImageIcon, Link as LinkIcon, LifeBuoy, Phone, Mail, Eye } from "lucide-react";
 
 const accentClasses = [
   "from-rose-400 to-red-500",
@@ -23,14 +24,15 @@ const accentClasses = [
 
 export function ManufacturersContent() {
   const router = useRouter();
+  const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [sort, setSort] = useState("name");
-  const [order, setOrder] = useState("asc");
+  const [sort, setSort] = useState("createdAt");
+  const [order, setOrder] = useState("desc");
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any | null>(null);
@@ -48,12 +50,18 @@ export function ManufacturersContent() {
     if (!itemToDelete) return;
     setDeleteLoading(true);
     try {
-      // Mock delete logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch(`${apiBase}/manufacturers/${itemToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to delete manufacturer");
       setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
       setItemToDelete(null);
+      push("Manufacturer deleted successfully!", "success");
     } catch (err) {
-      setError("Failed to delete manufacturer.");
+      const errorMsg = err instanceof Error ? err.message : "Failed to delete manufacturer.";
+      setError(errorMsg);
+      push(errorMsg, "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -105,15 +113,20 @@ export function ManufacturersContent() {
           onViewToggle={setViewType}
           onCreateClick={() => router.push("/manufacturers/create")}
           onRefreshClick={loadRecords}
+          sortOrder={order as "asc" | "desc"}
+          onSortOrderChange={(newOrder) => {
+            setSort("createdAt");
+            setOrder(newOrder);
+          }}
         />
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <Table className="min-w-[1800px]">
             <TableHeader className="bg-white/5 sticky top-0 z-10">
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Name</TableHead>
+                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-rose-400">Name</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">URL</TableHead>
+                <TableHead onClick={() => setSort("url")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-rose-400">URL</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Support URL</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Support Phone</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Support Email</TableHead>
@@ -205,7 +218,14 @@ export function ManufacturersContent() {
                   <TableCell className="px-4 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
-                        onClick={() => router.push(`/manufacturers/edit/${record.slug}`)}
+                        onClick={() => router.push(`/manufacturers/${record.id}`)}
+                        className="p-2 rounded-xl text-zinc-500 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all active:scale-90" 
+                        title="View Details"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button 
+                        onClick={() => router.push(`/manufacturers/${record.id}/edit`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >

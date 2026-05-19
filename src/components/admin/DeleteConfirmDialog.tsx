@@ -34,7 +34,10 @@ export function DeleteConfirmDialog({
 
   useEffect(() => {
     if (open) {
-      setConfirmText("");
+      const timer = setTimeout(() => {
+        setConfirmText("");
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 

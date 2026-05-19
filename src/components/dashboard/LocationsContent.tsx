@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import {
   Table,
   TableBody,
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
-import { ChevronDown, MoreHorizontal, Search, MapPin, Copy, Edit2, Trash, Image as ImageIcon, Check } from "lucide-react";
+import { ChevronDown, MoreHorizontal, Search, MapPin, Copy, Edit2, Trash, Eye, Image as ImageIcon, Check } from "lucide-react";
 
 const accentClasses = [
   "from-cyan-400 to-teal-500",
@@ -23,14 +24,15 @@ const accentClasses = [
 
 export function LocationsContent() {
   const router = useRouter();
+  const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [sort, setSort] = useState("name");
-  const [order, setOrder] = useState("asc");
+  const [sort, setSort] = useState("createdAt");
+  const [order, setOrder] = useState("desc");
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any | null>(null);
@@ -56,12 +58,18 @@ export function LocationsContent() {
     if (!itemToDelete) return;
     setDeleteLoading(true);
     try {
-      // Mock delete logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch(`${apiBase}/locations/${itemToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to delete location");
       setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
       setItemToDelete(null);
+      push("Location deleted successfully!", "success");
     } catch (err) {
-      setError("Failed to delete location.");
+      const errorMsg = err instanceof Error ? err.message : "Failed to delete location.";
+      setError(errorMsg);
+      push(errorMsg, "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -113,13 +121,18 @@ export function LocationsContent() {
           onViewToggle={setViewType}
           onCreateClick={() => router.push("/locations/create")}
           onRefreshClick={loadRecords}
+          sortOrder={order as "asc" | "desc"}
+          onSortOrderChange={(newOrder) => {
+            setSort("createdAt");
+            setOrder(newOrder);
+          }}
         />
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <Table className="min-w-[2000px]">
             <TableHeader className="bg-white/5 sticky top-0 z-10">
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Name</TableHead>
+                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500">Name</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Parent</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">People</TableHead>
@@ -132,7 +145,7 @@ export function LocationsContent() {
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Child Location</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Currency</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Address</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">City</TableHead>
+                <TableHead onClick={() => setSort("city")} className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500">City</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">State</TableHead>
                 <TableHead className="w-[100px] px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
               </TableRow>
@@ -212,7 +225,7 @@ export function LocationsContent() {
                         <Copy className="h-4 w-4" />
                       </button>
                       <button 
-                        onClick={() => router.push(`/locations/edit/${record.slug}`)}
+                        onClick={() => router.push(`/locations/${record.id}/edit`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >

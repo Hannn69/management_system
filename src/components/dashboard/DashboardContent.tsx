@@ -81,7 +81,10 @@ export function DashboardContent() {
   }, [apiBase]);
 
   useEffect(() => {
-    fetchSummary();
+    const timer = setTimeout(() => {
+      fetchSummary();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchSummary]);
 
   const summaryCards = [
@@ -89,29 +92,29 @@ export function DashboardContent() {
       label: "Inventory Tracked",
       value: summary.inventoryTracked.toLocaleString(),
       detail: "+8.4% this month",
-      tone: "bg-[#121f29]",
-      accent: "text-[#43d3cf]",
+      tone: "bg-white dark:bg-[#121f29]",
+      accent: "text-emerald-600 dark:text-[#43d3cf]",
     },
     {
       label: "Open Licenses",
       value: summary.openLicenses.toLocaleString(),
       detail: "12 renewals soon",
-      tone: "bg-[#121f29]",
-      accent: "text-[#ff5b9a]",
+      tone: "bg-white dark:bg-[#121f29]",
+      accent: "text-rose-600 dark:text-[#ff5b9a]",
     },
     {
       label: "Accessories Ready",
       value: summary.accessoriesReady.toLocaleString(),
       detail: "1 awaiting assignment",
-      tone: "bg-[#121f29]",
-      accent: "text-[#ffb24d]",
+      tone: "bg-white dark:bg-[#121f29]",
+      accent: "text-amber-600 dark:text-[#ffb24d]",
     },
     {
       label: "Supply Alerts",
       value: summary.supplyAlerts.toLocaleString(),
       detail: "Low-stock watchlist",
-      tone: "bg-[#121f29]",
-      accent: "text-[#9c8cff]",
+      tone: "bg-white dark:bg-[#121f29]",
+      accent: "text-indigo-600 dark:text-[#9c8cff]",
     },
   ];
 
@@ -122,64 +125,64 @@ export function DashboardContent() {
           {summaryCards.map((card) => (
             <article
               key={card.label}
-              className={`${card.tone} rounded-[28px] border border-white/6 px-5 py-5 shadow-[0_25px_55px_-35px_rgba(0,0,0,0.8)]`}
+              className={`${card.tone} rounded-[28px] border border-zinc-200 dark:border-white/6 px-5 py-5 shadow-sm dark:shadow-[0_25px_55px_-35px_rgba(0,0,0,0.8)] transition-all hover:scale-[1.03] hover:shadow-md dark:hover:shadow-[0_30px_60px_-30px_rgba(0,0,0,0.9)] cursor-default`}
             >
-              <p className="text-sm font-medium text-[#7993a1]">{card.label}</p>
-              <p className={`mt-3 text-4xl font-semibold ${card.accent}`}>
+              <p className="text-sm font-medium text-zinc-500 dark:text-[#7993a1]">{card.label}</p>
+              <p className={`mt-3 text-4xl font-bold ${card.accent}`}>
                 {card.value}
               </p>
-              <p className="mt-3 text-sm text-[#688290]">{card.detail}</p>
+              <p className="mt-3 text-sm text-zinc-400 dark:text-[#688290] font-medium">{card.detail}</p>
             </article>
           ))}
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
-          <div className="overflow-hidden rounded-[28px] border border-white/6 bg-[linear-gradient(135deg,#142737_0%,#19384f_50%,#1f5962_100%)] px-7 py-7 text-white shadow-[0_35px_80px_-45px_rgba(0,0,0,0.82)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/62">
+          <div className="overflow-hidden rounded-[28px] border border-zinc-200 dark:border-white/6 bg-[linear-gradient(135deg,#f1f5f9_0%,#e2e8f0_50%,#cbd5e1_100%)] dark:bg-[linear-gradient(135deg,#142737_0%,#19384f_50%,#1f5962_100%)] px-7 py-7 text-foreground dark:text-white shadow-sm dark:shadow-[0_35px_80px_-45px_rgba(0,0,0,0.82)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500 dark:text-white/62">
               Live Workspace
             </p>
             <h2 className="mt-3 max-w-xl text-3xl font-semibold leading-tight">
               Manage assets, requests, and team operations from a single view.
             </h2>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/80">
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-white/80">
               This dashboard is tailored for your project and keeps the familiar
               operational overview, but with its own visual system and content
               structure.
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-[28px] border border-white/8 bg-black/12 px-4 py-4 backdrop-blur">
-                <p className="text-xs uppercase tracking-[0.2em] text-white/60">
+              <div className="rounded-[28px] border border-zinc-300 dark:border-white/8 bg-white/50 dark:bg-black/12 px-4 py-4 backdrop-blur">
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-white/60">
                   Active items
                 </p>
-                <p className="mt-2 text-2xl font-semibold">{summary.inventoryTracked}</p>
+                <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">{summary.inventoryTracked}</p>
               </div>
-              <div className="rounded-[28px] border border-white/8 bg-black/12 px-4 py-4 backdrop-blur">
-                <p className="text-xs uppercase tracking-[0.2em] text-white/60">
+              <div className="rounded-[28px] border border-zinc-300 dark:border-white/8 bg-white/50 dark:bg-black/12 px-4 py-4 backdrop-blur">
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-white/60">
                   Pending actions
                 </p>
-                <p className="mt-2 text-2xl font-semibold">18</p>
+                <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">18</p>
               </div>
-              <div className="rounded-[28px] border border-white/8 bg-black/12 px-4 py-4 backdrop-blur">
-                <p className="text-xs uppercase tracking-[0.2em] text-white/60">
+              <div className="rounded-[28px] border border-zinc-300 dark:border-white/8 bg-white/50 dark:bg-black/12 px-4 py-4 backdrop-blur">
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-white/60">
                   Team coverage
                 </p>
-                <p className="mt-2 text-2xl font-semibold">92%</p>
+                <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">92%</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/6 bg-[#121f29] px-6 py-6 shadow-[0_28px_60px_-40px_rgba(0,0,0,0.8)]">
+          <div className="rounded-[28px] border border-zinc-200 dark:border-white/6 bg-white dark:bg-[#121f29] px-6 py-6 shadow-sm dark:shadow-[0_28px_60px_-40px_rgba(0,0,0,0.8)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7690a0]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-[#7690a0]">
                   Status Mix
                 </p>
-                <h3 className="mt-2 text-xl font-semibold text-white">
+                <h3 className="mt-2 text-xl font-semibold text-foreground dark:text-white">
                   Resource Health
                 </h3>
               </div>
-              <span className="rounded-full bg-[#1a2b36] px-3 py-1 text-xs font-medium text-[#8ca7b6]">
+              <span className="rounded-full bg-slate-100 dark:bg-[#1a2b36] px-3 py-1 text-xs font-medium text-zinc-500 dark:text-[#8ca7b6]">
                 Updated now
               </span>
             </div>
@@ -193,11 +196,11 @@ export function DashboardContent() {
                       "conic-gradient(#20a39e 0deg 266.4deg, #f18f01 266.4deg 316.8deg, #4f86c6 316.8deg 349.2deg, #d1495b 349.2deg 360deg)",
                   }}
                 />
-                <div className="absolute flex h-[138px] w-[138px] flex-col items-center justify-center rounded-full border border-white/6 bg-[#121f29] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]">
-                  <span className="text-xs uppercase tracking-[0.22em] text-[#6f8a9a]">
+                <div className="absolute flex h-[138px] w-[138px] flex-col items-center justify-center rounded-full border border-zinc-200 dark:border-white/6 bg-white dark:bg-[#121f29] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]">
+                  <span className="text-xs uppercase tracking-[0.22em] text-zinc-400 dark:text-[#6f8a9a]">
                     Healthy
                   </span>
-                  <span className="mt-2 text-4xl font-semibold text-white">
+                  <span className="mt-2 text-4xl font-semibold text-foreground dark:text-white">
                     74%
                   </span>
                 </div>
@@ -207,18 +210,18 @@ export function DashboardContent() {
                 {statusBars.map((item) => (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between rounded-[28px] bg-[#182732] px-4 py-3"
+                    className="flex items-center justify-between rounded-[28px] bg-slate-50 dark:bg-[#182732] px-4 py-3"
                   >
                     <div className="flex items-center gap-3">
                       <span
                         className="h-3 w-3 rounded-full"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span className="text-sm font-medium text-[#d3dde4]">
+                      <span className="text-sm font-medium text-zinc-700 dark:text-[#d3dde4]">
                         {item.label}
                       </span>
                     </div>
-                    <span className="text-sm text-[#8ca6b5]">{item.value}%</span>
+                    <span className="text-sm text-zinc-500 dark:text-[#8ca6b5]">{item.value}%</span>
                   </div>
                 ))}
               </div>
@@ -227,25 +230,25 @@ export function DashboardContent() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <div className="rounded-[28px] border border-white/6 bg-[#121f29] px-6 py-6 shadow-[0_28px_60px_-40px_rgba(0,0,0,0.82)]">
+          <div className="rounded-[28px] border border-zinc-200 dark:border-white/6 bg-white dark:bg-[#121f29] px-6 py-6 shadow-sm dark:shadow-[0_28px_60px_-40px_rgba(0,0,0,0.82)]">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7792a1]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-[#7792a1]">
                   Activity Stream
                 </p>
-                <h3 className="mt-2 text-xl font-semibold text-white">
+                <h3 className="mt-2 text-xl font-semibold text-foreground dark:text-white">
                   Recent Activity
                 </h3>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <input
-                  className="rounded-full border border-white/8 bg-[#17242d] px-4 py-2.5 text-sm text-white placeholder:text-[#7d97a7] focus:outline-none"
+                  className="rounded-full border border-zinc-200 dark:border-white/8 bg-slate-100 dark:bg-[#17242d] px-4 py-2.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-[#7d97a7] focus:outline-none"
                   placeholder="Search activity"
                   type="text"
                 />
                 <button
                   type="button"
-                  className="rounded-full border border-white/8 bg-[#17242d] px-4 py-2.5 text-sm font-medium text-[#b8cad4]"
+                  className="rounded-full border border-zinc-200 dark:border-white/8 bg-slate-100 dark:bg-[#17242d] px-4 py-2.5 text-sm font-medium text-zinc-600 dark:text-[#b8cad4]"
                 >
                   Filter
                 </button>
@@ -256,14 +259,14 @@ export function DashboardContent() {
               {activityFeed.map((item) => (
                 <div
                   key={`${item.time}-${item.title}`}
-                  className="flex gap-4 rounded-[28px] border border-white/5 bg-[#182732] px-4 py-4"
+                  className="flex gap-4 rounded-[28px] border border-zinc-200 dark:border-white/5 bg-slate-50 dark:bg-[#182732] px-4 py-4"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[28px] bg-[#223948] text-xs font-bold text-white">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[28px] bg-blue-600 dark:bg-[#223948] text-xs font-bold text-white">
                     {item.time.replace(":", "")}
                   </div>
                   <div>
-                    <p className="font-medium text-white">{item.title}</p>
-                    <p className="mt-1 text-sm leading-6 text-[#7691a0]">
+                    <p className="font-medium text-foreground dark:text-white">{item.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-zinc-500 dark:text-[#7691a0]">
                       {item.meta}
                     </p>
                   </div>
@@ -272,27 +275,27 @@ export function DashboardContent() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/6 bg-[#121f29] px-6 py-6 shadow-[0_28px_60px_-40px_rgba(0,0,0,0.82)]">
+          <div className="rounded-[28px] border border-zinc-200 dark:border-white/6 bg-white dark:bg-[#121f29] px-6 py-6 shadow-sm dark:shadow-[0_28px_60px_-40px_rgba(0,0,0,0.82)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7792a1]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-[#7792a1]">
                   Snapshot
                 </p>
-                <h3 className="mt-2 text-xl font-semibold text-white">
+                <h3 className="mt-2 text-xl font-semibold text-foreground dark:text-white">
                   Key Resources
                 </h3>
               </div>
               <button
                 type="button"
-                className="rounded-full border border-white/8 px-4 py-2 text-sm font-medium text-[#b8cad4]"
+                className="rounded-full border border-zinc-200 dark:border-white/8 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-[#b8cad4]"
               >
                 Export
               </button>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-[28px] border border-white/6">
+            <div className="mt-6 overflow-hidden rounded-[28px] border border-zinc-200 dark:border-white/6">
               <table className="w-full border-collapse text-left">
-                <thead className="bg-[#17242d] text-sm text-[#7d97a7]">
+                <thead className="bg-slate-100 dark:bg-[#17242d] text-sm text-zinc-500 dark:text-[#7d97a7]">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Resource</th>
                     <th className="px-4 py-3 font-semibold">Owner</th>
@@ -304,16 +307,16 @@ export function DashboardContent() {
                   {tableRows.map((row, index) => (
                     <tr
                       key={`${row.name}-${index}`}
-                      className="border-t border-white/6 bg-[#121f29] text-sm text-[#dce6ed]"
+                      className="border-t border-zinc-200 dark:border-white/6 bg-white dark:bg-[#121f29] text-sm text-zinc-700 dark:text-[#dce6ed]"
                     >
                       <td className="px-4 py-3 font-medium">{row.name}</td>
-                      <td className="px-4 py-3 text-[#7d97a7]">{row.owner}</td>
+                      <td className="px-4 py-3 text-zinc-400 dark:text-[#7d97a7]">{row.owner}</td>
                       <td className="px-4 py-3">
-                        <span className="rounded-full bg-[#173039] px-3 py-1 text-xs font-medium text-[#56d0cb]">
+                        <span className="rounded-full bg-emerald-500/10 dark:bg-[#173039] px-3 py-1 text-xs font-medium text-emerald-600 dark:text-[#56d0cb]">
                           {row.state}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-[#7d97a7]">{row.updated}</td>
+                      <td className="px-4 py-3 text-zinc-400 dark:text-[#7d97a7]">{row.updated}</td>
                     </tr>
                   ))}
                 </tbody>

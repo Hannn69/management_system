@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import { 
   MapPin, 
   ChevronDown, 
@@ -24,6 +25,7 @@ import {
 
 export function CreateLocationContent() {
   const router = useRouter();
+  const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,9 +94,12 @@ export function CreateLocationContent() {
         throw new Error(data.message || "Failed to create location");
       }
 
+      push("Location created successfully!", "success");
       router.push("/locations");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMsg = err instanceof Error ? err.message : "An error occurred";
+      setError(errorMsg);
+      push(errorMsg, "error");
     } finally {
       setLoading(false);
     }
@@ -106,12 +111,12 @@ export function CreateLocationContent() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/locations")}
-            className="p-2 rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white transition-all shadow-lg"
+            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Create New Location</h2>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">Create New Location</h2>
             <p className="text-zinc-400 text-sm">Define a physical or logical site for your inventory management.</p>
           </div>
         </div>
@@ -123,7 +128,7 @@ export function CreateLocationContent() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 pb-12">
-          <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-8 shadow-2xl backdrop-blur-xl">
+          <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
               {/* Left Column */}
@@ -136,7 +141,7 @@ export function CreateLocationContent() {
                       required
                       type="text" 
                       placeholder="e.g. Headquarters, London Studio"
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
@@ -149,12 +154,12 @@ export function CreateLocationContent() {
                     <div className="relative">
                       <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
                       <select 
-                        className="w-full rounded-2xl border border-white/10 bg-[#121212] px-4 py-3.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner appearance-none"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner appearance-none"
                         value={form.parentId}
                         onChange={(e) => setForm({ ...form, parentId: e.target.value })}
                       >
-                        <option value="">No Parent</option>
-                        {parentLocations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                        <option value="" className="bg-white dark:bg-[#111216]">No Parent</option>
+                        {parentLocations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
                       </select>
                     </div>
                   </div>
@@ -164,12 +169,12 @@ export function CreateLocationContent() {
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
                       <select 
-                        className="w-full rounded-2xl border border-white/10 bg-[#121212] pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner appearance-none"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner appearance-none"
                         value={form.managerId}
                         onChange={(e) => setForm({ ...form, managerId: e.target.value })}
                       >
-                        <option value="">Select Manager</option>
-                        <option value="1">Admin User</option>
+                        <option value="" className="bg-white dark:bg-[#111216]">Select Manager</option>
+                        <option value="1" className="bg-white dark:bg-[#111216]">Admin User</option>
                       </select>
                     </div>
                   </div>
@@ -180,12 +185,12 @@ export function CreateLocationContent() {
                   <div className="relative">
                     <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                     <select 
-                      className="w-full rounded-2xl border border-white/10 bg-[#121212] pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner appearance-none"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner appearance-none"
                       value={form.companyId}
                       onChange={(e) => setForm({ ...form, companyId: e.target.value })}
                     >
-                      <option value="">Select Company</option>
-                      {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      <option value="" className="bg-white dark:bg-[#111216]">Select Company</option>
+                      {companies.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#111216]">{c.name}</option>)}
                     </select>
                   </div>
                 </div>
@@ -198,7 +203,7 @@ export function CreateLocationContent() {
                       <input 
                         type="tel" 
                         placeholder="Site phone"
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
                         value={form.phone}
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       />
@@ -211,7 +216,7 @@ export function CreateLocationContent() {
                       <input 
                         type="tel" 
                         placeholder="Site fax"
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
                         value={form.fax}
                         onChange={(e) => setForm({ ...form, fax: e.target.value })}
                       />
@@ -226,7 +231,7 @@ export function CreateLocationContent() {
                     <input 
                       type="text" 
                       placeholder="e.g. USD, EUR, GBP"
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner"
                       value={form.currency}
                       onChange={(e) => setForm({ ...form, currency: e.target.value })}
                     />
@@ -244,7 +249,7 @@ export function CreateLocationContent() {
                       <input 
                         type="text" 
                         placeholder="Street Address 1"
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
                         value={form.address}
                         onChange={(e) => setForm({ ...form, address: e.target.value })}
                       />
@@ -252,7 +257,7 @@ export function CreateLocationContent() {
                     <input 
                       type="text" 
                       placeholder="Street Address 2 (Optional)"
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
                       value={form.address2}
                       onChange={(e) => setForm({ ...form, address2: e.target.value })}
                     />
@@ -267,7 +272,7 @@ export function CreateLocationContent() {
                       <input 
                         type="text" 
                         placeholder="e.g. New York"
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
                         value={form.city}
                         onChange={(e) => setForm({ ...form, city: e.target.value })}
                       />
@@ -279,14 +284,14 @@ export function CreateLocationContent() {
                        <input 
                         type="text" 
                         placeholder="NY"
-                        className="w-16 rounded-2xl border border-white/10 bg-white/5 px-2 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
+                        className="w-16 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
                         value={form.state}
                         onChange={(e) => setForm({ ...form, state: e.target.value })}
                       />
                       <input 
                         type="text" 
                         placeholder="10001"
-                        className="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
+                        className="flex-1 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
                         value={form.zip}
                         onChange={(e) => setForm({ ...form, zip: e.target.value })}
                       />
@@ -301,7 +306,7 @@ export function CreateLocationContent() {
                     <input 
                       type="text" 
                       placeholder="e.g. United States"
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
                       value={form.country}
                       onChange={(e) => setForm({ ...form, country: e.target.value })}
                     />
@@ -315,7 +320,7 @@ export function CreateLocationContent() {
                     <textarea 
                       rows={2}
                       placeholder="Shipping instructions, etc..."
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
                       value={form.notes}
                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
                     ></textarea>
@@ -329,7 +334,7 @@ export function CreateLocationContent() {
             <button 
               type="button"
               onClick={() => router.push("/locations")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-white/10 bg-white/5 text-sm font-bold text-zinc-400 hover:bg-white/10 hover:text-white transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>

@@ -12,28 +12,30 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
-import { Tag, Edit2, Trash, Check, Image as ImageIcon, Layers, Mail, ShieldAlert } from "lucide-react";
+import { Package, Copy, Edit2, Trash, Image as ImageIcon, Tag, Hash, TrendingDown, ClipboardList, Layers, Check, Mail, ShieldAlert } from "lucide-react";
+
+import { CategoryRecord } from "@/lib/types";
 
 const accentClasses = [
-  "from-indigo-400 to-violet-500",
-  "from-purple-400 to-fuchsia-500",
-  "from-blue-400 to-indigo-500",
+  "from-emerald-400 to-cyan-500",
   "from-cyan-400 to-blue-500",
+  "from-indigo-400 to-violet-500",
+  "from-rose-400 to-pink-500",
 ];
 
 export function CategoriesContent() {
   const router = useRouter();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<CategoryRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [sort, setSort] = useState("name");
-  const [order, setOrder] = useState("asc");
+  const [sort, setSort] = useState("createdAt");
+  const [order, setOrder] = useState("desc");
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<any | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<CategoryRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewType, setViewType] = useState<"list" | "grid">("list");
 
@@ -105,15 +107,20 @@ export function CategoriesContent() {
           onViewToggle={setViewType}
           onCreateClick={() => router.push("/categories/create")}
           onRefreshClick={loadRecords}
+          sortOrder={order as "asc" | "desc"}
+          onSortOrderChange={(newOrder) => {
+            setSort("createdAt");
+            setOrder(newOrder);
+          }}
         />
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <Table className="min-w-[1000px]">
             <TableHeader className="bg-white/5 sticky top-0 z-10">
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Name</TableHead>
+                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-indigo-400">Name</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Type</TableHead>
+                <TableHead onClick={() => setSort("type")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-indigo-400">Type</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Qty</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Send Email</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Acceptance</TableHead>
@@ -186,7 +193,7 @@ export function CategoriesContent() {
                   <TableCell className="px-4 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
-                        onClick={() => router.push(`/categories/edit/${record.slug}`)}
+                        onClick={() => router.push(`/categories/${record.id}/edit`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >

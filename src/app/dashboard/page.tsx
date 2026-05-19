@@ -1,21 +1,13 @@
 "use client";
 
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
-import { TopBar } from "@/components/TopBar";
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-[#0f1720] text-[#e6f0f7]">
-      <TopBar />
-      <div className="flex min-h-[calc(100vh-64px)]">
-        <DashboardSidebar />
-        <div className="flex flex-1 flex-col min-w-0">
-          <DashboardHeader title="Home" />
-          <DashboardContent />
-        </div>
-      </div>
+    <div className="flex flex-1 flex-col min-w-0">
+      <DashboardHeader title="Home" />
+      <DashboardContent />
     </div>
   );
 }

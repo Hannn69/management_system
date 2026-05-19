@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Users, 
@@ -13,43 +13,108 @@ import {
   FileText, 
   X, 
   Save, 
-  ArrowLeft,
-  Plus,
-  ChevronDown
+  ArrowLeft 
 } from "lucide-react";
 
 interface UpdateDepartmentContentProps {
-  id: string;
+  slug: string;
 }
 
-export function UpdateDepartmentContent({ id }: UpdateDepartmentContentProps) {
+export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) {
   const router = useRouter();
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Initial mock data based on the ID or general defaults
-  const [formData, setFormData] = useState({
-    name: "Engineering",
-    company: "Tech Corp",
-    phone: "+1 212-555-0200",
-    fax: "+1 212-555-0201",
-    manager: "Alice Johnson",
-    location: "New York Office",
-    notes: "Core software engineering and systems architecture department."
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
+
+  const [form, setForm] = useState({
+    name: "",
+    companyId: "",
+    locationId: "",
+    managerId: "",
+    phone: "",
+    fax: "",
+    notes: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const fetchData = useCallback(async () => {
+    try {
+      const fetchOpts = { credentials: "include" as const };
+      const [compRes, locRes, deptRes] = await Promise.all([
+        fetch(`${apiBase}/companies`, fetchOpts),
+        fetch(`${apiBase}/locations`, fetchOpts),
+        fetch(`${apiBase}/departments/${slug}`, fetchOpts),
+      ]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+      if (compRes.ok) setCompanies((await compRes.json()).records || []);
+      if (locRes.ok) setLocations((await locRes.json()).records || []);
+      
+      if (deptRes.ok) {
+        const { record } = await deptRes.json();
+        setForm({
+          name: record.name || "",
+          companyId: record.companyId?.toString() || "",
+          locationId: record.locationId?.toString() || "",
+          managerId: record.managerId?.toString() || "",
+          phone: record.phone || "",
+          fax: record.fax || "",
+          notes: record.notes || "",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch data", err);
+    } finally {
+      setFetching(false);
+    }
+  }, [apiBase, slug]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    setError(null);
+
+    try {
+      const payload = {
+        ...form,
+        companyId: form.companyId ? Number(form.companyId) : null,
+        locationId: form.locationId ? Number(form.locationId) : null,
+        managerId: form.managerId ? Number(form.managerId) : null,
+      };
+
+      const res = await fetch(`${apiBase}/departments/${slug}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to update department");
+      }
+
       router.push("/departments");
-    }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (fetching) {
+    return (
+      <div className="flex h-[400px] w-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <main className="px-6 pb-6 pt-5">
@@ -57,165 +122,132 @@ export function UpdateDepartmentContent({ id }: UpdateDepartmentContentProps) {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/departments")}
-            className="p-2 rounded-xl border border-white/10 bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white transition-all shadow-lg"
+            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Update Department</h2>
-            <p className="text-zinc-400 text-sm">Modify existing department details for {formData.name}.</p>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">Update Department</h2>
+            <p className="text-zinc-400 text-sm">Modify existing department details for {form.name}.</p>
           </div>
         </div>
 
+        {error && (
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-8 shadow-2xl backdrop-blur-xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+          <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
-              {/* Left Column: Department Identity */}
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Name</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Department Name</label>
                   <div className="relative">
-                    <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-violet-500" />
+                    <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
                     <input 
-                      required 
+                      required
                       type="text" 
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="e.g. Quality Assurance, Human Resources" 
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all shadow-inner" 
+                      placeholder="e.g. Engineering, Sales"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Company</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Company</label>
                   <div className="relative">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
+                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                     <select 
-                      name="company"
-                      value={formData.company}
-                      onChange={handleChange}
-                      className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      required
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner appearance-none"
+                      value={form.companyId}
+                      onChange={(e) => setForm({ ...form, companyId: e.target.value })}
                     >
-                      <option>Select Company</option>
-                      <option>Tech Corp</option>
-                      <option>Nexus Industries</option>
+                      <option value="" className="bg-white dark:bg-[#111216]">Select company</option>
+                      {companies.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#111216]">{c.name}</option>)}
                     </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Location</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
+                    <select 
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner appearance-none"
+                      value={form.locationId}
+                      onChange={(e) => setForm({ ...form, locationId: e.target.value })}
+                    >
+                      <option value="" className="bg-white dark:bg-[#111216]">Select location</option>
+                      {locations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Department Manager</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
+                    <select 
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner appearance-none"
+                      value={form.managerId}
+                      onChange={(e) => setForm({ ...form, managerId: e.target.value })}
+                    >
+                      <option value="" className="bg-white dark:bg-[#111216]">Select manager</option>
+                      <option value="1" className="bg-white dark:bg-[#111216]">Admin User</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone Number</label>
                     <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                       <input 
                         type="tel" 
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        placeholder="+1..." 
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" 
+                        placeholder="Direct phone line"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
+                        value={form.phone}
+                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Fax</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Fax Number</label>
                     <div className="relative">
-                      <Printer className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
+                      <Printer className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                       <input 
                         type="tel" 
-                        name="fax"
-                        value={formData.fax}
-                        onChange={handleChange}
-                        placeholder="Fax..." 
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none" 
+                        placeholder="Fax line"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
+                        value={form.fax}
+                        onChange={(e) => setForm({ ...form, fax: e.target.value })}
                       />
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Right Column: Governance & Media */}
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Department Manager</label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
-                      <select 
-                        name="manager"
-                        value={formData.manager}
-                        onChange={handleChange}
-                        className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none"
-                      >
-                        <option>Select Manager</option>
-                        <option>Alice Johnson</option>
-                        <option>Bob Wilson</option>
-                      </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
-                    </div>
-                    <button type="button" className="p-3.5 rounded-2xl border border-white/10 bg-white/5 text-emerald-500 hover:bg-emerald-500/10 transition-all">
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Default Location</label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
-                      <select 
-                        name="location"
-                        value={formData.location}
-                        onChange={handleChange}
-                        className="w-full rounded-2xl border border-white/10 bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-zinc-100 appearance-none focus:outline-none"
-                      >
-                        <option>Select Location</option>
-                        <option>New York Office</option>
-                        <option>London Studio</option>
-                      </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
-                    </div>
-                    <button type="button" className="p-3.5 rounded-2xl border border-white/10 bg-white/5 text-emerald-500 hover:bg-emerald-500/10 transition-all">
-                      <Plus className="h-4 w-4" />
-                    </button>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes</label>
+                  <div className="relative">
+                    <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-500" />
+                    <textarea 
+                      rows={4}
+                      placeholder="Additional information about the department..."
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
+                      value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    ></textarea>
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Department Logo / Image</label>
-                  <div className="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-white/5">
-                    <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                      <Upload className="h-5 w-5 text-zinc-500" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-zinc-400 mb-2 font-medium">Update photo...</p>
-                      <button type="button" className="px-4 py-1.5 rounded-lg border border-white/10 bg-white/5 text-[11px] font-bold text-zinc-200 hover:bg-white/10 transition-all">
-                        Select File...
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 space-y-2">
-              <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes</label>
-              <div className="relative">
-                <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-600" />
-                <textarea 
-                  rows={3} 
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  placeholder="Additional department notes, hierarchy details or instructions..." 
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-4 py-3.5 text-sm text-zinc-100 focus:outline-none resize-none" 
-                />
               </div>
             </div>
           </div>
@@ -224,7 +256,7 @@ export function UpdateDepartmentContent({ id }: UpdateDepartmentContentProps) {
             <button 
               type="button"
               onClick={() => router.push("/departments")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-white/10 bg-white/5 text-sm font-bold text-zinc-400 hover:bg-white/10 hover:text-white transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>
@@ -232,14 +264,14 @@ export function UpdateDepartmentContent({ id }: UpdateDepartmentContentProps) {
             <button 
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(139,92,246,0.5)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.5)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
             >
               {loading ? (
                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              <span>{loading ? 'Updating...' : 'Update Department'}</span>
+              <span>{loading ? 'Processing...' : 'Save Changes'}</span>
             </button>
           </div>
         </form>

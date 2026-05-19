@@ -5,7 +5,13 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, LayoutDashboard, Settings, Package as AssetsIcon } from "lucide-react";
 
-const assetsItems = [
+interface SidebarItem {
+  label: string;
+  href: string;
+  count?: number;
+}
+
+const assetsItems: SidebarItem[] = [
   { label: "List All", href: "/assets" },
   { label: "Deployed", href: "/assets/deployed" },
   { label: "Ready to Deploy", href: "/assets/ready-to-deploy" },
@@ -18,7 +24,7 @@ const assetsItems = [
   { label: "Due for Checkin", href: "/assets/due-for-checkin" },
 ];
 
-const settingsItems = [
+const settingsItems: SidebarItem[] = [
   { label: "Status Labels", href: "/status-labels" },
   { label: "Asset Models", href: "/asset-models" },
   { label: "Categories", href: "/categories" },
@@ -31,44 +37,49 @@ const settingsItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const [isAssetsOpen, setIsAssetsOpen] = useState(true);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
+  const [isAssetsOpen, setIsAssetsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Ensure groups are open if we are on a corresponding page
+  // Load state from localStorage on mount
   useEffect(() => {
-    const isAssetPage = assetsItems.some(item => pathname.startsWith(item.href));
-    if (isAssetPage) {
-      setIsAssetsOpen(true);
-    }
-    
-    const isSettingsPage = settingsItems.some(item => pathname.startsWith(item.href));
-    if (isSettingsPage) {
-      setIsSettingsOpen(true);
-    }
-  }, [pathname]);
+    const timer = setTimeout(() => {
+      setIsAssetsOpen(localStorage.getItem("assets-open") === "true");
+      setIsSettingsOpen(localStorage.getItem("settings-open") === "true");
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const isActive = (href: string) =>
-    pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+  // Save state to localStorage when it changes
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem("assets-open", isAssetsOpen.toString());
+    }
+  }, [isAssetsOpen, mounted]);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem("settings-open", isSettingsOpen.toString());
+    }
+  }, [isSettingsOpen, mounted]);
 
   return (
-    <aside className="hidden min-h-screen w-[280px] shrink-0 border-r border-white/6 bg-[#111b24] lg:flex">
+    <aside className="hidden fixed left-0 top-0 h-screen w-[280px] shrink-0 border-r border-zinc-200 dark:border-white/6 bg-slate-50 dark:bg-[#111b24] lg:flex overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-white/10 z-50">
       <div className="flex w-full flex-col px-5 py-6">
         {/* Brand Card */}
-        <div className="rounded-3xl border border-white/8 bg-[linear-gradient(160deg,#163042_0%,#153c49_55%,#1e6c73_100%)] px-5 py-5 text-white shadow-[0_30px_70px_-38px_rgba(0,0,0,0.75)]">
+        <div className="rounded-3xl border border-zinc-200 dark:border-white/8 bg-[linear-gradient(160deg,#f8fafc_0%,#f1f5f9_100%)] dark:bg-[linear-gradient(160deg,#163042_0%,#153c49_55%,#1e6c73_100%)] px-5 py-5 text-foreground dark:text-white shadow-sm dark:shadow-[0_30px_70px_-38px_rgba(0,0,0,0.75)]">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#2ca6a4] text-sm font-black text-white">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 dark:bg-[#2ca6a4] text-sm font-black text-white">
               MS
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.28em] text-white/65">
+              <p className="text-[11px] uppercase tracking-[0.28em] text-zinc-500 dark:text-white/65">
                 Platform
               </p>
-              <p className="text-lg font-semibold">Management System</p>
+              <p className="text-lg font-semibold text-foreground dark:text-white">Management System</p>
             </div>
           </div>
-          <p className="mt-4 text-sm leading-6 text-white/72">
-            Operational dashboard for inventory, requests, and team activity.
-          </p>
         </div>
 
         <nav className="mt-6 flex flex-1 flex-col gap-5">
@@ -78,12 +89,12 @@ export function DashboardSidebar() {
               href="/dashboard"
               className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] transition ${
                 pathname === "/dashboard"
-                  ? "bg-[#213847] text-white shadow-[0_18px_35px_-26px_rgba(0,0,0,0.8)]"
-                  : "text-[#9eb6c3] hover:bg-[#17242d] hover:text-white"
+                  ? "bg-slate-200/50 dark:bg-[#213847] text-foreground dark:text-white shadow-sm dark:shadow-[0_18px_35px_-26px_rgba(0,0,0,0.8)]"
+                  : "text-zinc-500 dark:text-[#9eb6c3] hover:bg-slate-200 dark:hover:bg-[#17242d] hover:text-foreground dark:hover:text-white"
               }`}
             >
               <span className={`inline-flex w-8 justify-center rounded-xl px-2 py-1 text-[10px] font-bold ${
-                pathname === "/dashboard" ? "bg-white/16 text-white" : "bg-[#1f3442] text-[#8ec8e6]"
+                pathname === "/dashboard" ? "bg-white/16 text-white" : "bg-slate-200 dark:bg-[#1f3442] text-blue-600 dark:text-[#8ec8e6]"
               }`}>
                 <LayoutDashboard className="h-4 w-4" />
               </span>
@@ -96,13 +107,13 @@ export function DashboardSidebar() {
                 onClick={() => setIsAssetsOpen(!isAssetsOpen)}
                 className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-[15px] transition ${
                   assetsItems.some(item => pathname.startsWith(item.href))
-                    ? "bg-[#213847] text-white shadow-[0_18px_35px_-26px_rgba(0,0,0,0.8)]"
-                    : "text-[#9eb6c3] hover:bg-[#17242d] hover:text-white"
+                    ? "bg-slate-200/50 dark:bg-[#213847] text-foreground dark:text-white shadow-sm dark:shadow-[0_18px_35px_-26px_rgba(0,0,0,0.8)]"
+                    : "text-zinc-500 dark:text-[#9eb6c3] hover:bg-slate-200 dark:hover:bg-[#17242d] hover:text-foreground dark:hover:text-white"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className={`inline-flex w-8 justify-center rounded-xl px-2 py-1 text-[10px] font-bold ${
-                    assetsItems.some(item => pathname.startsWith(item.href)) ? "bg-white/16 text-white" : "bg-[#1f3442] text-[#8ec8e6]"
+                    assetsItems.some(item => pathname.startsWith(item.href)) ? "bg-white/16 text-white" : "bg-slate-200 dark:bg-[#1f3442] text-blue-600 dark:text-[#8ec8e6]"
                   }`}>
                     <AssetsIcon className="h-4 w-4" />
                   </span>
@@ -117,25 +128,25 @@ export function DashboardSidebar() {
 
               {/* Dropdown Items */}
               {isAssetsOpen && (
-                <div className="mt-1 ml-4 flex flex-col gap-1 overflow-hidden border-l border-white/5 pl-4 transition-all duration-300">
+                <div className="mt-1 ml-4 flex flex-col gap-1 overflow-hidden border-l border-zinc-200 dark:border-white/5 pl-4 transition-all duration-300">
                   {assetsItems.map((item) => {
                     const active = pathname === item.href;
                     return (
                       <Link
                         key={item.label}
-                        href={(item as any).href}
+                        href={item.href}
                         className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-sm transition-all ${
                           active
-                            ? "text-emerald-400 font-bold bg-white/5 shadow-inner"
-                            : "text-[#9eb6c3] hover:bg-[#1d2d38] hover:text-white"
+                            ? "text-emerald-600 dark:text-emerald-400 font-bold bg-zinc-100 dark:bg-white/5 shadow-inner"
+                            : "text-zinc-500 dark:text-[#9eb6c3] hover:bg-slate-200 dark:hover:bg-[#1d2d38] hover:text-foreground dark:hover:text-white"
                         }`}
                       >
                         <span>{item.label}</span>
-                        {(item as any).count !== undefined && (
+                        {item.count !== undefined && (
                           <span className={`inline-flex items-center justify-center rounded-lg px-2 py-0.5 text-[10px] font-black ${
-                            active ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-[#4e6c7c]"
+                            active ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-zinc-100 dark:bg-white/5 text-[#4e6c7c]"
                           }`}>
-                            {(item as any).count}
+                            {item.count}
                           </span>
                         )}
                       </Link>
@@ -151,13 +162,13 @@ export function DashboardSidebar() {
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                 className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-[15px] transition ${
                   settingsItems.some(item => pathname.startsWith(item.href))
-                    ? "bg-[#213847] text-white shadow-[0_18px_35px_-26px_rgba(0,0,0,0.8)]"
-                    : "text-[#9eb6c3] hover:bg-[#17242d] hover:text-white"
+                    ? "bg-slate-200/50 dark:bg-[#213847] text-foreground dark:text-white shadow-sm dark:shadow-[0_18px_35px_-26px_rgba(0,0,0,0.8)]"
+                    : "text-zinc-500 dark:text-[#9eb6c3] hover:bg-slate-200 dark:hover:bg-[#17242d] hover:text-foreground dark:hover:text-white"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className={`inline-flex w-8 justify-center rounded-xl px-2 py-1 text-[10px] font-bold ${
-                    settingsItems.some(item => pathname.startsWith(item.href)) ? "bg-white/16 text-white" : "bg-[#1f3442] text-[#8ec8e6]"
+                    settingsItems.some(item => pathname.startsWith(item.href)) ? "bg-white/16 text-white" : "bg-slate-200 dark:bg-[#1f3442] text-blue-600 dark:text-[#8ec8e6]"
                   }`}>
                     <Settings className="h-4 w-4" />
                   </span>
@@ -172,25 +183,25 @@ export function DashboardSidebar() {
 
               {/* Dropdown Items */}
               {isSettingsOpen && (
-                <div className="mt-1 ml-4 flex flex-col gap-1 overflow-hidden border-l border-white/5 pl-4 transition-all duration-300">
+                <div className="mt-1 ml-4 flex flex-col gap-1 overflow-hidden border-l border-zinc-200 dark:border-white/5 pl-4 transition-all duration-300">
                   {settingsItems.map((item) => {
                     const active = pathname === item.href;
                     return (
                       <Link
                         key={item.label}
-                        href={(item as any).href}
+                        href={item.href}
                         className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-sm transition-all ${
                           active
-                            ? "text-emerald-400 font-bold bg-white/5 shadow-inner"
-                            : "text-[#9eb6c3] hover:bg-[#1d2d38] hover:text-white"
+                            ? "text-emerald-600 dark:text-emerald-400 font-bold bg-zinc-100 dark:bg-white/5 shadow-inner"
+                            : "text-zinc-500 dark:text-[#9eb6c3] hover:bg-slate-200 dark:hover:bg-[#1d2d38] hover:text-foreground dark:hover:text-white"
                         }`}
                       >
                         <span>{item.label}</span>
-                        {(item as any).count !== undefined && (
+                        {item.count !== undefined && (
                           <span className={`inline-flex items-center justify-center rounded-lg px-2 py-0.5 text-[10px] font-black ${
-                            active ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-[#4e6c7c]"
+                            active ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-zinc-100 dark:bg-white/5 text-[#4e6c7c]"
                           }`}>
-                            {(item as any).count}
+                            {item.count}
                           </span>
                         )}
                       </Link>

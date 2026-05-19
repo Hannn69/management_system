@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import {
   Table,
   TableBody,
@@ -12,7 +13,9 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
-import { Package, Copy, Edit2, Trash, Image as ImageIcon, Tag, Hash, TrendingDown, ClipboardList } from "lucide-react";
+import { Package, Copy, Edit2, Trash, Image as ImageIcon, Tag, Hash, TrendingDown, ClipboardList, Eye } from "lucide-react";
+
+import { AssetModelRecord } from "@/lib/types";
 
 const accentClasses = [
   "from-amber-400 to-orange-500",
@@ -23,17 +26,18 @@ const accentClasses = [
 
 export function AssetModelsContent() {
   const router = useRouter();
+  const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<AssetModelRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [sort, setSort] = useState("name");
-  const [order, setOrder] = useState("asc");
+  const [sort, setSort] = useState("createdAt");
+  const [order, setOrder] = useState("desc");
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<any | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<AssetModelRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewType, setViewType] = useState<"list" | "grid">("list");
 
@@ -48,12 +52,23 @@ export function AssetModelsContent() {
     if (!itemToDelete) return;
     setDeleteLoading(true);
     try {
-      // Mock delete logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch(`${apiBase}/asset-models/${itemToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to delete asset model");
+      }
+
       setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
       setItemToDelete(null);
+      push("Asset Model deleted successfully!", "success");
     } catch (err) {
-      setError("Failed to delete asset model.");
+      const errorMsg = err instanceof Error ? err.message : "Failed to delete asset model.";
+      setError(errorMsg);
+      push(errorMsg, "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -106,15 +121,20 @@ export function AssetModelsContent() {
           onCreateClick={() => router.push("/asset-models/create")}
           onRefreshClick={loadRecords}
           showAdvancedSearch={true}
+          sortOrder={order as "asc" | "desc"}
+          onSortOrderChange={(newOrder) => {
+            setSort("createdAt");
+            setOrder(newOrder);
+          }}
         />
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <Table className="min-w-[2200px]">
             <TableHeader className="bg-white/5 sticky top-0 z-10">
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Name</TableHead>
+                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-amber-500">Name</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Model No.</TableHead>
+                <TableHead onClick={() => setSort("modelNumber")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-amber-500">Model No.</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Min Qty</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assets</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assigned</TableHead>
@@ -183,12 +203,12 @@ export function AssetModelsContent() {
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center">
                     <div className="flex flex-col gap-1.5 items-center">
-                      <span className={`text-[10px] font-bold ${record.percentRemaining < 10 ? "text-rose-400" : "text-zinc-400"}`}>
+                      <span className={`text-[10px] font-bold ${(record.percentRemaining ?? 100) < 10 ? "text-rose-400" : "text-zinc-400"}`}>
                         {record.percentRemaining}%
                       </span>
                       <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
                         <div 
-                          className={`h-full rounded-full ${record.percentRemaining < 10 ? "bg-rose-500" : "bg-emerald-500"}`} 
+                          className={`h-full rounded-full ${(record.percentRemaining ?? 100) < 10 ? "bg-rose-500" : "bg-emerald-500"}`} 
                           style={{ width: `${record.percentRemaining}%` }} 
                         />
                       </div>
@@ -219,12 +239,19 @@ export function AssetModelsContent() {
                   </TableCell>
                   <TableCell className="px-4 py-4 text-right">
                     <div className="flex items-center justify-end gap-1.5">
+                      <button 
+                        onClick={() => router.push(`/asset-models/${record.id}`)}
+                        className="p-2 rounded-xl text-zinc-500 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all active:scale-90" 
+                        title="View Details"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
                       <button className="px-2 py-1 text-[10px] font-bold text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-all">New Asset</button>
                       <button className="p-2 rounded-xl text-zinc-500 hover:bg-white/10 hover:text-white transition-all active:scale-90" title="Clone Item">
                         <Copy className="h-4 w-4" />
                       </button>
                       <button 
-                        onClick={() => router.push(`/asset-models/edit/${record.slug}`)}
+                        onClick={() => router.push(`/asset-models/${record.id}/edit`)}
                         className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >
