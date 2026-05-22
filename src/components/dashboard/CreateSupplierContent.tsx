@@ -3,19 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { 
   Truck, 
   MapPin, 
   User, 
   Phone, 
-  Printer, 
   Mail, 
   Link as LinkIcon, 
   FileText, 
-  Upload, 
   X, 
   Save, 
-  ArrowLeft 
+  ArrowLeft,
+  Milestone,
+  Globe2
 } from "lucide-react";
 
 export function CreateSupplierContent() {
@@ -29,15 +30,13 @@ export function CreateSupplierContent() {
     name: "",
     contactName: "",
     phone: "",
-    fax: "",
     email: "",
     url: "",
     address: "",
     city: "",
-    state: "",
-    country: "",
-    zip: "",
+    state: "", // Province
     notes: "",
+    image: null as string | null,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,7 +74,7 @@ export function CreateSupplierContent() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/suppliers")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg"
+            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -95,6 +94,7 @@ export function CreateSupplierContent() {
           <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
+              {/* Left Column: Primary Details */}
               <div className="space-y-5">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Supplier Name</label>
@@ -125,32 +125,17 @@ export function CreateSupplierContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
-                    <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
-                      <input 
-                        type="tel" 
-                        placeholder="Business phone"
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
-                        value={form.phone}
-                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Fax</label>
-                    <div className="relative">
-                      <Printer className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
-                      <input 
-                        type="tel" 
-                        placeholder="Fax number"
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
-                        value={form.fax}
-                        onChange={(e) => setForm({ ...form, fax: e.target.value })}
-                      />
-                    </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
+                    <input 
+                      type="tel" 
+                      placeholder="Business phone"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    />
                   </div>
                 </div>
 
@@ -183,6 +168,7 @@ export function CreateSupplierContent() {
                 </div>
               </div>
 
+              {/* Right Column: Address & Media */}
               <div className="space-y-5">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Address</label>
@@ -201,30 +187,27 @@ export function CreateSupplierContent() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">City</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Seattle"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
-                      value={form.city}
-                      onChange={(e) => setForm({ ...form, city: e.target.value })}
-                    />
+                    <div className="relative">
+                      <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-violet-500" />
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Phnom Penh"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
+                        value={form.city}
+                        onChange={(e) => setForm({ ...form, city: e.target.value })}
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">State/Zip</label>
-                    <div className="flex gap-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Province</label>
+                    <div className="relative">
+                      <Milestone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
                       <input 
                         type="text" 
-                        placeholder="WA"
-                        className="w-16 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                        placeholder="Province"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
                         value={form.state}
                         onChange={(e) => setForm({ ...form, state: e.target.value })}
-                      />
-                      <input 
-                        type="text" 
-                        placeholder="98101"
-                        className="flex-1 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
-                        value={form.zip}
-                        onChange={(e) => setForm({ ...form, zip: e.target.value })}
                       />
                     </div>
                   </div>
@@ -235,7 +218,7 @@ export function CreateSupplierContent() {
                   <div className="relative">
                     <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-500" />
                     <textarea 
-                      rows={4}
+                      rows={3}
                       placeholder="Additional information about the supplier..."
                       className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
                       value={form.notes}
@@ -243,6 +226,12 @@ export function CreateSupplierContent() {
                     ></textarea>
                   </div>
                 </div>
+
+                <ImageUpload 
+                  value={form.image} 
+                  onChange={(val) => setForm({...form, image: val})} 
+                  label="Supplier Image" 
+                />
               </div>
             </div>
           </div>
@@ -251,7 +240,7 @@ export function CreateSupplierContent() {
             <button 
               type="button"
               onClick={() => router.push("/suppliers")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-90"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>

@@ -177,10 +177,10 @@ export function CompaniesContent() {
                   </TableCell>
                   <TableCell className="px-4 py-4">
                     <div className="flex items-center justify-center">
-                      {record.image ? (
-                        <img src={record.image} alt={record.name} className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/10" />
+                      {record.logo ? (
+                        <img src={record.logo} alt={record.name} className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/10" />
                       ) : (
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10`}>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10">
                           <ImageIcon className="h-5 w-5 text-zinc-600" />
                         </div>
                       )}

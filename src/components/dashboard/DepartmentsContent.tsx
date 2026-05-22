@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
-import { Users, Edit2, Trash, Eye } from "lucide-react";
+import { Users, Edit2, Trash, Eye, Image as ImageIcon } from "lucide-react";
 
 const accentClasses = [
   "from-violet-400 to-purple-500",
@@ -125,6 +125,7 @@ export function DepartmentsContent() {
             <TableHeader className="bg-white/5 sticky top-0 z-10">
               <TableRow className="border-white/10 hover:bg-transparent">
                 <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-violet-400">Name</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Manager</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Location</TableHead>
                 <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">People</TableHead>
@@ -146,6 +147,17 @@ export function DepartmentsContent() {
                         <p className="text-sm font-bold text-zinc-100">{record.name}</p>
                         <p className="text-[10px] text-zinc-500 font-mono tracking-tight">{record.slug}</p>
                       </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-4">
+                    <div className="flex items-center justify-center">
+                      {record.image ? (
+                        <img src={record.image} alt={record.name} className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/10" />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                          <ImageIcon className="h-5 w-5 text-zinc-600" />
+                        </div>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-4 text-sm text-zinc-300 font-medium">{record.manager}</TableCell>
@@ -184,7 +196,7 @@ export function DepartmentsContent() {
               ))}
               {decoratedRecords.length === 0 && (
                 <TableRow className="border-white/10">
-                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={5}>
+                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={6}>
                     {loading ? "Loading..." : "No departments found."}
                   </TableCell>
                 </TableRow>

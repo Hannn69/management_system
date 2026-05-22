@@ -116,8 +116,16 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
           <div className="lg:col-span-2 space-y-6">
             <div className="rounded-[32px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-sm">
               <div className="flex flex-col md:flex-row gap-8">
-                <div className={`w-full md:w-40 h-48 rounded-3xl ${entityConfig.bg} flex items-center justify-center border border-zinc-200 dark:border-white/5`}>
-                  <Icon className={`h-16 w-16 ${entityConfig.color} opacity-40`} />
+                <div className={`w-full md:w-48 h-48 rounded-[32px] ${entityConfig.bg} flex items-center justify-center border border-zinc-200 dark:border-white/5 overflow-hidden shadow-inner`}>
+                  {record.image ? (
+                    <img 
+                      src={record.image} 
+                      alt={record.name}
+                      className="w-full h-full object-cover animate-in fade-in duration-500"
+                    />
+                  ) : (
+                    <Icon className={`h-16 w-16 ${entityConfig.color} opacity-40`} />
+                  )}
                 </div>
 
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6">
@@ -169,7 +177,29 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
                       <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Department Head</p>
                       <div className="flex items-center gap-2 text-foreground font-medium">
                         <User className="h-4 w-4 text-amber-500" />
-                        {record.manager || "Admin User"}
+                        {record.manager?.firstName || record.managerId ? `${record.manager?.firstName || ''} ${record.manager?.lastName || ''}` : "Admin User"}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Company Info */}
+                  {record.company && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Associated Company</p>
+                      <div className="flex items-center gap-2 text-foreground font-medium">
+                        <Building2 className="h-4 w-4 text-blue-500" />
+                        {record.company.name}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Location Info */}
+                  {record.location && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Primary Location</p>
+                      <div className="flex items-center gap-2 text-foreground font-medium">
+                        <MapPin className="h-4 w-4 text-rose-500" />
+                        {record.location.name}
                       </div>
                     </div>
                   )}
@@ -204,13 +234,13 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
               <div className="space-y-5">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Linked Assets</span>
-                  <span className="text-2xl font-black text-foreground">{record.assets ?? record.assetModels ?? 0}</span>
+                  <span className="text-2xl font-black text-foreground">{record.assets?.length ?? 0}</span>
                 </div>
                 
                 {type === "locations" && (
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Child Sites</span>
-                    <span className="text-2xl font-black text-foreground">{record.childLocation || 0}</span>
+                    <span className="text-2xl font-black text-foreground">{record.childLocation?.length || 0}</span>
                   </div>
                 )}
               </div>
@@ -225,7 +255,7 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-500 uppercase font-black tracking-tighter">Created</span>
-                  <span className="text-foreground">2026-05-18</span>
+                  <span className="text-foreground">{record.createdAt ? new Date(record.createdAt).toLocaleDateString() : "N/A"}</span>
                 </div>
               </div>
             </div>

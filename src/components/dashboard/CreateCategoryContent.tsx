@@ -3,13 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { 
   Tag, 
   Layers, 
-  FileCheck, 
-  ShieldAlert, 
-  Mail, 
-  Upload, 
   FileText, 
   X, 
   Save, 
@@ -31,6 +28,7 @@ export function CreateCategoryContent() {
     requireConfirmation: false,
     emailNotification: false,
     notes: "",
+    image: null as string | null,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -158,13 +156,11 @@ export function CreateCategoryContent() {
 
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Category Image</label>
-                  <div className="group relative h-[140px] rounded-3xl border-2 border-dashed border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/[0.08] hover:border-emerald-500/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 overflow-hidden shadow-inner">
-                    <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Upload className="h-5 w-5 text-emerald-400" />
-                    </div>
-                    <p className="text-xs font-bold text-zinc-500 dark:text-zinc-200">Upload Image</p>
-                  </div>
+                  <ImageUpload 
+                    value={form.image} 
+                    onChange={(val) => setForm({...form, image: val})} 
+                    label="Category Image"
+                  />
                 </div>
 
                 <div className="space-y-2">

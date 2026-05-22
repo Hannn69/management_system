@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { 
   Factory, 
   Globe, 
@@ -10,7 +11,6 @@ import {
   ShieldCheck, 
   Phone, 
   Mail, 
-  Upload, 
   FileText, 
   X, 
   Save, 
@@ -37,6 +37,7 @@ export function UpdateManufacturerContent({ slug }: UpdateManufacturerContentPro
     supportPhone: "",
     supportEmail: "",
     notes: "",
+    image: null as string | null,
   });
 
   const fetchManufacturer = useCallback(async () => {
@@ -52,6 +53,7 @@ export function UpdateManufacturerContent({ slug }: UpdateManufacturerContentPro
           supportPhone: record.supportPhone || "",
           supportEmail: record.supportEmail || "",
           notes: record.notes || "",
+          image: record.image || null,
         });
       }
     } catch (err) {
@@ -242,6 +244,14 @@ export function UpdateManufacturerContent({ slug }: UpdateManufacturerContentPro
                       className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
                     ></textarea>
                   </div>
+                </div>
+
+                <div className="pt-2">
+                  <ImageUpload 
+                    value={form.image}
+                    onChange={(val) => setForm({ ...form, image: val })}
+                    label="Manufacturer Image"
+                  />
                 </div>
               </div>
             </div>

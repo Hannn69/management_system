@@ -2,11 +2,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { QuickCreateLocationModal } from "@/components/dashboard/QuickCreateLocationModal";
+import { QuickCreateUserModal } from "@/components/dashboard/QuickCreateUserModal";
 import { 
   ChevronDown, 
   ChevronRight, 
   Plus, 
-  Upload, 
   Save, 
   X, 
   Building2, 
@@ -23,7 +26,8 @@ import {
   FileText,
   MousePointer2,
   Tag,
-  History
+  History,
+  Coins
 } from "lucide-react";
 
 interface UpdateAssetContentProps {
@@ -32,6 +36,7 @@ interface UpdateAssetContentProps {
 
 export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
   const router = useRouter();
+  const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   
   const [isOptionalOpen, setIsOptionalOpen] = useState(false);
@@ -40,6 +45,10 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
   const [fetching, setFetching] = useState(true);
   const [afterSaveAction, setAfterSaveAction] = useState("all-assets");
   const [error, setError] = useState<string | null>(null);
+
+  // Currency State
+  const [activeCurrency, setActiveCurrency] = useState("USD");
+  const [currencySymbol, setCurrencySymbol] = useState("$");
 
   // Dropdown data
   const [companies, setCompanies] = useState<any[]>([]);
@@ -133,12 +142,34 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
     fetchData();
   }, [fetchData]);
 
+  // Handle Currency Change & Conversion
+  const handleCurrencyChange = (newCurrency: string) => {
+    if (newCurrency === activeCurrency) return;
+
+    const currentCost = parseFloat(form.purchaseCost);
+    if (!isNaN(currentCost)) {
+      let convertedCost = currentCost;
+      if (activeCurrency === "USD" && newCurrency === "KHR") {
+        convertedCost = currentCost * 4000;
+      } else if (activeCurrency === "KHR" && newCurrency === "USD") {
+        convertedCost = currentCost / 4000;
+      }
+      setForm(prev => ({ ...prev, purchaseCost: convertedCost.toFixed(2) }));
+    }
+
+    setActiveCurrency(newCurrency);
+    setCurrencySymbol(newCurrency === "USD" ? "$" : "៛");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
+      const costValue = parseFloat(form.purchaseCost);
+      let finalCost = isNaN(costValue) ? undefined : costValue;
+      
       const payload = {
         ...form,
         companyId: form.companyId ? Number(form.companyId) : null,
@@ -148,7 +179,7 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
         supplierId: form.supplierId ? Number(form.supplierId) : null,
         checkedOutUserId: form.checkedOutUserId ? Number(form.checkedOutUserId) : null,
         warrantyMonths: form.warrantyMonths ? Number(form.warrantyMonths) : null,
-        purchaseCost: form.purchaseCost ? Number(form.purchaseCost) : null,
+        purchaseCost: finalCost,
         purchaseDate: form.purchaseDate ? new Date(form.purchaseDate).toISOString() : null,
         expectedCheckin: form.expectedCheckin ? new Date(form.expectedCheckin).toISOString() : null,
         nextAuditDate: form.nextAuditDate ? new Date(form.nextAuditDate).toISOString() : null,
@@ -166,6 +197,8 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to update asset");
       }
+
+      push("Asset updated successfully!", "success");
 
       // Handle navigation based on selection
       if (afterSaveAction === "all-assets") router.push("/assets");
@@ -203,10 +236,8 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          {/* Main Section */}
           <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
             <div className="grid gap-6 md:grid-cols-2">
-              {/* Company */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <Building2 className="h-3 w-3" /> Company
@@ -221,7 +252,6 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 </select>
               </div>
 
-              {/* Asset Tag */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <Barcode className="h-3 w-3" /> Asset Tag
@@ -244,7 +274,6 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 </div>
               </div>
 
-              {/* Serial */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <Cpu className="h-3 w-3" /> Serial
@@ -258,7 +287,6 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 />
               </div>
 
-              {/* Model */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <Box className="h-3 w-3" /> Model
@@ -278,7 +306,6 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 </div>
               </div>
 
-              {/* Status */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <ShieldCheck className="h-3 w-3" /> Status
@@ -302,7 +329,6 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 </div>
               </div>
 
-              {/* Checkout To */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <User className="h-3 w-3" /> Checkout to
@@ -322,7 +348,6 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 </div>
               </div>
 
-              {/* Default Location */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <MapPin className="h-3 w-3" /> Default Location
@@ -342,7 +367,6 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 </div>
               </div>
 
-              {/* Requestable */}
               <div className="flex items-center gap-3 pt-6">
                 <input 
                   type="checkbox" 
@@ -356,7 +380,6 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 </label>
               </div>
 
-              {/* Notes */}
               <div className="flex flex-col gap-2 md:col-span-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <FileText className="h-3 w-3" /> Notes
@@ -370,23 +393,14 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                 />
               </div>
 
-              {/* Upload Image */}
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                  <Upload className="h-3 w-3" /> Upload Image
-                </label>
-                <div className="flex items-center gap-4">
-                  <button type="button" className="flex items-center gap-2 rounded-xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-6 py-3 text-sm font-medium text-zinc-500 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95">
-                    <Upload className="h-4 w-4" />
-                    Select File...
-                  </button>
-                  <span className="text-xs text-zinc-500">No file selected</span>
-                </div>
-              </div>
+              <ImageUpload 
+                value={form.image} 
+                onChange={(val) => setForm({...form, image: val})} 
+                className="md:col-span-2"
+              />
             </div>
           </div>
 
-          {/* Optional Information Dropdown */}
           <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] overflow-hidden">
             <button 
               type="button"
@@ -473,7 +487,6 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
             )}
           </div>
 
-          {/* Order Related Information Dropdown */}
           <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] overflow-hidden">
             <button 
               type="button"
@@ -551,23 +564,37 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                   <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                     <DollarSign className="h-3 w-3" /> Purchase Cost
                   </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">$</span>
-                    <input 
-                      type="number" 
-                      step="0.01"
-                      placeholder="0.00"
-                      className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-8 pr-4 py-3 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                      value={form.purchaseCost}
-                      onChange={(e) => setForm({...form, purchaseCost: e.target.value})}
-                    />
+                  <div className="flex flex-col gap-3">
+                    <div className="relative">
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500/50" />
+                      <select 
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner appearance-none"
+                        value={activeCurrency}
+                        onChange={(e) => handleCurrencyChange(e.target.value)}
+                      >
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="KHR">KHR - Cambodian Riel</option>
+                      </select>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 font-bold text-lg">{currencySymbol}</span>
+                      <input 
+                        type="number" 
+                        step="0.01"
+                        placeholder={activeCurrency}
+                        className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-10 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
+                        value={form.purchaseCost}
+                        onChange={(e) => setForm({...form, purchaseCost: e.target.value})}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Footer Actions */}
           <div className="flex flex-col gap-6 items-end mt-4">
             <div className="flex flex-col gap-2 w-full md:w-64">
               <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-2">

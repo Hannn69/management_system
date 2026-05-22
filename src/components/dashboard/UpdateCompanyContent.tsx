@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { 
   Building2, 
   Phone, 
   Printer, 
   Mail, 
   FileText, 
-  UploadCloud, 
   X, 
   Save, 
   ArrowLeft 
@@ -199,16 +199,11 @@ export function UpdateCompanyContent({ companyId }: UpdateCompanyContentProps) {
 
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Company Logo</label>
-                  <div className="group relative h-[180px] rounded-3xl border-2 border-dashed border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/[0.08] hover:border-emerald-500/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 overflow-hidden shadow-inner">
-                    <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <UploadCloud className="h-6 w-6 text-emerald-400" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-bold text-zinc-500 dark:text-zinc-200">Logo update via upload</p>
-                      <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">PNG, JPG or SVG (Max. 2MB)</p>
-                    </div>
-                  </div>
+                  <ImageUpload 
+                    value={formData.logo} 
+                    onChange={(val) => setFormData({...formData, logo: val})} 
+                    label="Company Logo"
+                  />
                 </div>
 
                 <div className="space-y-2">

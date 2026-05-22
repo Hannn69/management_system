@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { QuickCreateLocationModal } from "@/components/dashboard/QuickCreateLocationModal";
+import { QuickCreateUserModal } from "@/components/dashboard/QuickCreateUserModal";
 import { 
   MapPin, 
   ChevronDown, 
-  Plus, 
   Building2, 
   User, 
   Phone, 
@@ -15,12 +17,11 @@ import {
   Home, 
   Globe2, 
   Milestone, 
-  Navigation, 
-  Upload, 
   FileText, 
   X, 
   Save, 
-  ArrowLeft 
+  ArrowLeft,
+  Plus
 } from "lucide-react";
 
 export function CreateLocationContent() {
@@ -29,37 +30,47 @@ export function CreateLocationContent() {
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [quickCreateUserOpen, setQuickCreateUserOpen] = useState(false);
 
   const [companies, setCompanies] = useState<any[]>([]);
   const [parentLocations, setParentLocations] = useState<any[]>([]);
+  const [managers, setManagers] = useState<any[]>([]);
+
+  // Currency & Conversion Logic
+  const [activeCurrency, setActiveCurrency] = useState("USD"); // Internal baseline
+  const [currencyPlaceholder, setCurrencyPlaceholder] = useState("e.g. KHR");
+  const [currencySymbol, setCurrencySymbol] = useState("");
 
   const [form, setForm] = useState({
     name: "",
-    companyId: "",
     parentId: "",
     managerId: "",
+    companyId: "",
     phone: "",
-    fax: "",
-    currency: "",
+    currency: "", 
     address: "",
     address2: "",
     city: "",
-    state: "",
-    country: "",
+    state: "", // Province
+    country: "Cambodia",
     zip: "",
     notes: "",
+    image: null as string | null,
   });
 
   const fetchData = useCallback(async () => {
     try {
       const fetchOpts = { credentials: "include" as const };
-      const [compRes, locRes] = await Promise.all([
+      const [compRes, locRes, userRes] = await Promise.all([
         fetch(`${apiBase}/companies`, fetchOpts),
         fetch(`${apiBase}/locations`, fetchOpts),
+        fetch(`${apiBase}/auth/users`, fetchOpts),
       ]);
 
       if (compRes.ok) setCompanies((await compRes.json()).records || []);
       if (locRes.ok) setParentLocations((await locRes.json()).records || []);
+      if (userRes.ok) setManagers((await userRes.json()).records || []);
     } catch (err) {
       console.error("Failed to fetch dropdown data", err);
     }
@@ -69,14 +80,44 @@ export function CreateLocationContent() {
     fetchData();
   }, [fetchData]);
 
+  const handleCurrencySelection = (newCurrency: string) => {
+    if (!newCurrency) return;
+    
+    const currentVal = parseFloat(form.currency);
+    
+    // 1. Perform Conversion if numeric value is present
+    if (!isNaN(currentVal)) {
+      let converted = currentVal;
+      if (activeCurrency === "USD" && newCurrency === "KHR") {
+        converted = currentVal * 4000;
+      } else if (activeCurrency === "KHR" && newCurrency === "USD") {
+        converted = currentVal / 4000;
+      }
+      // Round to 2 decimal places if USD, or whole number if KHR
+      const finalVal = newCurrency === "KHR" ? Math.round(converted).toString() : converted.toFixed(2);
+      setForm(prev => ({ ...prev, currency: finalVal }));
+    } else {
+      // If empty, just clear to show placeholder as requested ("dont fill")
+      setForm(prev => ({ ...prev, currency: "" }));
+    }
+
+    // 2. Update UI Indicators
+    setCurrencyPlaceholder(newCurrency);
+    setCurrencySymbol(newCurrency === "USD" ? "$" : "៛");
+    setActiveCurrency(newCurrency);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
+      const finalCurrency = form.currency || (currencyPlaceholder !== "e.g. KHR" ? currencyPlaceholder : "");
+      
       const payload = {
         ...form,
+        currency: finalCurrency,
         companyId: form.companyId ? Number(form.companyId) : undefined,
         parentId: form.parentId ? Number(form.parentId) : undefined,
         managerId: form.managerId ? Number(form.managerId) : undefined,
@@ -111,7 +152,7 @@ export function CreateLocationContent() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/locations")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg"
+            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -140,7 +181,7 @@ export function CreateLocationContent() {
                     <input 
                       required
                       type="text" 
-                      placeholder="e.g. Headquarters, London Studio"
+                      placeholder="e.g. Headquarters"
                       className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -148,35 +189,59 @@ export function CreateLocationContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Parent Location</label>
-                    <div className="relative">
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Parent Location</label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500/50" />
                       <select 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner appearance-none"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner appearance-none"
                         value={form.parentId}
                         onChange={(e) => setForm({ ...form, parentId: e.target.value })}
                       >
-                        <option value="" className="bg-white dark:bg-[#111216]">No Parent</option>
+                        <option value="" className="bg-white dark:bg-[#111216]">Select Parent Location</option>
                         {parentLocations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
                       </select>
                     </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setQuickCreateOpen(true)}
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-lg active:scale-95"
+                      title="New Location"
+                    >
+                      <Plus className="h-5 w-5" />
+                    </button>
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Manager</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Manager</label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
                       <select 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner appearance-none"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/50 transition-all shadow-inner appearance-none"
                         value={form.managerId}
                         onChange={(e) => setForm({ ...form, managerId: e.target.value })}
                       >
                         <option value="" className="bg-white dark:bg-[#111216]">Select Manager</option>
-                        <option value="1" className="bg-white dark:bg-[#111216]">Admin User</option>
+                        {managers.map(m => (
+                          <option key={m.id} value={m.id} className="bg-white dark:bg-[#111216]">
+                            {m.firstName || m.username || m.email} {m.lastName || ""}
+                          </option>
+                        ))}
                       </select>
                     </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setQuickCreateUserOpen(true)}
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-orange-600/10 text-orange-400 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-lg active:scale-95"
+                      title="New Manager"
+                    >
+                      <Plus className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
 
@@ -185,6 +250,7 @@ export function CreateLocationContent() {
                   <div className="relative">
                     <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                     <select 
+                      required
                       className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner appearance-none"
                       value={form.companyId}
                       onChange={(e) => setForm({ ...form, companyId: e.target.value })}
@@ -195,46 +261,52 @@ export function CreateLocationContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
-                    <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
-                      <input 
-                        type="tel" 
-                        placeholder="Site phone"
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
-                        value={form.phone}
-                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Fax</label>
-                    <div className="relative">
-                      <Printer className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4e6c7c]" />
-                      <input 
-                        type="tel" 
-                        placeholder="Site fax"
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
-                        value={form.fax}
-                        onChange={(e) => setForm({ ...form, fax: e.target.value })}
-                      />
-                    </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
+                    <input 
+                      type="tel" 
+                      placeholder="Site phone"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Location Currency</label>
-                  <div className="relative">
-                    <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
-                    <input 
-                      type="text" 
-                      placeholder="e.g. USD, EUR, GBP"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner"
-                      value={form.currency}
-                      onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                    />
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Currency</label>
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500/50" />
+                      <select 
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner appearance-none"
+                        value={activeCurrency}
+                        onChange={(e) => handleCurrencySelection(e.target.value)}
+                      >
+                        <option value="">Quick Select Suggestions...</option>
+                        <option value="KHR">KHR - Cambodian Riel</option>
+                        <option value="USD">USD - US Dollar</option>
+                      </select>
+                    </div>
+
+                    <div className="relative">
+                      <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
+                      <input 
+                        type="text" 
+                        placeholder={currencyPlaceholder}
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-12 py-3.5 text-sm text-foreground placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner"
+                        value={form.currency}
+                        onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })}
+                      />
+                      {currencySymbol && (
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold text-amber-500 pointer-events-none animate-in fade-in zoom-in duration-300">
+                          {currencySymbol}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -248,19 +320,24 @@ export function CreateLocationContent() {
                       <Home className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
                       <input 
                         type="text" 
-                        placeholder="Street Address 1"
+                        placeholder="Address Line 1"
                         className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
                         value={form.address}
                         onChange={(e) => setForm({ ...form, address: e.target.value })}
                       />
                     </div>
-                    <input 
-                      type="text" 
-                      placeholder="Street Address 2 (Optional)"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
-                      value={form.address2}
-                      onChange={(e) => setForm({ ...form, address2: e.target.value })}
-                    />
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 border border-rose-500/30 rounded-full flex items-center justify-center">
+                        <div className="h-1 w-1 bg-rose-500/30 rounded-full" />
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder="Address Line 2"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
+                        value={form.address2}
+                        onChange={(e) => setForm({ ...form, address2: e.target.value })}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -271,7 +348,7 @@ export function CreateLocationContent() {
                       <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-violet-500" />
                       <input 
                         type="text" 
-                        placeholder="e.g. New York"
+                        placeholder="e.g. Phnom Penh"
                         className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
                         value={form.city}
                         onChange={(e) => setForm({ ...form, city: e.target.value })}
@@ -279,21 +356,15 @@ export function CreateLocationContent() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">State/Zip</label>
-                    <div className="flex gap-2">
-                       <input 
-                        type="text" 
-                        placeholder="NY"
-                        className="w-16 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
-                        value={form.state}
-                        onChange={(e) => setForm({ ...form, state: e.target.value })}
-                      />
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Province</label>
+                    <div className="relative">
+                      <Milestone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
                       <input 
                         type="text" 
-                        placeholder="10001"
-                        className="flex-1 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
-                        value={form.zip}
-                        onChange={(e) => setForm({ ...form, zip: e.target.value })}
+                        placeholder="Province"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                        value={form.state}
+                        onChange={(e) => setForm({ ...form, state: e.target.value })}
                       />
                     </div>
                   </div>
@@ -302,11 +373,11 @@ export function CreateLocationContent() {
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Country</label>
                   <div className="relative">
-                    <Milestone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
+                    <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
                     <input 
                       type="text" 
-                      placeholder="e.g. United States"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                      placeholder="e.g. Cambodia"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner"
                       value={form.country}
                       onChange={(e) => setForm({ ...form, country: e.target.value })}
                     />
@@ -318,13 +389,21 @@ export function CreateLocationContent() {
                   <div className="relative">
                     <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-500" />
                     <textarea 
-                      rows={2}
-                      placeholder="Shipping instructions, etc..."
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
+                      placeholder="Any additional information..."
+                      rows={3}
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500/50 transition-all shadow-inner resize-none"
                       value={form.notes}
                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    ></textarea>
+                    />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Location Image</label>
+                  <ImageUpload 
+                    value={form.image}
+                    onChange={(url) => setForm({ ...form, image: url })}
+                  />
                 </div>
               </div>
             </div>
@@ -334,7 +413,7 @@ export function CreateLocationContent() {
             <button 
               type="button"
               onClick={() => router.push("/locations")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-90"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>
@@ -353,6 +432,27 @@ export function CreateLocationContent() {
             </button>
           </div>
         </form>
+
+        <QuickCreateLocationModal 
+          open={quickCreateOpen}
+          onClose={() => setQuickCreateOpen(false)}
+          companies={companies}
+          onSuccess={(newLoc) => {
+            setParentLocations(prev => [newLoc, ...prev]);
+            setForm(prev => ({ ...prev, parentId: newLoc.id.toString() }));
+          }}
+        />
+
+        <QuickCreateUserModal 
+          open={quickCreateUserOpen}
+          onClose={() => setQuickCreateUserOpen(false)}
+          companies={companies}
+          locations={parentLocations}
+          onSuccess={(newUser) => {
+            setManagers(prev => [newUser, ...prev]);
+            setForm(prev => ({ ...prev, managerId: newUser.id.toString() }));
+          }}
+        />
       </div>
     </main>
   );

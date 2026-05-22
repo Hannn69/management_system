@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { 
   ChevronDown, 
   ChevronRight, 
   Plus, 
-  Upload, 
+  Trash2,
   Save, 
   X, 
   Building2, 
@@ -24,7 +25,8 @@ import {
   FileText,
   MousePointer2,
   Tag,
-  History
+  History,
+  Coins
 } from "lucide-react";
 
 export function CreateAssetContent() {
@@ -38,18 +40,23 @@ export function CreateAssetContent() {
   const [afterSaveAction, setAfterSaveAction] = useState("all-assets");
   const [error, setError] = useState<string | null>(null);
 
+  // Currency State
+  const [activeCurrency, setActiveCurrency] = useState("USD");
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+
+  // Multi-Asset State
+  const [assetItems, setAssetItems] = useState([{ tag: "", serial: "" }]);
+
   // Dropdown data
   const [companies, setCompanies] = useState<any[]>([]);
   const [models, setModels] = useState<any[]>([]);
   const [statuses, setStatuses] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
   const [suppliers, setSuppliers] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]); // Placeholder for now
+  const [users, setUsers] = useState<any[]>([]); 
 
   const [form, setForm] = useState({
     companyId: "",
-    assetTag: "",
-    serial: "",
     modelId: "",
     statusId: "",
     checkedOutUserId: "",
@@ -74,12 +81,13 @@ export function CreateAssetContent() {
   const fetchData = useCallback(async () => {
     try {
       const fetchOpts = { credentials: "include" as const };
-      const [compRes, modRes, statRes, locRes, supRes] = await Promise.all([
+      const [compRes, modRes, statRes, locRes, supRes, userRes] = await Promise.all([
         fetch(`${apiBase}/companies`, fetchOpts),
         fetch(`${apiBase}/asset-models`, fetchOpts),
         fetch(`${apiBase}/status-labels`, fetchOpts),
         fetch(`${apiBase}/locations`, fetchOpts),
         fetch(`${apiBase}/suppliers`, fetchOpts),
+        fetch(`${apiBase}/users`, fetchOpts),
       ]);
 
       if (compRes.ok) setCompanies((await compRes.json()).records || []);
@@ -87,12 +95,7 @@ export function CreateAssetContent() {
       if (statRes.ok) setStatuses((await statRes.json()).records || []);
       if (locRes.ok) setLocations((await locRes.json()).records || []);
       if (supRes.ok) setSuppliers((await supRes.json()).records || []);
-      
-      // Mock users since we don't have an endpoint yet
-      setUsers([
-        { id: 1, email: "admin@example.com" },
-        { id: 4, email: "sonvirak@example.com" }
-      ]);
+      if (userRes.ok) setUsers((await userRes.json()).records || []);
     } catch (err) {
       console.error("Failed to fetch dropdown data", err);
     }
@@ -100,67 +103,120 @@ export function CreateAssetContent() {
 
   useEffect(() => {
     fetchData();
-    // Auto generate asset tag
-    if (!form.assetTag) {
-      setForm(prev => ({
-        ...prev, 
-        assetTag: `AST-${Math.floor(100000 + Math.random() * 900000)}`
-      }));
+    // Initialize first asset tag if empty
+    if (assetItems[0].tag === "") {
+      const newItems = [...assetItems];
+      newItems[0].tag = `AST-${Math.floor(100000 + Math.random() * 900000)}`;
+      setAssetItems(newItems);
     }
   }, [fetchData]);
+
+  const addAssetItem = () => {
+    setAssetItems([...assetItems, { 
+      tag: `AST-${Math.floor(100000 + Math.random() * 900000)}`, 
+      serial: "" 
+    }]);
+  };
+
+  const removeAssetItem = (index: number) => {
+    if (assetItems.length > 1) {
+      const newItems = assetItems.filter((_, i) => i !== index);
+      setAssetItems(newItems);
+    }
+  };
+
+  const updateAssetItem = (index: number, field: "tag" | "serial", value: string) => {
+    const newItems = [...assetItems];
+    newItems[index][field] = value;
+    setAssetItems(newItems);
+  };
+
+  const handleCurrencyChange = (newCurrency: string) => {
+    if (newCurrency === activeCurrency) return;
+    const currentCost = parseFloat(form.purchaseCost);
+    if (!isNaN(currentCost)) {
+      let convertedCost = currentCost;
+      if (activeCurrency === "USD" && newCurrency === "KHR") convertedCost = currentCost * 4000;
+      else if (activeCurrency === "KHR" && newCurrency === "USD") convertedCost = currentCost / 4000;
+      setForm(prev => ({ ...prev, purchaseCost: convertedCost.toFixed(2) }));
+    }
+    setActiveCurrency(newCurrency);
+    setCurrencySymbol(newCurrency === "USD" ? "$" : "៛");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    // Basic Validation
-    if (!form.assetTag || !form.modelId || !form.statusId) {
-      setError("Asset Tag, Model, and Status are required.");
+    if (!form.modelId || !form.statusId) {
+      setError("Model and Status are required.");
       setLoading(false);
       return;
     }
 
     try {
-      const payload = {
-        ...form,
-        companyId: form.companyId ? Number(form.companyId) : undefined,
+      const costValue = parseFloat(form.purchaseCost);
+      const finalCost = isNaN(costValue) ? null : costValue;
+
+      const basePayload = {
+        name: form.name || undefined,
         modelId: Number(form.modelId),
         statusId: Number(form.statusId),
-        locationId: form.locationId ? Number(form.locationId) : undefined,
-        supplierId: form.supplierId ? Number(form.supplierId) : undefined,
-        checkedOutUserId: form.checkedOutUserId ? Number(form.checkedOutUserId) : undefined,
-        warrantyMonths: form.warrantyMonths ? Number(form.warrantyMonths) : undefined,
-        purchaseCost: form.purchaseCost ? Number(form.purchaseCost) : undefined,
-        purchaseDate: form.purchaseDate ? new Date(form.purchaseDate).toISOString() : undefined,
-        expectedCheckin: form.expectedCheckin ? new Date(form.expectedCheckin).toISOString() : undefined,
-        nextAuditDate: form.nextAuditDate ? new Date(form.nextAuditDate).toISOString() : undefined,
-        eolDate: form.eolDate ? new Date(form.eolDate).toISOString() : undefined,
+        companyId: form.companyId ? Number(form.companyId) : null,
+        locationId: form.locationId ? Number(form.locationId) : null,
+        supplierId: form.supplierId ? Number(form.supplierId) : null,
+        checkedOutUserId: form.checkedOutUserId ? Number(form.checkedOutUserId) : null,
+        notes: form.notes || null,
+        image: form.image || null,
+        isRequestable: !!form.isRequestable,
+        isByod: !!form.isByod,
+        warrantyMonths: form.warrantyMonths ? Number(form.warrantyMonths) : null,
+        purchaseCost: finalCost,
+        purchaseDate: form.purchaseDate ? new Date(form.purchaseDate).toISOString() : null,
+        expectedCheckin: form.expectedCheckin ? new Date(form.expectedCheckin).toISOString() : null,
+        nextAuditDate: form.nextAuditDate ? new Date(form.nextAuditDate).toISOString() : null,
+        eolDate: form.eolDate ? new Date(form.eolDate).toISOString() : null,
+        orderNumber: form.orderNumber || null,
       };
 
-      const res = await fetch(`${apiBase}/assets`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        credentials: "include",
-      });
+      const results = [];
+      for (const item of assetItems) {
+        if (!item.tag) continue;
+        
+        const assetPayload = {
+          ...basePayload,
+          assetTag: item.tag,
+          serial: item.serial || null,
+        };
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to create asset");
+        const res = await fetch(`${apiBase}/assets`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(assetPayload),
+          credentials: "include",
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || `Failed to create asset with tag ${item.tag}`);
+        }
+        results.push(data);
       }
 
-      const createdAsset = await res.json();
-      console.log("Created Asset:", createdAsset);
-
-      // Handle navigation based on selection
+      push(`${assetItems.length} Asset(s) created successfully!`, "success");
       if (afterSaveAction === "all-assets") router.push("/assets");
       else if (afterSaveAction === "previous") router.back();
-      else if (afterSaveAction === "view-asset") router.push(`/assets/${createdAsset.slug}/edit`);
+      else if (afterSaveAction === "view-asset" && results.length > 0) {
+        const slug = results[0].record?.slug || results[0].slug;
+        router.push(`/assets/${slug}/edit`);
+      }
       else router.push("/assets"); 
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred";
+      setError(msg);
+      push(msg, "error");
     } finally {
       setLoading(false);
     }
@@ -181,10 +237,8 @@ export function CreateAssetContent() {
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          {/* Main Section */}
           <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
             <div className="grid gap-6 md:grid-cols-2">
-              {/* Company */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <Building2 className="h-3 w-3" /> Company
@@ -199,50 +253,13 @@ export function CreateAssetContent() {
                 </select>
               </div>
 
-              {/* Asset Tag */}
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                  <Barcode className="h-3 w-3" /> Asset Tag
-                </label>
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="AST-00001"
-                    className="flex-1 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                    value={form.assetTag}
-                    onChange={(e) => setForm({...form, assetTag: e.target.value})}
-                  />
-                  <button 
-                    type="button" 
-                    onClick={() => setForm({...form, assetTag: `AST-${Date.now().toString().slice(-6)}`})}
-                    className="flex items-center justify-center rounded-xl bg-cyan-600 px-4 text-white hover:bg-cyan-500 transition-colors shadow-lg active:scale-95"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Serial */}
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                  <Cpu className="h-3 w-3" /> Serial
-                </label>
-                <input 
-                  type="text" 
-                  placeholder="Enter serial number"
-                  className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                  value={form.serial}
-                  onChange={(e) => setForm({...form, serial: e.target.value})}
-                />
-              </div>
-
-              {/* Model */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <Box className="h-3 w-3" /> Model
                 </label>
                 <div className="flex gap-2">
                   <select 
+                    required
                     className="flex-1 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-sm text-foreground focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
                     value={form.modelId}
                     onChange={(e) => setForm({...form, modelId: e.target.value})}
@@ -256,13 +273,66 @@ export function CreateAssetContent() {
                 </div>
               </div>
 
-              {/* Status */}
-              <div className="flex flex-col gap-2">
+              <div className="md:col-span-2 space-y-4">
+                <div className="flex items-center justify-between">
+                   <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Assets to Create ({assetItems.length})</label>
+                   <button 
+                    type="button" 
+                    onClick={addAssetItem}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-600/10 text-emerald-400 text-[10px] font-bold uppercase tracking-widest border border-emerald-500/20 hover:bg-emerald-600/20 transition-all active:scale-95"
+                   >
+                     <Plus className="h-3 w-3" /> Add More
+                   </button>
+                </div>
+
+                <div className="space-y-3">
+                  {assetItems.map((item, index) => (
+                    <div key={index} className="group relative grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02]">
+                       <div className="flex flex-col gap-2">
+                          <label className="text-[10px] font-bold uppercase text-zinc-500 flex items-center justify-between">
+                            <span>Asset Tag {index + 1}</span>
+                            {assetItems.length > 1 && (
+                              <button type="button" onClick={() => removeAssetItem(index)} className="text-rose-500 hover:text-rose-400 transition-colors">
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            )}
+                          </label>
+                          <div className="relative">
+                            <Barcode className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                            <input 
+                              type="text" 
+                              placeholder="AST-00001"
+                              className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#0a0b0d] pl-10 pr-4 py-2.5 text-sm text-foreground focus:ring-1 focus:ring-cyan-500/50 transition-all outline-none"
+                              value={item.tag}
+                              onChange={(e) => updateAssetItem(index, "tag", e.target.value)}
+                            />
+                          </div>
+                       </div>
+                       <div className="flex flex-col gap-2">
+                          <label className="text-[10px] font-bold uppercase text-zinc-500">Serial {index + 1}</label>
+                          <div className="relative">
+                            <Cpu className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                            <input 
+                              type="text" 
+                              placeholder="Serial Number"
+                              className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#0a0b0d] pl-10 pr-4 py-2.5 text-sm text-foreground focus:ring-1 focus:ring-cyan-500/50 transition-all outline-none"
+                              value={item.serial}
+                              onChange={(e) => updateAssetItem(index, "serial", e.target.value)}
+                            />
+                          </div>
+                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 pt-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <ShieldCheck className="h-3 w-3" /> Status
                 </label>
                 <div className="flex gap-2">
                   <select 
+                    required
                     className="flex-1 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-sm text-foreground focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
                     value={form.statusId}
                     onChange={(e) => setForm({...form, statusId: e.target.value})}
@@ -270,18 +340,13 @@ export function CreateAssetContent() {
                     <option value="" className="bg-white dark:bg-[#111216]">Select Status</option>
                     {statuses.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-[#111216]">{s.name}</option>)}
                   </select>
-                  <button 
-                    type="button" 
-                    onClick={() => router.push("/status-labels/create")}
-                    className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95"
-                  >
+                  <button type="button" onClick={() => router.push("/status-labels/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
               </div>
 
-              {/* Checkout To */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 pt-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <User className="h-3 w-3" /> Checkout to
                 </label>
@@ -300,8 +365,7 @@ export function CreateAssetContent() {
                 </div>
               </div>
 
-              {/* Default Location */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 pt-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <MapPin className="h-3 w-3" /> Default Location
                 </label>
@@ -320,7 +384,6 @@ export function CreateAssetContent() {
                 </div>
               </div>
 
-              {/* Requestable */}
               <div className="flex items-center gap-3 pt-6">
                 <input 
                   type="checkbox" 
@@ -334,7 +397,6 @@ export function CreateAssetContent() {
                 </label>
               </div>
 
-              {/* Notes */}
               <div className="flex flex-col gap-2 md:col-span-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                   <FileText className="h-3 w-3" /> Notes
@@ -348,23 +410,14 @@ export function CreateAssetContent() {
                 />
               </div>
 
-              {/* Upload Image */}
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                  <Upload className="h-3 w-3" /> Upload Image
-                </label>
-                <div className="flex items-center gap-4">
-                  <button type="button" className="flex items-center gap-2 rounded-xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-6 py-3 text-sm font-medium text-zinc-500 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all active:scale-95">
-                    <Upload className="h-4 w-4" />
-                    Select File...
-                  </button>
-                  <span className="text-xs text-zinc-500">No file selected</span>
-                </div>
-              </div>
+              <ImageUpload 
+                value={form.image} 
+                onChange={(val) => setForm({...form, image: val})} 
+                className="md:col-span-2"
+              />
             </div>
           </div>
 
-          {/* Optional Information Dropdown */}
           <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] overflow-hidden">
             <button 
               type="button"
@@ -451,7 +504,6 @@ export function CreateAssetContent() {
             )}
           </div>
 
-          {/* Order Related Information Dropdown */}
           <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] overflow-hidden">
             <button 
               type="button"
@@ -529,23 +581,37 @@ export function CreateAssetContent() {
                   <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                     <DollarSign className="h-3 w-3" /> Purchase Cost
                   </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">$</span>
-                    <input 
-                      type="number" 
-                      step="0.01"
-                      placeholder="0.00"
-                      className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-8 pr-4 py-3 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
-                      value={form.purchaseCost}
-                      onChange={(e) => setForm({...form, purchaseCost: e.target.value})}
-                    />
+                  <div className="flex flex-col gap-3">
+                    <div className="relative">
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500/50" />
+                      <select 
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner appearance-none"
+                        value={activeCurrency}
+                        onChange={(e) => handleCurrencyChange(e.target.value)}
+                      >
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="KHR">KHR - Cambodian Riel</option>
+                      </select>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 font-bold text-lg">{currencySymbol}</span>
+                      <input 
+                        type="number" 
+                        step="0.01"
+                        placeholder={activeCurrency}
+                        className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-10 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
+                        value={form.purchaseCost}
+                        onChange={(e) => setForm({...form, purchaseCost: e.target.value})}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Footer Actions */}
           <div className="flex flex-col gap-6 items-end mt-4">
             <div className="flex flex-col gap-2 w-full md:w-64">
               <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-2">
@@ -582,7 +648,7 @@ export function CreateAssetContent() {
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
-                Save Asset
+                Save {assetItems.length > 1 ? `${assetItems.length} Assets` : "Asset"}
               </button>
             </div>
           </div>

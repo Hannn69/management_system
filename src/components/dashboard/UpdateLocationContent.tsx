@@ -2,10 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { QuickCreateLocationModal } from "@/components/dashboard/QuickCreateLocationModal";
+import { QuickCreateUserModal } from "@/components/dashboard/QuickCreateUserModal";
 import { 
   MapPin, 
   ChevronDown, 
-  Plus, 
   Building2, 
   User, 
   Phone, 
@@ -13,11 +16,12 @@ import {
   Coins, 
   Home, 
   Globe2, 
+  Milestone, 
   FileText, 
-  Upload, 
   X, 
   Save, 
-  ArrowLeft 
+  ArrowLeft,
+  Plus
 } from "lucide-react";
 
 interface UpdateLocationContentProps {
@@ -26,53 +30,76 @@ interface UpdateLocationContentProps {
 
 export function UpdateLocationContent({ id }: UpdateLocationContentProps) {
   const router = useRouter();
+  const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [quickCreateUserOpen, setQuickCreateUserOpen] = useState(false);
 
   const [companies, setCompanies] = useState<any[]>([]);
   const [parentLocations, setParentLocations] = useState<any[]>([]);
+  const [managers, setManagers] = useState<any[]>([]);
+
+  // Currency Logic
+  const [activeCurrency, setActiveCurrency] = useState("USD");
+  const [currencyPlaceholder, setCurrencyPlaceholder] = useState("e.g. KHR");
+  const [currencySymbol, setCurrencySymbol] = useState("");
 
   const [form, setForm] = useState({
     name: "",
-    companyId: "",
     parentId: "",
     managerId: "",
+    companyId: "",
     phone: "",
-    fax: "",
-    currency: "",
+    currency: "", // Start empty
     address: "",
     address2: "",
     city: "",
-    state: "",
+    state: "", // Province
     country: "",
     zip: "",
     notes: "",
+    image: null as string | null,
   });
 
   const fetchData = useCallback(async () => {
     try {
       const fetchOpts = { credentials: "include" as const };
-      const [compRes, locsRes, currentLocRes] = await Promise.all([
+      const [compRes, locRes, userRes, currentLocRes] = await Promise.all([
         fetch(`${apiBase}/companies`, fetchOpts),
         fetch(`${apiBase}/locations`, fetchOpts),
+        fetch(`${apiBase}/auth/users`, fetchOpts),
         fetch(`${apiBase}/locations/${id}`, fetchOpts),
       ]);
 
       if (compRes.ok) setCompanies((await compRes.json()).records || []);
-      if (locsRes.ok) setParentLocations((await locsRes.json()).records || []);
+      if (locRes.ok) setParentLocations((await locRes.json()).records || []);
+      if (userRes.ok) setManagers((await userRes.json()).records || []);
       
       if (currentLocRes.ok) {
         const { record } = await currentLocRes.json();
+        const c = record.currency || "";
+        
+        // Initialize indicators
+        if (c === "USD") {
+          setCurrencyPlaceholder("USD");
+          setCurrencySymbol("$");
+          setActiveCurrency("USD");
+        } else if (c === "KHR") {
+          setCurrencyPlaceholder("KHR");
+          setCurrencySymbol("៛");
+          setActiveCurrency("KHR");
+        }
+
         setForm({
           name: record.name || "",
-          companyId: record.companyId?.toString() || "",
           parentId: record.parentId?.toString() || "",
           managerId: record.managerId?.toString() || "",
+          companyId: record.companyId?.toString() || "",
           phone: record.phone || "",
-          fax: record.fax || "",
-          currency: record.currency || "",
+          currency: c,
           address: record.address || "",
           address2: record.address2 || "",
           city: record.city || "",
@@ -80,6 +107,7 @@ export function UpdateLocationContent({ id }: UpdateLocationContentProps) {
           country: record.country || "",
           zip: record.zip || "",
           notes: record.notes || "",
+          image: record.image || null,
         });
       }
     } catch (err) {
@@ -93,9 +121,29 @@ export function UpdateLocationContent({ id }: UpdateLocationContentProps) {
     fetchData();
   }, [fetchData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+  const handleCurrencySelection = (newCurrency: string) => {
+    if (!newCurrency) return;
+
+    const currentVal = parseFloat(form.currency);
+    
+    // 1. Perform Conversion if numeric value exists
+    if (!isNaN(currentVal)) {
+      let converted = currentVal;
+      if (activeCurrency === "USD" && newCurrency === "KHR") {
+        converted = currentVal * 4000;
+      } else if (activeCurrency === "KHR" && newCurrency === "USD") {
+        converted = currentVal / 4000;
+      }
+      const finalVal = newCurrency === "KHR" ? Math.round(converted).toString() : converted.toFixed(2);
+      setForm(prev => ({ ...prev, currency: finalVal }));
+    } else {
+      setForm(prev => ({ ...prev, currency: "" }));
+    }
+
+    // 2. Update Indicators
+    setCurrencyPlaceholder(newCurrency);
+    setCurrencySymbol(newCurrency === "USD" ? "$" : "៛");
+    setActiveCurrency(newCurrency);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,8 +152,11 @@ export function UpdateLocationContent({ id }: UpdateLocationContentProps) {
     setError(null);
 
     try {
+      const finalCurrency = form.currency || (currencyPlaceholder !== "e.g. KHR" ? currencyPlaceholder : "");
+
       const payload = {
         ...form,
+        currency: finalCurrency,
         companyId: form.companyId ? Number(form.companyId) : null,
         parentId: form.parentId ? Number(form.parentId) : null,
         managerId: form.managerId ? Number(form.managerId) : null,
@@ -123,9 +174,12 @@ export function UpdateLocationContent({ id }: UpdateLocationContentProps) {
         throw new Error(data.message || "Failed to update location");
       }
 
+      push("Location updated successfully!", "success");
       router.push("/locations");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMsg = err instanceof Error ? err.message : "An error occurred";
+      setError(errorMsg);
+      push(errorMsg, "error");
     } finally {
       setLoading(false);
     }
@@ -145,7 +199,7 @@ export function UpdateLocationContent({ id }: UpdateLocationContentProps) {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/locations")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all"
+            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -161,160 +215,174 @@ export function UpdateLocationContent({ id }: UpdateLocationContentProps) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 pb-12">
           <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
-              <div className="space-y-6">
+              {/* Left Column */}
+              <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Location Name</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Location Name</label>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
                     <input 
-                      required 
+                      required
                       type="text" 
-                      name="name"
+                      placeholder="e.g. Headquarters"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
                       value={form.name}
-                      onChange={handleChange}
-                      placeholder="e.g. Headquarters, North Warehouse" 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-inner" 
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Parent Location</label>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <select 
-                          name="parentId"
-                          value={form.parentId}
-                          onChange={handleChange}
-                          className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#1a1b1e] pl-4 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none"
-                        >
-                          <option value="" className="bg-white dark:bg-[#111216]">No Parent</option>
-                          {parentLocations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
-                      </div>
-                      <button type="button" onClick={() => router.push("/locations/create")} className="p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-emerald-500 hover:bg-emerald-500/10 transition-all">
-                        <Plus className="h-4 w-4" />
-                      </button>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Parent Location</label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500/50" />
+                      <select 
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner appearance-none"
+                        value={form.parentId}
+                        onChange={(e) => setForm({ ...form, parentId: e.target.value })}
+                      >
+                        <option value="" className="bg-white dark:bg-[#111216]">Select Parent Location</option>
+                        {parentLocations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
+                      </select>
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Manager</label>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                        <select 
-                          name="managerId"
-                          value={form.managerId}
-                          onChange={handleChange}
-                          className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none"
-                        >
-                          <option value="" className="bg-white dark:bg-[#111216]">Select Manager</option>
-                          <option value="1" className="bg-white dark:bg-[#111216]">Admin User</option>
-                        </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
-                      </div>
-                      <button type="button" className="p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-emerald-500 hover:bg-emerald-500/10 transition-all">
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setQuickCreateOpen(true)}
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-lg active:scale-95"
+                      title="New Location"
+                    >
+                      <Plus className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Company</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Manager</label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
+                      <select 
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/50 transition-all shadow-inner appearance-none"
+                        value={form.managerId}
+                        onChange={(e) => setForm({ ...form, managerId: e.target.value })}
+                      >
+                        <option value="" className="bg-white dark:bg-[#111216]">Select Manager</option>
+                        {managers.map(m => (
+                          <option key={m.id} value={m.id} className="bg-white dark:bg-[#111216]">
+                            {m.firstName || m.username || m.email} {m.lastName || ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setQuickCreateUserOpen(true)}
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-orange-600/10 text-orange-400 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-lg active:scale-95"
+                      title="New Manager"
+                    >
+                      <Plus className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Company</label>
                   <div className="relative">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
+                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                     <select 
-                      name="companyId"
+                      required
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner appearance-none"
                       value={form.companyId}
-                      onChange={handleChange}
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#1a1b1e] pl-12 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none"
+                      onChange={(e) => setForm({ ...form, companyId: e.target.value })}
                     >
                       <option value="" className="bg-white dark:bg-[#111216]">Select Company</option>
                       {companies.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#111216]">{c.name}</option>)}
                     </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
-                    <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
-                      <input 
-                        type="tel" 
-                        name="phone"
-                        value={form.phone}
-                        onChange={handleChange}
-                        placeholder="+1..." 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20" 
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Fax</label>
-                    <div className="relative">
-                      <Printer className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
-                      <input 
-                        type="tel" 
-                        name="fax"
-                        value={form.fax}
-                        onChange={handleChange}
-                        placeholder="Fax..." 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20" 
-                      />
-                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Location Currency</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
                   <div className="relative">
-                    <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
                     <input 
-                      type="text" 
-                      name="currency"
-                      value={form.currency}
-                      onChange={handleChange}
-                      placeholder="USD, EUR, GBP..." 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20" 
+                      type="tel" 
+                      placeholder="Site phone"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
                     />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Currency</label>
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500/50" />
+                      <select 
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner appearance-none"
+                        value={activeCurrency}
+                        onChange={(e) => handleCurrencySelection(e.target.value)}
+                      >
+                        <option value="">Quick Select Suggestions...</option>
+                        <option value="KHR">KHR - Cambodian Riel</option>
+                        <option value="USD">USD - US Dollar</option>
+                      </select>
+                    </div>
+
+                    <div className="relative">
+                      <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
+                      <input 
+                        type="text" 
+                        placeholder={currencyPlaceholder}
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-12 py-3.5 text-sm text-foreground placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner"
+                        value={form.currency}
+                        onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })}
+                      />
+                      {currencySymbol && (
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold text-amber-500 pointer-events-none animate-in fade-in zoom-in duration-300">
+                          {currencySymbol}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-6">
+              {/* Right Column */}
+              <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Address</label>
-                  <div className="space-y-3 p-4 rounded-2xl border-2 border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02]">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Address</label>
+                  <div className="space-y-3">
                     <div className="relative">
-                      <Home className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+                      <Home className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
                       <input 
                         type="text" 
-                        name="address"
+                        placeholder="Address Line 1"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
                         value={form.address}
-                        onChange={handleChange}
-                        placeholder="Street Address 1" 
-                        className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-2.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-all" 
+                        onChange={(e) => setForm({ ...form, address: e.target.value })}
                       />
                     </div>
                     <div className="relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 border border-zinc-600 rounded-sm" />
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 border border-rose-500/30 rounded-full flex items-center justify-center">
+                        <div className="h-1 w-1 bg-rose-500/30 rounded-full" />
+                      </div>
                       <input 
                         type="text" 
-                        name="address2"
+                        placeholder="Address Line 2"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
                         value={form.address2}
-                        onChange={handleChange}
-                        placeholder="Street Address 2 / Suite / Floor" 
-                        className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-2.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-all" 
+                        onChange={(e) => setForm({ ...form, address2: e.target.value })}
                       />
                     </div>
                   </div>
@@ -322,83 +390,68 @@ export function UpdateLocationContent({ id }: UpdateLocationContentProps) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">City</label>
-                    <input 
-                      type="text" 
-                      name="city"
-                      value={form.city}
-                      onChange={handleChange}
-                      placeholder="City" 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none" 
-                    />
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">City</label>
+                    <div className="relative">
+                      <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-violet-500" />
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Phnom Penh"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
+                        value={form.city}
+                        onChange={(e) => setForm({ ...form, city: e.target.value })}
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">State / Province</label>
-                    <input 
-                      type="text" 
-                      name="state"
-                      value={form.state}
-                      onChange={handleChange}
-                      placeholder="State" 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none" 
-                    />
+                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Province</label>
+                    <div className="relative">
+                      <Milestone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
+                      <input 
+                        type="text" 
+                        placeholder="Province"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                        value={form.state}
+                        onChange={(e) => setForm({ ...form, state: e.target.value })}
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Country</label>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Country</label>
+                  <div className="relative">
+                    <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
                     <input 
                       type="text" 
-                      name="country"
+                      placeholder="e.g. Cambodia"
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner"
                       value={form.country}
-                      onChange={handleChange}
-                      placeholder="Country"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Zip / Postal Code</label>
-                    <input 
-                      type="text" 
-                      name="zip"
-                      value={form.zip}
-                      onChange={handleChange}
-                      placeholder="Zip" 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none" 
+                      onChange={(e) => setForm({ ...form, country: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Upload Image</label>
-                  <div className="flex items-center gap-4 p-4 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5">
-                    <div className="h-12 w-12 rounded-xl bg-zinc-200 dark:bg-white/5 flex items-center justify-center border border-zinc-200 dark:border-white/10 overflow-hidden">
-                      <Upload className="h-5 w-5 text-zinc-500" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-zinc-400 mb-2 font-medium">Update location photo...</p>
-                      <button type="button" className="px-4 py-1.5 rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-[11px] font-bold text-zinc-500 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all">
-                        Select File...
-                      </button>
-                    </div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Internal Notes</label>
+                  <div className="relative">
+                    <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-500" />
+                    <textarea 
+                      placeholder="Any additional information..."
+                      rows={3}
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500/50 transition-all shadow-inner resize-none"
+                      value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    />
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="mt-8 space-y-2">
-              <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes</label>
-              <div className="relative">
-                <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-600" />
-                <textarea 
-                  rows={3} 
-                  name="notes"
-                  value={form.notes}
-                  onChange={handleChange}
-                  placeholder="Additional location notes or instructions..." 
-                  className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none resize-none shadow-inner" 
-                />
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Location Image</label>
+                  <ImageUpload 
+                    value={form.image}
+                    onChange={(url) => setForm({ ...form, image: url })}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -407,7 +460,7 @@ export function UpdateLocationContent({ id }: UpdateLocationContentProps) {
             <button 
               type="button"
               onClick={() => router.push("/locations")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-90"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>
@@ -415,17 +468,38 @@ export function UpdateLocationContent({ id }: UpdateLocationContentProps) {
             <button 
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.5)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.5)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
             >
               {loading ? (
                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              <span>{loading ? 'Updating...' : 'Update Location'}</span>
+              <span>{loading ? 'Processing...' : 'Save Location'}</span>
             </button>
           </div>
         </form>
+
+        <QuickCreateLocationModal 
+          open={quickCreateOpen}
+          onClose={() => setQuickCreateOpen(false)}
+          companies={companies}
+          onSuccess={(newLoc) => {
+            setParentLocations(prev => [newLoc, ...prev]);
+            setForm(prev => ({ ...prev, parentId: newLoc.id.toString() }));
+          }}
+        />
+
+        <QuickCreateUserModal 
+          open={quickCreateUserOpen}
+          onClose={() => setQuickCreateUserOpen(false)}
+          companies={companies}
+          locations={parentLocations}
+          onSuccess={(newUser) => {
+            setManagers(prev => [newUser, ...prev]);
+            setForm(prev => ({ ...prev, managerId: newUser.id.toString() }));
+          }}
+        />
       </div>
     </main>
   );

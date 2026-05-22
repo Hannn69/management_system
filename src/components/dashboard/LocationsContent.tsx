@@ -133,115 +133,93 @@ export function LocationsContent() {
             <TableHeader className="bg-white/5 sticky top-0 z-10">
               <TableRow className="border-white/10 hover:bg-transparent">
                 <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500">Name</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Parent</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">People</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Current Location</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assign Asset</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Accessories</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assign Accessories</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Components</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Consumables</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Child Location</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Currency</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Image</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Parent</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Currency</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">People</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assets</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Accessories</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Components</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Consumables</TableHead>
                 <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Address</TableHead>
-                <TableHead onClick={() => setSort("city")} className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500">City</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">State</TableHead>
+                <TableHead onClick={() => setSort("city")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500">City</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Province</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Country</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Zip</TableHead>
                 <TableHead className="w-[100px] px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-white/5">
               {decoratedRecords.map((record) => (
-                <TableRow 
-                  key={record.id} 
-                  className="border-white/5 transition-colors hover:bg-white/[0.03]"
-                >
-                  <TableCell className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${record.accent} text-black shadow-[0_10px_20px_-5px_rgba(0,0,0,0.5)]`}>
-                        <MapPin className="h-5 w-5" />
+                  <TableRow 
+                    key={record.id} 
+                    className="border-white/5 transition-colors hover:bg-white/[0.03]"
+                  >
+                    <TableCell className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${record.accent} text-black shadow-[0_10px_20px_-5px_rgba(0,0,0,0.5)]`}>
+                          <MapPin className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-zinc-100">{record.name}</p>
+                          <p className="text-[10px] text-zinc-500 font-mono tracking-tight">{record.slug}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-zinc-100">{record.name}</p>
-                        <p className="text-[10px] text-zinc-500 font-mono tracking-tight">{record.slug}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4">
-                    <div className="flex items-center justify-center">
+                    </TableCell>
+                    <TableCell className="px-4 py-4">
                       {record.image ? (
-                        <img src={record.image} alt={record.name} className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/10" />
+                        <img src={record.image} alt="" className="h-10 w-10 rounded-xl object-cover border border-white/10 shadow-lg" />
                       ) : (
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10`}>
-                          <ImageIcon className="h-5 w-5 text-zinc-600" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-dashed border-white/10">
+                          <ImageIcon className="h-4 w-4 text-zinc-600" />
                         </div>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400 font-medium">{record.parent}</TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-bold text-indigo-400 border border-indigo-500/20">
-                      {record.people}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400">{record.currentLocation}</TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/20">
-                      {record.assignAsset}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-400 border border-amber-500/20">
-                      {record.accessories}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-orange-500/10 px-2.5 py-1 text-xs font-bold text-orange-400 border border-orange-500/20">
-                      {record.assignAccessories}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-purple-500/10 px-2.5 py-1 text-xs font-bold text-purple-400 border border-purple-500/20">
-                      {record.components}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-400 border border-rose-500/20">
-                      {record.consumables}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-400 border border-blue-500/20">
-                      {record.childLocation}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs font-black text-zinc-300">{record.currency}</TableCell>
-                  <TableCell className="px-4 py-4 text-xs text-zinc-500 italic">{record.address}</TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400">{record.city}</TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400">{record.state}</TableCell>
-                  <TableCell className="px-4 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-2 rounded-xl text-zinc-500 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all active:scale-90" title="Clone Item">
-                        <Copy className="h-4 w-4" />
-                      </button>
-                      <button 
-                        onClick={() => router.push(`/locations/${record.id}/edit`)}
-                        className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
-                        title="Edit"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button 
-                        onClick={() => setItemToDelete(record)}
-                        className="p-2 rounded-xl text-zinc-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all active:scale-90" 
-                        title="Delete"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </button>
-                    </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-4">
+                      {record.parent ? (
+                        <span className="text-xs text-emerald-400 font-medium">{record.parent.name}</span>
+                      ) : (
+                        <span className="text-xs text-zinc-600">Root</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-400 font-mono uppercase">{record.currency || "USD"}</TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-400">{record.people || 0}</TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-400">{record.assignAsset || 0}</TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-400">{record.accessories || 0}</TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-400">{record.components || 0}</TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-400">{record.consumables || 0}</TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-500 italic max-w-[200px] truncate">{record.address}</TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-400">{record.city}</TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-400">{record.state}</TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-400">{record.country}</TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-zinc-400">{record.zip}</TableCell>
+                    <TableCell className="px-4 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => router.push(`/locations/${record.id}/edit`)}
+                          className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
+                          title="Edit"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button 
+                          onClick={() => setItemToDelete(record)}
+                          className="p-2 rounded-xl text-zinc-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all active:scale-90" 
+                          title="Delete"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+              ))}
+              {records.length === 0 && (
+                <TableRow className="border-white/10">
+                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={15}>
+                    {loading ? "Loading..." : "No locations found."}
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>

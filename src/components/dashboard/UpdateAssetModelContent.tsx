@@ -3,19 +3,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { QuickCreateCategoryModal } from "@/components/dashboard/QuickCreateCategoryModal";
+import { QuickCreateManufacturerModal } from "@/components/dashboard/QuickCreateManufacturerModal";
 import { 
   Package, 
   Tag, 
   Factory, 
   Hash, 
-  TrendingDown, 
   Inbox, 
   Barcode, 
   CalendarClock, 
-  ClipboardList, 
   FileText, 
   UserCheck, 
-  Upload, 
   X, 
   Save, 
   ArrowLeft,
@@ -35,6 +35,9 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [quickCreateCategoryOpen, setQuickCreateCategoryOpen] = useState(false);
+  const [quickCreateManufacturerOpen, setQuickCreateManufacturerOpen] = useState(false);
+
   const [categories, setCategories] = useState<any[]>([]);
   const [manufacturers, setManufacturers] = useState<any[]>([]);
 
@@ -48,6 +51,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
     notes: "",
     isRequestable: false,
     requireSerialNumber: false,
+    image: null as string | null,
   });
 
   const fetchData = useCallback(async () => {
@@ -74,6 +78,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
           notes: record.notes || "",
           isRequestable: record.isRequestable || false,
           requireSerialNumber: record.requireSerialNumber || false,
+          image: record.image || null,
         });
       }
     } catch (err) {
@@ -148,7 +153,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/asset-models")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg"
+            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -164,8 +169,8 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/[0.04] p-8 shadow-2xl backdrop-blur-xl">
+        <form onSubmit={handleSubmit} className="space-y-6 pb-12">
+          <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl backdrop-blur-xl">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
               
               <div className="space-y-6">
@@ -180,7 +185,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                       value={form.name}
                       onChange={handleChange}
                       placeholder="e.g. MacBook Pro M3, ThinkPad X1" 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all" 
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner" 
                     />
                   </div>
                 </div>
@@ -195,15 +200,20 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                         name="categoryId"
                         value={form.categoryId}
                         onChange={handleChange}
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none shadow-inner"
                       >
                         <option value="" className="bg-white dark:bg-[#111216]">Select Category</option>
                         {categories.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#111216]">{c.name}</option>)}
                       </select>
                       <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
                     </div>
-                    <button type="button" onClick={() => router.push("/categories/create")} className="p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-amber-500 hover:bg-amber-500/10 transition-all">
-                      <Plus className="h-4 w-4" />
+                    <button 
+                      type="button" 
+                      onClick={() => setQuickCreateCategoryOpen(true)}
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-cyan-600/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-600/20 transition-all shadow-lg active:scale-95"
+                      title="New Category"
+                    >
+                      <Plus className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
@@ -218,15 +228,20 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                         name="manufacturerId"
                         value={form.manufacturerId}
                         onChange={handleChange}
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none"
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none shadow-inner"
                       >
                         <option value="" className="bg-white dark:bg-[#111216]">Select Manufacturer</option>
                         {manufacturers.map(m => <option key={m.id} value={m.id} className="bg-white dark:bg-[#111216]">{m.name}</option>)}
                       </select>
                       <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
                     </div>
-                    <button type="button" onClick={() => router.push("/manufacturers/create")} className="p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-amber-500 hover:bg-amber-500/10 transition-all">
-                      <Plus className="h-4 w-4" />
+                    <button 
+                      type="button" 
+                      onClick={() => setQuickCreateManufacturerOpen(true)}
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600/20 transition-all shadow-lg active:scale-95"
+                      title="New Manufacturer"
+                    >
+                      <Plus className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
@@ -241,7 +256,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                       value={form.modelNumber}
                       onChange={handleChange}
                       placeholder="Model No." 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none" 
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none shadow-inner" 
                     />
                   </div>
                 </div>
@@ -259,24 +274,9 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                         value={form.minQty}
                         onChange={handleChange}
                         placeholder="0" 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none" 
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none shadow-inner" 
                       />
                     </div>
-                    <label className="flex items-center gap-3 cursor-pointer group mt-3 ml-1">
-                      <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-                        <input 
-                          type="checkbox" 
-                          name="requireSerialNumber"
-                          checked={form.requireSerialNumber}
-                          onChange={handleChange}
-                          className="w-4 h-4 rounded border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-amber-600 focus:ring-amber-500/20" 
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Barcode className="h-3.5 w-3.5 text-zinc-500" />
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 group-hover:text-foreground dark:group-hover:text-zinc-200 transition-colors">Require Serial Number</span>
-                      </div>
-                    </label>
                   </div>
 
                   <div className="space-y-2">
@@ -289,7 +289,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                         value={form.eolMonths}
                         onChange={handleChange}
                         placeholder="Months" 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none" 
+                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none shadow-inner" 
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-tighter">Months</span>
                     </div>
@@ -297,18 +297,11 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Update Model Image</label>
-                  <div className="flex items-center gap-4 p-4 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5">
-                    <div className="h-12 w-12 rounded-xl bg-zinc-200 dark:bg-white/5 flex items-center justify-center border border-zinc-300 dark:border-white/10 overflow-hidden">
-                      <Upload className="h-5 w-5 text-zinc-500" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 font-medium">Select new photo...</p>
-                      <button type="button" className="px-4 py-1.5 rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-[11px] font-bold text-foreground dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-white/10 transition-all">
-                        Select File...
-                      </button>
-                    </div>
-                  </div>
+                  <ImageUpload 
+                    value={form.image} 
+                    onChange={(val) => setForm({...form, image: val})} 
+                    label="Update Model Image"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -321,10 +314,28 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                       value={form.notes}
                       onChange={handleChange}
                       placeholder="Technical specifications, model variations or other info..." 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none resize-none" 
+                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none resize-none shadow-inner" 
                     />
                   </div>
-                  <label className="flex items-center gap-3 cursor-pointer group pt-2 ml-1">
+                </div>
+
+                <div className="flex items-center gap-6 pt-2">
+                   <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+                        <input 
+                          type="checkbox" 
+                          name="requireSerialNumber"
+                          checked={form.requireSerialNumber}
+                          onChange={handleChange}
+                          className="w-4 h-4 rounded border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-amber-600 focus:ring-amber-500/20" 
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Barcode className="h-3.5 w-3.5 text-zinc-500" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 group-hover:text-foreground dark:group-hover:text-zinc-200 transition-colors">Require Serial</span>
+                      </div>
+                   </label>
+                   <label className="flex items-center gap-3 cursor-pointer group">
                     <div className="flex h-5 w-5 shrink-0 items-center justify-center">
                       <input 
                         type="checkbox" 
@@ -336,7 +347,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                     </div>
                     <div className="flex items-center gap-2">
                       <UserCheck className="h-3.5 w-3.5 text-zinc-500" />
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 group-hover:text-foreground dark:group-hover:text-zinc-200 transition-colors">Users may request this model</span>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 group-hover:text-foreground dark:group-hover:text-zinc-200 transition-colors">Requestable</span>
                     </div>
                   </label>
                 </div>
@@ -367,6 +378,24 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
             </button>
           </div>
         </form>
+
+        <QuickCreateCategoryModal 
+          open={quickCreateCategoryOpen}
+          onClose={() => setQuickCreateCategoryOpen(false)}
+          onSuccess={(newCat) => {
+            setCategories(prev => [newCat, ...prev]);
+            setForm(prev => ({ ...prev, categoryId: newCat.id.toString() }));
+          }}
+        />
+
+        <QuickCreateManufacturerModal 
+          open={quickCreateManufacturerOpen}
+          onClose={() => setQuickCreateManufacturerOpen(false)}
+          onSuccess={(newMfr) => {
+            setManufacturers(prev => [newMfr, ...prev]);
+            setForm(prev => ({ ...prev, manufacturerId: newMfr.id.toString() }));
+          }}
+        />
       </div>
     </main>
   );

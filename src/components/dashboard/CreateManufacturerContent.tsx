@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { 
   Factory, 
   Globe, 
@@ -10,7 +11,6 @@ import {
   ShieldCheck, 
   Phone, 
   Mail, 
-  Upload, 
   FileText, 
   X, 
   Save, 
@@ -32,6 +32,7 @@ export function CreateManufacturerContent() {
     supportPhone: "",
     supportEmail: "",
     notes: "",
+    image: null as string | null,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -191,6 +192,14 @@ export function CreateManufacturerContent() {
                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
                     ></textarea>
                   </div>
+                </div>
+
+                <div className="pt-2">
+                  <ImageUpload 
+                    value={form.image}
+                    onChange={(val) => setForm({ ...form, image: val })}
+                    label="Manufacturer Image"
+                  />
                 </div>
               </div>
             </div>
