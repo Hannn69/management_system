@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { 
@@ -21,6 +21,8 @@ import {
 
 export function CreateSupplierContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,14 @@ export function CreateSupplierContent() {
     notes: "",
     image: null as string | null,
   });
+
+  const handleBack = () => {
+    if (returnTo) {
+      router.push(returnTo);
+    } else {
+      router.push("/suppliers");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +68,7 @@ export function CreateSupplierContent() {
       }
 
       push("Supplier created successfully!", "success");
-      router.push("/suppliers");
+      handleBack();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "An error occurred";
       setError(errorMsg);
@@ -73,7 +83,7 @@ export function CreateSupplierContent() {
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => router.push("/suppliers")}
+            onClick={handleBack}
             className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -239,8 +249,8 @@ export function CreateSupplierContent() {
           <div className="flex items-center justify-end gap-4 pt-2">
             <button 
               type="button"
-              onClick={() => router.push("/suppliers")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-90"
+              onClick={handleBack}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>

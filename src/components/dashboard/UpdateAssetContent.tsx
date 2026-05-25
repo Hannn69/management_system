@@ -43,6 +43,7 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
   const [isOrderOpen, setIsOrderOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [quickCreateUserOpen, setQuickCreateUserOpen] = useState(false);
   const [afterSaveAction, setAfterSaveAction] = useState("all-assets");
   const [error, setError] = useState<string | null>(null);
 
@@ -300,7 +301,7 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                     <option value="" className="bg-white dark:bg-[#111216]">Select Model</option>
                     {models.map(m => <option key={m.id} value={m.id} className="bg-white dark:bg-[#111216]">{m.name}</option>)}
                   </select>
-                  <button type="button" onClick={() => router.push("/asset-models/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button type="button" onClick={() => router.push("/asset-models/create?returnTo=" + window.location.pathname)} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
@@ -321,7 +322,7 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                   </select>
                   <button 
                     type="button" 
-                    onClick={() => router.push("/status-labels/create")}
+                    onClick={() => router.push("/status-labels/create?returnTo=" + window.location.pathname)}
                     className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95"
                   >
                     NEW
@@ -342,7 +343,11 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                     <option value="" className="bg-white dark:bg-[#111216]">Select User</option>
                     {users.map(u => <option key={u.id} value={u.id} className="bg-white dark:bg-[#111216]">{u.email}</option>)}
                   </select>
-                  <button type="button" className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button 
+                    type="button" 
+                    onClick={() => setQuickCreateUserOpen(true)}
+                    className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95"
+                  >
                     NEW
                   </button>
                 </div>
@@ -361,7 +366,7 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                     <option value="" className="bg-white dark:bg-[#111216]">Select Location</option>
                     {locations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
                   </select>
-                  <button type="button" onClick={() => router.push("/locations/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button type="button" onClick={() => router.push("/locations/create?returnTo=" + window.location.pathname)} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
@@ -554,9 +559,10 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
                       <option value="" className="bg-white dark:bg-[#111216]">Select Supplier</option>
                       {suppliers.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-[#111216]">{s.name}</option>)}
                     </select>
-                    <button type="button" onClick={() => router.push("/suppliers/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                    <button type="button" onClick={() => router.push("/suppliers/create?returnTo=" + window.location.pathname)} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                       NEW
                     </button>
+
                   </div>
                 </div>
 
@@ -636,6 +642,17 @@ export function UpdateAssetContent({ id }: UpdateAssetContentProps) {
             </div>
           </div>
         </form>
+
+        <QuickCreateUserModal 
+          open={quickCreateUserOpen}
+          onClose={() => setQuickCreateUserOpen(false)}
+          companies={companies}
+          locations={locations}
+          onSuccess={(newUser: any) => {
+            setUsers(prev => [newUser, ...prev]);
+            setForm(prev => ({ ...prev, checkedOutUserId: newUser.id.toString() }));
+          }}
+        />
       </div>
     </main>
   );

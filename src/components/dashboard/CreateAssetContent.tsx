@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { QuickCreateUserModal } from "@/components/dashboard/QuickCreateUserModal";
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -37,6 +38,7 @@ export function CreateAssetContent() {
   const [isOptionalOpen, setIsOptionalOpen] = useState(false);
   const [isOrderOpen, setIsOrderOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [quickCreateUserOpen, setQuickCreateUserOpen] = useState(false);
   const [afterSaveAction, setAfterSaveAction] = useState("all-assets");
   const [error, setError] = useState<string | null>(null);
 
@@ -267,7 +269,7 @@ export function CreateAssetContent() {
                     <option value="" className="bg-white dark:bg-[#111216]">Select Model</option>
                     {models.map(m => <option key={m.id} value={m.id} className="bg-white dark:bg-[#111216]">{m.name}</option>)}
                   </select>
-                  <button type="button" onClick={() => router.push("/asset-models/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button type="button" onClick={() => router.push("/asset-models/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
@@ -340,7 +342,7 @@ export function CreateAssetContent() {
                     <option value="" className="bg-white dark:bg-[#111216]">Select Status</option>
                     {statuses.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-[#111216]">{s.name}</option>)}
                   </select>
-                  <button type="button" onClick={() => router.push("/status-labels/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button type="button" onClick={() => router.push("/status-labels/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
@@ -359,7 +361,11 @@ export function CreateAssetContent() {
                     <option value="" className="bg-white dark:bg-[#111216]">Select User</option>
                     {users.map(u => <option key={u.id} value={u.id} className="bg-white dark:bg-[#111216]">{u.email}</option>)}
                   </select>
-                  <button type="button" className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button 
+                    type="button" 
+                    onClick={() => setQuickCreateUserOpen(true)}
+                    className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95"
+                  >
                     NEW
                   </button>
                 </div>
@@ -378,7 +384,7 @@ export function CreateAssetContent() {
                     <option value="" className="bg-white dark:bg-[#111216]">Select Location</option>
                     {locations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
                   </select>
-                  <button type="button" onClick={() => router.push("/locations/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button type="button" onClick={() => router.push("/locations/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
@@ -571,16 +577,17 @@ export function CreateAssetContent() {
                       <option value="" className="bg-white dark:bg-[#111216]">Select Supplier</option>
                       {suppliers.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-[#111216]">{s.name}</option>)}
                     </select>
-                    <button type="button" onClick={() => router.push("/suppliers/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                    <button type="button" onClick={() => router.push("/suppliers/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                       NEW
                     </button>
-                  </div>
-                </div>
+                    </div>
+                    </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                    <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                     <DollarSign className="h-3 w-3" /> Purchase Cost
-                  </label>
+                    </label>
+
                   <div className="flex flex-col gap-3">
                     <div className="relative">
                       <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
@@ -653,6 +660,17 @@ export function CreateAssetContent() {
             </div>
           </div>
         </form>
+
+        <QuickCreateUserModal 
+          open={quickCreateUserOpen}
+          onClose={() => setQuickCreateUserOpen(false)}
+          companies={companies}
+          locations={locations}
+          onSuccess={(newUser) => {
+            setUsers(prev => [newUser, ...prev]);
+            setForm(prev => ({ ...prev, checkedOutUserId: newUser.id.toString() }));
+          }}
+        />
       </div>
     </main>
   );

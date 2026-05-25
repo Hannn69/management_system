@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { QuickCreateLocationModal } from "@/components/dashboard/QuickCreateLocationModal";
@@ -12,7 +12,6 @@ import {
   Building2, 
   User, 
   Phone, 
-  Printer, 
   Coins, 
   Home, 
   Globe2, 
@@ -26,6 +25,8 @@ import {
 
 export function CreateLocationContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
@@ -65,7 +66,7 @@ export function CreateLocationContent() {
       const [compRes, locRes, userRes] = await Promise.all([
         fetch(`${apiBase}/companies`, fetchOpts),
         fetch(`${apiBase}/locations`, fetchOpts),
-        fetch(`${apiBase}/auth/users`, fetchOpts),
+        fetch(`${apiBase}/users`, fetchOpts),
       ]);
 
       if (compRes.ok) setCompanies((await compRes.json()).records || []);
@@ -79,6 +80,14 @@ export function CreateLocationContent() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleBack = () => {
+    if (returnTo) {
+      router.push(returnTo);
+    } else {
+      router.push("/locations");
+    }
+  };
 
   const handleCurrencySelection = (newCurrency: string) => {
     if (!newCurrency) return;
@@ -136,7 +145,7 @@ export function CreateLocationContent() {
       }
 
       push("Location created successfully!", "success");
-      router.push("/locations");
+      handleBack();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "An error occurred";
       setError(errorMsg);
@@ -151,7 +160,7 @@ export function CreateLocationContent() {
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => router.push("/locations")}
+            onClick={handleBack}
             className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -412,8 +421,8 @@ export function CreateLocationContent() {
           <div className="flex items-center justify-end gap-4 pt-2">
             <button 
               type="button"
-              onClick={() => router.push("/locations")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-90"
+              onClick={handleBack}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>

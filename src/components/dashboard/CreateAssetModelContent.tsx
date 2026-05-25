@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { QuickCreateCategoryModal } from "@/components/dashboard/QuickCreateCategoryModal";
@@ -24,6 +24,8 @@ import {
 
 export function CreateAssetModelContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
@@ -67,6 +69,14 @@ export function CreateAssetModelContent() {
     fetchData();
   }, [fetchData]);
 
+  const handleBack = () => {
+    if (returnTo) {
+      router.push(returnTo);
+    } else {
+      router.push("/asset-models");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -102,7 +112,7 @@ export function CreateAssetModelContent() {
       }
 
       push("Asset Model created successfully!", "success");
-      router.push("/asset-models");
+      handleBack();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "An error occurred";
       setError(errorMsg);
@@ -117,7 +127,7 @@ export function CreateAssetModelContent() {
       <div className="mx-auto w-full max-w-[1380px] flex flex-1 flex-col gap-6">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => router.push("/asset-models")}
+            onClick={handleBack}
             className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -305,7 +315,7 @@ export function CreateAssetModelContent() {
           <div className="flex items-center justify-end gap-4 pt-2">
             <button 
               type="button"
-              onClick={() => router.push("/asset-models")}
+              onClick={handleBack}
               className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
             >
               <X className="h-4 w-4" />

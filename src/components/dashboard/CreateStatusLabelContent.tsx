@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { Activity, ArrowLeft, FileText, Save, Tag, X } from "lucide-react";
 
 export function CreateStatusLabelContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [loading, setLoading] = useState(false);
@@ -16,6 +18,14 @@ export function CreateStatusLabelContent() {
     type: "Pending",
     notes: "",
   });
+
+  const handleBack = () => {
+    if (returnTo) {
+      router.push(returnTo);
+    } else {
+      router.push("/status-labels");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +46,7 @@ export function CreateStatusLabelContent() {
       }
 
       push("Status label created successfully!", "success");
-      router.push("/status-labels");
+      handleBack();
     } catch (err) {
       const errorMsg =
         err instanceof Error ? err.message : "An unexpected error occurred";
@@ -52,7 +62,7 @@ export function CreateStatusLabelContent() {
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => router.push("/status-labels")}
+            onClick={handleBack}
             className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-sm"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -143,7 +153,7 @@ export function CreateStatusLabelContent() {
           <div className="flex items-center justify-end gap-4 pt-2">
             <button
               type="button"
-              onClick={() => router.push("/status-labels")}
+              onClick={handleBack}
               className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-sm active:scale-95"
             >
               <X className="h-4 w-4" />

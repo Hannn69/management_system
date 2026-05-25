@@ -162,20 +162,21 @@ export function AssetsContent({
         />
 
         <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] shadow-sm dark:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
-          <Table className="min-w-[2400px]">
+          <Table className="min-w-[1800px]">
             <TableHeader className="bg-slate-50 dark:bg-white/5 sticky top-0 z-10">
               <TableRow className="border-zinc-200 dark:border-white/10 hover:bg-transparent">
-                <TableHead onClick={() => setSort("assetTag")} className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500 transition-colors">Asset Tag</TableHead>
-                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500 transition-colors">Asset Name</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
-                <TableHead onClick={() => setSort("serial")} className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500 transition-colors">Serial</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Model</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Category</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Status</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Checked Out To</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Location</TableHead>
-                <TableHead onClick={() => setSort("purchaseCost")} className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500 transition-colors">Purchase Cost</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Checkin/Checkout</TableHead>
+                <TableHead onClick={() => setSort("assetTag")} className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500 transition-colors w-[150px]">Asset Tag</TableHead>
+                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500 transition-colors min-w-[200px]">Asset Name</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center w-[80px]">Image</TableHead>
+                <TableHead onClick={() => setSort("serial")} className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500 transition-colors w-[150px]">Serial</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] w-[150px]">Model</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] w-[120px]">Category</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] w-[130px]">Status</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] w-[180px]">Checked Out To</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] w-[150px]">Location</TableHead>
+                <TableHead onClick={() => setSort("purchaseCost")} className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500 transition-colors w-[130px]">Purchase Cost</TableHead>
+                <TableHead className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] w-[130px]">Current Value</TableHead>
+                <TableHead className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] w-[150px]">Checkin/Checkout</TableHead>
                 <TableHead className="w-[180px] px-4 py-3 text-right text-zinc-600 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Action</TableHead>
               </TableRow>
             </TableHeader>
