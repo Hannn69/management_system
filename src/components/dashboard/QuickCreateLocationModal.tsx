@@ -13,6 +13,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -82,6 +83,9 @@ export function QuickCreateLocationModal({ open, onClose, onSuccess, companies }
               </div>
               Quick Create Location
             </DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              Enter the location details below to create a new location.
+            </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-5">

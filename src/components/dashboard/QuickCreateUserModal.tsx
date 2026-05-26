@@ -20,6 +20,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -116,6 +117,9 @@ export function QuickCreateUserModal({ open, onClose, onSuccess, companies, loca
               </div>
               Quick Create Manager
             </DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              Fill in the manager details below to add a new manager.
+            </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-6">

@@ -226,12 +226,7 @@ export function CreateAssetContent() {
 
   return (
     <main className="px-6 pb-12 pt-5">
-      <div className="mx-auto w-full max-w-4xl">
-        <div className="mb-8 flex flex-col gap-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#6e8a99]">Inventory</p>
-          <h2 className="text-3xl font-bold text-foreground">Create Asset</h2>
-        </div>
-
+      <div className="mx-auto flex w-full max-w-[1380px] flex-1 flex-col gap-6">
         {error && (
           <div className="mb-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
             {error}

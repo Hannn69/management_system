@@ -14,7 +14,6 @@ import {
   FileText, 
   X, 
   Save, 
-  ArrowLeft,
   Milestone,
   Globe2
 } from "lucide-react";
@@ -81,19 +80,6 @@ export function CreateSupplierContent() {
   return (
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={handleBack}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">Add New Supplier</h2>
-            <p className="text-zinc-400 text-sm">Register a new vendor for equipment procurement.</p>
-          </div>
-        </div>
-
         {error && (
           <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
             {error}

@@ -102,11 +102,6 @@ export function StatusLabelsContent() {
   return (
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto w-full max-w-full flex flex-1 flex-col gap-6">
-        <div className="flex flex-col gap-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#6e8a99]">Settings</p>
-          <h2 className="text-3xl font-bold text-white">Status Labels</h2>
-        </div>
-
         <DataTableToolbar 
           search={search}
           onSearchChange={setSearch}
