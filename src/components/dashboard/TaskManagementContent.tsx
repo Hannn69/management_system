@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { UpdateTaskModal } from "@/components/dashboard/UpdateTaskModal";
 import { DeleteTaskModal } from "@/components/dashboard/DeleteTaskModal";
@@ -145,7 +145,7 @@ type TaskManagementContentProps = {
   lockSpace?: boolean;
 };
 
-export function TaskManagementContent({
+function TaskManagementContentInner({
   spaceKey,
   spaceName,
   lockSpace = false,
@@ -565,5 +565,13 @@ export function TaskManagementContent({
         onClose={() => setDeleteTask(null)}
       />
     </main>
+  );
+}
+
+export function TaskManagementContent(props: TaskManagementContentProps) {
+  return (
+    <Suspense fallback={null}>
+      <TaskManagementContentInner {...props} />
+    </Suspense>
   );
 }

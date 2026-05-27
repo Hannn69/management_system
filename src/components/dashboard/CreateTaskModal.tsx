@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Dialog,
@@ -19,7 +19,7 @@ type CreateTaskModalProps = {
   lockSpace?: boolean;
 };
 
-export function CreateTaskModal({
+function CreateTaskModalInner({
   open,
   onClose,
   spaces = [],
@@ -433,5 +433,13 @@ export function CreateTaskModal({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function CreateTaskModal(props: CreateTaskModalProps) {
+  return (
+    <Suspense fallback={null}>
+      <CreateTaskModalInner {...props} />
+    </Suspense>
   );
 }

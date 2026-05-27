@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -22,7 +22,7 @@ import {
   Plus
 } from "lucide-react";
 
-export function CreateLocationContent() {
+function CreateLocationContentInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
@@ -450,5 +450,13 @@ export function CreateLocationContent() {
         />
       </div>
     </main>
+  );
+}
+
+export function CreateLocationContent() {
+  return (
+    <Suspense fallback={null}>
+      <CreateLocationContentInner />
+    </Suspense>
   );
 }

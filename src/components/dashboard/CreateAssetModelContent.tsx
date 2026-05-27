@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -21,7 +21,7 @@ import {
   ChevronDown
 } from "lucide-react";
 
-export function CreateAssetModelContent() {
+function CreateAssetModelContentInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
@@ -341,5 +341,13 @@ export function CreateAssetModelContent() {
         />
       </div>
     </main>
+  );
+}
+
+export function CreateAssetModelContent() {
+  return (
+    <Suspense fallback={null}>
+      <CreateAssetModelContentInner />
+    </Suspense>
   );
 }

@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, LayoutDashboard, Settings, Package as AssetsIcon } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  LayoutDashboard,
+  Settings,
+  Package as AssetsIcon,
+  Users,
+} from "lucide-react";
 
 interface SidebarItem {
   label: string;
@@ -35,9 +42,15 @@ const settingsItems: SidebarItem[] = [
   { label: "Companies", href: "/companies" },
 ];
 
+const userManagementItems: SidebarItem[] = [
+  { label: "User", href: "/users" },
+  { label: "Role & Permission", href: "/roles" },
+];
+
 export function DashboardSidebar() {
   const pathname = usePathname();
   const [isAssetsOpen, setIsAssetsOpen] = useState(false);
+  const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -45,6 +58,9 @@ export function DashboardSidebar() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsAssetsOpen(localStorage.getItem("assets-open") === "true");
+      setIsUserManagementOpen(
+        localStorage.getItem("user-management-open") === "true"
+      );
       setIsSettingsOpen(localStorage.getItem("settings-open") === "true");
       setMounted(true);
     }, 0);
@@ -57,6 +73,15 @@ export function DashboardSidebar() {
       localStorage.setItem("assets-open", isAssetsOpen.toString());
     }
   }, [isAssetsOpen, mounted]);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem(
+        "user-management-open",
+        isUserManagementOpen.toString()
+      );
+    }
+  }, [isUserManagementOpen, mounted]);
 
   useEffect(() => {
     if (mounted) {
@@ -149,6 +174,58 @@ export function DashboardSidebar() {
                             {item.count}
                           </span>
                         )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => setIsUserManagementOpen(!isUserManagementOpen)}
+                className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-[15px] transition ${
+                  userManagementItems.some((item) => pathname.startsWith(item.href))
+                    ? "bg-slate-200/50 dark:bg-[#213847] text-foreground dark:text-white shadow-sm dark:shadow-[0_18px_35px_-26px_rgba(0,0,0,0.8)]"
+                    : "text-zinc-500 dark:text-[#9eb6c3] hover:bg-slate-200 dark:hover:bg-[#17242d] hover:text-foreground dark:hover:text-white"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`inline-flex w-8 justify-center rounded-xl px-2 py-1 text-[10px] font-bold ${
+                      userManagementItems.some((item) =>
+                        pathname.startsWith(item.href)
+                      )
+                        ? "bg-white/16 text-white"
+                        : "bg-slate-200 dark:bg-[#1f3442] text-blue-600 dark:text-[#8ec8e6]"
+                    }`}
+                  >
+                    <Users className="h-4 w-4" />
+                  </span>
+                  <span>User Management</span>
+                </div>
+                {isUserManagementOpen ? (
+                  <ChevronDown className="h-4 w-4 text-zinc-500" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-zinc-500" />
+                )}
+              </button>
+
+              {isUserManagementOpen && (
+                <div className="mt-1 ml-4 flex flex-col gap-1 overflow-hidden border-l border-zinc-200 dark:border-white/5 pl-4 transition-all duration-300">
+                  {userManagementItems.map((item) => {
+                    const active = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-sm transition-all ${
+                          active
+                            ? "text-emerald-600 dark:text-emerald-400 font-bold bg-zinc-100 dark:bg-white/5 shadow-inner"
+                            : "text-zinc-500 dark:text-[#9eb6c3] hover:bg-slate-200 dark:hover:bg-[#1d2d38] hover:text-foreground dark:hover:text-white"
+                        }`}
+                      >
+                        <span>{item.label}</span>
                       </Link>
                     );
                   })}

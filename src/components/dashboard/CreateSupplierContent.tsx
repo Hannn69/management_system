@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -18,7 +18,7 @@ import {
   Globe2
 } from "lucide-react";
 
-export function CreateSupplierContent() {
+function CreateSupplierContentInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
@@ -257,5 +257,13 @@ export function CreateSupplierContent() {
         </form>
       </div>
     </main>
+  );
+}
+
+export function CreateSupplierContent() {
+  return (
+    <Suspense fallback={null}>
+      <CreateSupplierContentInner />
+    </Suspense>
   );
 }

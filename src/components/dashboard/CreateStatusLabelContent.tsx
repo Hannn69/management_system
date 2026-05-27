@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { Activity, FileText, Save, Tag, X } from "lucide-react";
 
-export function CreateStatusLabelContent() {
+function CreateStatusLabelContentInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
@@ -158,5 +158,13 @@ export function CreateStatusLabelContent() {
         </form>
       </div>
     </main>
+  );
+}
+
+export function CreateStatusLabelContent() {
+  return (
+    <Suspense fallback={null}>
+      <CreateStatusLabelContentInner />
+    </Suspense>
   );
 }
