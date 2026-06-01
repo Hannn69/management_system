@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import {
   Dialog,
   DialogContent,
@@ -19,37 +20,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import {
+  Check,
   Edit2,
   Ellipsis,
   Fingerprint,
-  ChevronDown,
-  Check,
+  Search,
+  ShieldCheck,
   Trash,
   UserPlus,
-  Users,
 } from "lucide-react";
-
-const seedRoles = [
-  {
-    id: 1,
-    name: "Asset Control",
-    description: "Manage asset records, assignment, and status updates.",
-    users: ["2 assigned"],
-  },
-  {
-    id: 2,
-    name: "Request Review",
-    description: "Review submitted requests and approve workflow changes.",
-    users: ["1 assigned"],
-  },
-  {
-    id: 3,
-    name: "Read Only Access",
-    description: "Allow dashboard visibility without edit privileges.",
-    users: ["4 assigned"],
-  },
-];
+import {
+  emptyRoleForm,
+  RoleFormState,
+  RolePermissionRecord,
+  RoleRecord,
+} from "@/lib/roles";
+import { ApiUserRecord, getUserFullName } from "@/lib/users";
 
 const accentClasses = [
   "from-emerald-400 to-teal-500",
@@ -58,85 +46,64 @@ const accentClasses = [
   "from-amber-400 to-orange-500",
 ];
 
-const availableUsers = [
-  "Asset Team Lead",
-  "Operations Reviewer",
-  "Support Coordinator",
-  "Space Manager",
-  "Inventory Clerk",
-  "Audit Observer",
-];
-
-const permissionModules = [
-  "API",
-  "Buckets",
-  "Media Library",
-  "Permissions",
-  "Roles",
-  "Spaces",
-  "Users",
-] as const;
-
-type SortKey = "name" | "description";
+type SortKey = "name" | "description" | "createdAt";
 
 export function RolesContent() {
   const router = useRouter();
+  const { push } = useToast();
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const menuButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({});
-  const [roles, setRoles] = useState(seedRoles);
+  const [records, setRecords] = useState<RoleRecord[]>([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [sort, setSort] = useState<SortKey>("name");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [viewType, setViewType] = useState<"list" | "grid">("list");
+  const [loading, setLoading] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
+  const [savingPermissions, setSavingPermissions] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [menuPosition, setMenuPosition] = useState<{
     top: number;
     left: number;
   } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [assignRoleOpen, setAssignRoleOpen] = useState(false);
-  const [assignPermissionsOpen, setAssignPermissionsOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({
-    name: "",
-    description: "",
-  });
+  const [assignUsersOpen, setAssignUsersOpen] = useState(false);
+  const [permissionsOpen, setPermissionsOpen] = useState(false);
+  const [createForm, setCreateForm] = useState<RoleFormState>(emptyRoleForm);
+  const [itemToDelete, setItemToDelete] = useState<RoleRecord | null>(null);
+  const [permissionRows, setPermissionRows] = useState<RolePermissionRecord[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<ApiUserRecord[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
   const [assignUserSearch, setAssignUserSearch] = useState("");
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [permissionsState, setPermissionsState] = useState<
-    Record<
-      (typeof permissionModules)[number],
-      { create: boolean; read: boolean; update: boolean; delete: boolean }
-    >
-  >({
-    API: { create: false, read: true, update: false, delete: false },
-    Buckets: { create: false, read: false, update: false, delete: false },
-    "Media Library": {
-      create: false,
-      read: true,
-      update: false,
-      delete: false,
-    },
-    Permissions: { create: false, read: true, update: false, delete: false },
-    Roles: { create: false, read: true, update: false, delete: false },
-    Spaces: { create: false, read: true, update: false, delete: false },
-    Users: { create: false, read: true, update: false, delete: false },
-  });
+  const [selectedUserIds, setSelectedUserIds] = useState<Array<number | string>>(
+    []
+  );
 
   const filteredRoles = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    const filtered = roles.filter((role) => {
+    const filtered = records.filter((role) => {
+      if (!query) {
+        return true;
+      }
+
       return (
         role.name.toLowerCase().includes(query) ||
-        role.description.toLowerCase().includes(query)
+        role.description.toLowerCase().includes(query) ||
+        role.slug.toLowerCase().includes(query)
       );
     });
 
     const sorted = [...filtered].sort((a, b) => {
-      const aValue = a[sort];
-      const bValue = b[sort];
+      const aValue =
+        sort === "createdAt" ? a.createdAt : (a[sort] || "").toString();
+      const bValue =
+        sort === "createdAt" ? b.createdAt : (b[sort] || "").toString();
 
       return order === "asc"
         ? String(aValue).localeCompare(String(bValue))
@@ -147,7 +114,7 @@ export function RolesContent() {
       ...role,
       accent: accentClasses[index % accentClasses.length],
     }));
-  }, [order, roles, search, sort]);
+  }, [order, records, search, sort]);
 
   const total = filteredRoles.length;
   const paginatedRoles = useMemo(() => {
@@ -156,14 +123,66 @@ export function RolesContent() {
   }, [filteredRoles, limit, page]);
 
   const activeRole = useMemo(
-    () => roles.find((role) => role.id === openMenuId) ?? null,
-    [openMenuId, roles]
+    () => records.find((role) => role.id === openMenuId) ?? null,
+    [openMenuId, records]
+  );
+
+  const permissionRole = useMemo(
+    () => records.find((role) => role.id === openMenuId) ?? null,
+    [openMenuId, records]
+  );
+
+  const assignRole = useMemo(
+    () => records.find((role) => role.id === openMenuId) ?? null,
+    [openMenuId, records]
   );
 
   const filteredAssignableUsers = useMemo(() => {
     const query = assignUserSearch.trim().toLowerCase();
-    return availableUsers.filter((user) => user.toLowerCase().includes(query));
-  }, [assignUserSearch]);
+
+    return availableUsers.filter((user) => {
+      if (!query) {
+        return true;
+      }
+
+      const fullName = getUserFullName(user).toLowerCase();
+      return (
+        fullName.includes(query) ||
+        user.email.toLowerCase().includes(query) ||
+        (user.username || "").toLowerCase().includes(query)
+      );
+    });
+  }, [assignUserSearch, availableUsers]);
+
+  const loadRoles = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/roles`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch roles.");
+      }
+
+      const data = await res.json();
+      setRecords(Array.isArray(data) ? data : []);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch roles.";
+      setError(message);
+      setRecords([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [apiBase]);
+
+  useEffect(() => {
+    loadRoles();
+  }, [loadRoles]);
 
   useEffect(() => {
     if (openMenuId === null) {
@@ -192,63 +211,257 @@ export function RolesContent() {
     };
   }, [openMenuId]);
 
-  const handleCreateRole = () => {
+  const handleCreateRole = async () => {
     if (!createForm.name.trim()) {
       return;
     }
 
-    setRoles((prev) => [
-      {
-        id: prev.length + 1,
-        name: createForm.name.trim(),
-        description: createForm.description.trim() || "No description provided.",
-        users: ["0 assigned"],
-      },
-      ...prev,
-    ]);
-    setCreateForm({ name: "", description: "" });
-    setCreateOpen(false);
-    setPage(1);
+    setCreateLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/roles`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: createForm.name.trim(),
+          description: createForm.description.trim(),
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to create role.");
+      }
+
+      push("Role created successfully!", "success");
+      setCreateForm(emptyRoleForm);
+      setCreateOpen(false);
+      setPage(1);
+      await loadRoles();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create role.";
+      setError(message);
+      push(message, "error");
+    } finally {
+      setCreateLoading(false);
+    }
   };
 
-  const toggleUser = (user: string) => {
-    setSelectedUsers((prev) =>
-      prev.includes(user) ? prev.filter((item) => item !== user) : [...prev, user]
+  const handleDeleteRole = async () => {
+    if (!itemToDelete) {
+      return;
+    }
+
+    setDeleteLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/roles/${itemToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to delete role.");
+      }
+
+      push("Role deleted successfully!", "success");
+      setItemToDelete(null);
+
+      if (paginatedRoles.length === 1 && page > 1) {
+        setPage((prev) => prev - 1);
+      } else {
+        await loadRoles();
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete role.";
+      setError(message);
+      push(message, "error");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const loadAssignableUsers = useCallback(async () => {
+    setUsersLoading(true);
+
+    try {
+      const params = new URLSearchParams({
+        page: "1",
+        limit: "200",
+        sort: "createdAt",
+        order: "desc",
+        search: "",
+      });
+
+      const res = await fetch(`/api/users?${params.toString()}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to load users.");
+      }
+
+      const data = await res.json();
+      setAvailableUsers(data.records || []);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load users.";
+      setError(message);
+      push(message, "error");
+      setAvailableUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  }, [push]);
+
+  const openAssignUsersDialog = async (roleId: number) => {
+    setOpenMenuId(roleId);
+    setMenuPosition(null);
+    setAssignUserSearch("");
+    setSelectedUserIds([]);
+    setAssignUsersOpen(true);
+    await loadAssignableUsers();
+  };
+
+  const toggleUser = (userId: number | string) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId)
+        ? prev.filter((currentId) => currentId !== userId)
+        : [...prev, userId]
     );
   };
 
   const handleSelectAllUsers = () => {
+    const visibleIds = filteredAssignableUsers.map((user) => user.id);
     const allVisibleSelected =
-      filteredAssignableUsers.length > 0 &&
-      filteredAssignableUsers.every((user) => selectedUsers.includes(user));
+      visibleIds.length > 0 &&
+      visibleIds.every((userId) => selectedUserIds.includes(userId));
 
     if (allVisibleSelected) {
-      setSelectedUsers((prev) =>
-        prev.filter((user) => !filteredAssignableUsers.includes(user))
+      setSelectedUserIds((prev) =>
+        prev.filter((userId) => !visibleIds.includes(userId))
       );
       return;
     }
 
-    setSelectedUsers((prev) => [
-      ...new Set([...prev, ...filteredAssignableUsers]),
-    ]);
+    setSelectedUserIds((prev) => [...new Set([...prev, ...visibleIds])]);
   };
 
-  const openAssignUsersDialog = () => {
-    setAssignRoleOpen(true);
-    setUserDropdownOpen(false);
-    setAssignUserSearch("");
-    setOpenMenuId(null);
+  const handleAssignUsers = () => {
+    const selectedUsers = availableUsers.filter((user) =>
+      selectedUserIds.includes(user.id)
+    );
+
+    push(
+      selectedUsers.length > 0
+        ? `${selectedUsers.length} user${selectedUsers.length > 1 ? "s" : ""} selected for ${assignRole?.name || "this role"}.`
+        : "No users selected.",
+      selectedUsers.length > 0 ? "success" : "error"
+    );
+    setAssignUsersOpen(false);
   };
 
-  const openPermissionsDialog = () => {
-    setAssignPermissionsOpen(true);
-    setOpenMenuId(null);
+  const openPermissionsDialog = async (roleId: number) => {
+    setPermissionsLoading(true);
+    setPermissionRows([]);
+    setPermissionsOpen(true);
+    setOpenMenuId(roleId);
+    setMenuPosition(null);
+
+    try {
+      const res = await fetch(`${apiBase}/roles/${roleId}/permissions`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to load permissions.");
+      }
+
+      const data = await res.json();
+      setPermissionRows(Array.isArray(data) ? data : []);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load permissions.";
+      setError(message);
+      push(message, "error");
+      setPermissionsOpen(false);
+    } finally {
+      setPermissionsLoading(false);
+    }
+  };
+
+  const updatePermissionCell = (
+    permissionId: number,
+    field: "create" | "read" | "update" | "delete",
+    value: boolean
+  ) => {
+    setPermissionRows((prev) =>
+      prev.map((row) =>
+        row.permissionId === permissionId ? { ...row, [field]: value } : row
+      )
+    );
+  };
+
+  const handleSavePermissions = async () => {
+    if (!permissionRole) {
+      return;
+    }
+
+    setSavingPermissions(true);
+    setError(null);
+
+    try {
+      await Promise.all(
+        permissionRows.map((row) =>
+          fetch(`${apiBase}/roles/${permissionRole.id}/permissions/${row.permissionId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              create: row.create,
+              read: row.read,
+              update: row.update,
+              delete: row.delete,
+            }),
+          }).then(async (res) => {
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              throw new Error(
+                data.message ||
+                  `Failed to update ${row.permission?.label || row.permissionId}.`
+              );
+            }
+            return res.json();
+          })
+        )
+      );
+
+      push("Permissions updated successfully!", "success");
+      setPermissionsOpen(false);
+      await loadRoles();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update permissions.";
+      setError(message);
+      push(message, "error");
+    } finally {
+      setSavingPermissions(false);
+    }
   };
 
   return (
     <main className="px-6 pb-6 pt-5">
-      <div className="mx-auto w-full max-w-full flex flex-1 flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-full flex-1 flex-col gap-6">
         <DataTableToolbar
           search={search}
           onSearchChange={(value) => {
@@ -258,30 +471,31 @@ export function RolesContent() {
           viewType={viewType}
           onViewToggle={setViewType}
           onCreateClick={() => setCreateOpen(true)}
+          onRefreshClick={loadRoles}
           sortOrder={order}
           onSortOrderChange={setOrder}
         />
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <Table className="min-w-[1100px]">
-            <TableHeader className="bg-white/5 sticky top-0 z-10">
+            <TableHeader className="sticky top-0 z-10 bg-white/5">
               <TableRow className="border-white/10 hover:bg-transparent">
                 <TableHead
                   onClick={() => setSort("name")}
-                  className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-emerald-400"
+                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100 hover:text-emerald-400"
                 >
                   Role
                 </TableHead>
                 <TableHead
                   onClick={() => setSort("description")}
-                  className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-emerald-400"
+                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100 hover:text-emerald-400"
                 >
                   Description
                 </TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">
-                  Users
+                <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                  Permissions
                 </TableHead>
-                <TableHead className="w-[220px] px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">
+                <TableHead className="w-[220px] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-zinc-100">
                   Action
                 </TableHead>
               </TableRow>
@@ -293,32 +507,33 @@ export function RolesContent() {
                   className="border-white/5 transition-colors hover:bg-white/[0.03]"
                 >
                   <TableCell className="px-4 py-4">
-                    <div>
-                      <p className="text-sm font-bold text-zinc-100">
-                        {role.name}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${role.accent} text-black shadow-lg`}
+                      >
+                        <ShieldCheck className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-zinc-100">
+                          {role.name}
+                        </p>
+                        <p className="font-mono text-[10px] tracking-tight text-zinc-500">
+                          {role.slug}
+                        </p>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-4 text-sm text-zinc-300">
                     <p className="max-w-[480px] text-sm text-zinc-300">
-                      {role.description}
+                      {role.description || "No description provided."}
                     </p>
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center">
-                    <div className="flex items-center justify-center">
-                      {role.users.map((userCode, index) => (
-                        <span
-                          key={`${role.id}-${userCode}-${index}`}
-                          className={`${
-                            index > 0 ? "-ml-2" : ""
-                          } inline-flex min-w-[88px] items-center justify-center rounded-full border border-[#2d3442] bg-[#2c2a22] px-3 py-2 text-xs font-semibold text-white shadow-sm`}
-                        >
-                          {userCode}
-                        </span>
-                      ))}
-                    </div>
+                    <span className="inline-flex min-w-[96px] items-center justify-center rounded-full border border-[#2d3442] bg-[#2c2a22] px-3 py-2 text-xs font-semibold text-white shadow-sm">
+                      {role.rolePermissions?.length || 0} modules
+                    </span>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-right overflow-visible">
+                  <TableCell className="overflow-visible px-4 py-4 text-right">
                     <div className="relative inline-flex items-center justify-end">
                       <button
                         type="button"
@@ -339,16 +554,16 @@ export function RolesContent() {
                   </TableCell>
                 </TableRow>
               ))}
-              {paginatedRoles.length === 0 && (
+              {paginatedRoles.length === 0 ? (
                 <TableRow className="border-white/10">
                   <TableCell
                     className="px-4 py-12 text-center text-sm text-zinc-500"
                     colSpan={4}
                   >
-                    No roles found.
+                    {loading ? "Loading roles..." : "No roles found."}
                   </TableCell>
                 </TableRow>
-              )}
+              ) : null}
             </TableBody>
           </Table>
         </div>
@@ -363,15 +578,15 @@ export function RolesContent() {
           >
             <button
               type="button"
-              onClick={openAssignUsersDialog}
+              onClick={() => openAssignUsersDialog(openMenuId)}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-100 transition hover:bg-white/5"
             >
               <UserPlus className="h-4 w-4 text-zinc-300" />
-              <span>Assign Users</span>
+              <span>Assign User</span>
             </button>
             <button
               type="button"
-              onClick={openPermissionsDialog}
+              onClick={() => openPermissionsDialog(openMenuId)}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-100 transition hover:bg-white/5"
             >
               <Fingerprint className="h-4 w-4 text-zinc-300" />
@@ -381,9 +596,7 @@ export function RolesContent() {
               type="button"
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-100 transition hover:bg-white/5"
               onClick={() => {
-                if (openMenuId !== null) {
-                  router.push(`/roles/${openMenuId}/edit`);
-                }
+                router.push(`/roles/${openMenuId}/edit`);
                 setOpenMenuId(null);
               }}
             >
@@ -393,12 +606,27 @@ export function RolesContent() {
             <button
               type="button"
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-500 transition hover:bg-white/5"
+              onClick={() => {
+                if (activeRole) {
+                  setItemToDelete(activeRole);
+                }
+                setOpenMenuId(null);
+              }}
             >
               <Trash className="h-4 w-4" />
               <span>Delete</span>
             </button>
           </div>
         ) : null}
+
+        <DeleteConfirmDialog
+          open={!!itemToDelete}
+          onClose={() => setItemToDelete(null)}
+          onConfirm={handleDeleteRole}
+          title="Delete Role"
+          itemName={itemToDelete?.name}
+          loading={deleteLoading}
+        />
 
         <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
@@ -508,129 +736,129 @@ export function RolesContent() {
                 <button
                   type="button"
                   onClick={handleCreateRole}
-                  className="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-cyan-500"
+                  disabled={createLoading}
+                  className="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Create
+                  {createLoading ? "Creating..." : "Create"}
                 </button>
               </DialogFooter>
             </div>
           </DialogContent>
         </Dialog>
 
-        <Dialog open={assignRoleOpen} onOpenChange={setAssignRoleOpen}>
-          <DialogContent className="max-w-lg border-white/10 bg-[#111216] p-0">
+        <Dialog open={assignUsersOpen} onOpenChange={setAssignUsersOpen}>
+          <DialogContent className="max-w-2xl border-white/10 bg-[#111216] p-0">
             <div className="flex flex-col">
               <DialogHeader className="border-b border-white/10 px-6 py-5">
                 <DialogTitle className="text-xl font-bold text-white">
-                  Assign Role
+                  Assign User
                 </DialogTitle>
                 <DialogDescription>
-                  Role Name:{" "}
+                  Search and select users for{" "}
                   <span className="font-medium text-zinc-200">
-                    {activeRole?.name ?? "Selected Role"}
+                    {assignRole?.name ?? "Selected Role"}
                   </span>
+                  .
                 </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4 px-6 py-5">
-                <div className="space-y-2">
-                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
-                    Select Users
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setUserDropdownOpen((prev) => !prev)}
-                      className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm text-zinc-100 transition hover:bg-white/10"
-                    >
-                      <span className="truncate">
-                        {selectedUsers.length > 0
-                          ? `${selectedUsers.length} user${
-                              selectedUsers.length > 1 ? "s" : ""
-                            } selected`
-                          : "Select users"}
-                      </span>
-                      <ChevronDown className="h-4 w-4 text-zinc-400" />
-                    </button>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                  <input
+                    type="text"
+                    placeholder="Search users by name, email, or username..."
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-11 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                    value={assignUserSearch}
+                    onChange={(e) => setAssignUserSearch(e.target.value)}
+                  />
+                </div>
 
-                    {userDropdownOpen ? (
-                      <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-10 rounded-2xl border border-white/10 bg-[#17191d] p-3 shadow-[0_18px_45px_-20px_rgba(0,0,0,0.9)]">
-                        <input
-                          type="text"
-                          placeholder="Search users..."
-                          className="mb-3 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
-                          value={assignUserSearch}
-                          onChange={(e) => setAssignUserSearch(e.target.value)}
-                        />
-
-                        <button
-                          type="button"
-                          onClick={handleSelectAllUsers}
-                          className="mb-2 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-zinc-100 transition hover:bg-white/5"
-                        >
-                          <span className="flex h-4 w-4 items-center justify-center rounded border border-white/20 bg-white/5">
-                            {filteredAssignableUsers.length > 0 &&
-                            filteredAssignableUsers.every((user) =>
-                              selectedUsers.includes(user)
-                            ) ? (
-                              <Check className="h-3 w-3 text-cyan-400" />
-                            ) : null}
-                          </span>
-                          <span>Select All</span>
-                        </button>
-
-                        <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
-                          {filteredAssignableUsers.map((user) => (
-                            <button
-                              key={user}
-                              type="button"
-                              onClick={() => toggleUser(user)}
-                              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-zinc-100 transition hover:bg-white/5"
-                            >
-                              <span className="flex h-4 w-4 items-center justify-center rounded border border-white/20 bg-white/5">
-                                {selectedUsers.includes(user) ? (
-                                  <Check className="h-3 w-3 text-cyan-400" />
-                                ) : null}
-                              </span>
-                              <span>{user}</span>
-                            </button>
-                          ))}
-                          {filteredAssignableUsers.length === 0 ? (
-                            <p className="px-3 py-2 text-sm text-zinc-500">
-                              No users found.
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
+                <button
+                  type="button"
+                  onClick={handleSelectAllUsers}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 transition hover:bg-white/10"
+                >
+                  <span className="flex h-4 w-4 items-center justify-center rounded border border-white/20 bg-white/5">
+                    {filteredAssignableUsers.length > 0 &&
+                    filteredAssignableUsers.every((user) =>
+                      selectedUserIds.includes(user.id)
+                    ) ? (
+                      <Check className="h-3 w-3 text-cyan-400" />
                     ) : null}
-                  </div>
+                  </span>
+                  Select All Visible
+                </button>
+
+                <div className="max-h-[380px] overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.03]">
+                  {usersLoading ? (
+                    <div className="px-4 py-10 text-center text-sm text-zinc-500">
+                      Loading users...
+                    </div>
+                  ) : filteredAssignableUsers.length === 0 ? (
+                    <div className="px-4 py-10 text-center text-sm text-zinc-500">
+                      No users found.
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-white/5">
+                      {filteredAssignableUsers.map((user) => {
+                        const checked = selectedUserIds.includes(user.id);
+
+                        return (
+                          <button
+                            key={user.id}
+                            type="button"
+                            onClick={() => toggleUser(user.id)}
+                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-white/5"
+                          >
+                            <span
+                              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+                                checked
+                                  ? "border-cyan-500 bg-cyan-500 text-white"
+                                  : "border-white/20 bg-white/5 text-transparent"
+                              }`}
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium text-zinc-100">
+                                {getUserFullName(user)}
+                              </p>
+                              <p className="truncate text-xs text-zinc-400">
+                                {user.email}
+                                {user.username ? ` • @${user.username}` : ""}
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 
               <DialogFooter className="justify-end gap-3 border-t border-white/10 px-6 py-5 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => setAssignRoleOpen(false)}
+                  onClick={() => setAssignUsersOpen(false)}
                   className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-300 transition hover:bg-white/10"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAssignRoleOpen(false)}
-                  className="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-cyan-500"
+                  onClick={handleAssignUsers}
+                  disabled={usersLoading}
+                  className="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Assign Role
+                  Select Users
                 </button>
               </DialogFooter>
             </div>
           </DialogContent>
         </Dialog>
 
-        <Dialog
-          open={assignPermissionsOpen}
-          onOpenChange={setAssignPermissionsOpen}
-        >
+        <Dialog open={permissionsOpen} onOpenChange={setPermissionsOpen}>
           <DialogContent className="max-w-4xl border-white/10 bg-[#111216] p-0">
             <div className="flex flex-col">
               <DialogHeader className="border-b border-white/10 px-6 py-5">
@@ -640,7 +868,7 @@ export function RolesContent() {
                 <DialogDescription>
                   Configure module permissions for{" "}
                   <span className="font-medium text-zinc-200">
-                    {activeRole?.name ?? "Selected Role"}
+                    {permissionRole?.name ?? "Selected Role"}
                   </span>
                   .
                 </DialogDescription>
@@ -651,59 +879,86 @@ export function RolesContent() {
                   <Table className="min-w-full">
                     <TableHeader className="bg-white/5">
                       <TableRow className="border-white/10 hover:bg-transparent">
-                        <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px]">
+                        <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100">
                           Module
                         </TableHead>
-                        <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">
+                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
                           Create
                         </TableHead>
-                        <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">
+                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
                           Read
                         </TableHead>
-                        <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">
+                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
                           Update
                         </TableHead>
-                        <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">
+                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
                           Delete
                         </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody className="divide-y divide-white/5">
-                      {permissionModules.map((moduleName) => (
-                        <TableRow
-                          key={moduleName}
-                          className="border-white/5 hover:bg-white/[0.03]"
-                        >
-                          <TableCell className="px-4 py-4 text-sm font-medium text-zinc-200">
-                            {moduleName}
+                      {permissionsLoading ? (
+                        <TableRow className="border-white/10">
+                          <TableCell
+                            colSpan={5}
+                            className="px-4 py-10 text-center text-sm text-zinc-500"
+                          >
+                            Loading permissions...
                           </TableCell>
-                          {(["create", "read", "update", "delete"] as const).map(
-                            (permissionKey) => (
-                              <TableCell
-                                key={`${moduleName}-${permissionKey}`}
-                                className="px-4 py-4 text-center"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={
-                                    permissionsState[moduleName][permissionKey]
-                                  }
-                                  onChange={(e) =>
-                                    setPermissionsState((prev) => ({
-                                      ...prev,
-                                      [moduleName]: {
-                                        ...prev[moduleName],
-                                        [permissionKey]: e.target.checked,
-                                      },
-                                    }))
-                                  }
-                                  className="h-4 w-4 rounded border-white/20 bg-white/5 accent-cyan-500"
-                                />
-                              </TableCell>
-                            )
-                          )}
                         </TableRow>
-                      ))}
+                      ) : permissionRows.length === 0 ? (
+                        <TableRow className="border-white/10">
+                          <TableCell
+                            colSpan={5}
+                            className="px-4 py-10 text-center text-sm text-zinc-500"
+                          >
+                            No permissions found.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        permissionRows.map((row) => (
+                          <TableRow
+                            key={row.permissionId}
+                            className="border-white/5 hover:bg-white/[0.03]"
+                          >
+                            <TableCell className="px-4 py-4 text-sm font-medium text-zinc-200">
+                              {row.permission?.label || row.permission?.name || row.slug}
+                            </TableCell>
+                            {(["create", "read", "update", "delete"] as const).map(
+                              (permissionKey) => (
+                                <TableCell
+                                  key={`${row.permissionId}-${permissionKey}`}
+                                  className="px-4 py-4 text-center"
+                                >
+                                  <label className="inline-flex cursor-pointer items-center justify-center">
+                                    <input
+                                      type="checkbox"
+                                      checked={row[permissionKey]}
+                                      onChange={(e) =>
+                                        updatePermissionCell(
+                                          row.permissionId,
+                                          permissionKey,
+                                          e.target.checked
+                                        )
+                                      }
+                                      className="sr-only"
+                                    />
+                                    <span
+                                      className={`flex h-5 w-5 items-center justify-center rounded border transition ${
+                                        row[permissionKey]
+                                          ? "border-cyan-500 bg-cyan-500 text-white"
+                                          : "border-white/20 bg-white/5 text-transparent"
+                                      }`}
+                                    >
+                                      <Check className="h-3.5 w-3.5" />
+                                    </span>
+                                  </label>
+                                </TableCell>
+                              )
+                            )}
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>
@@ -712,22 +967,29 @@ export function RolesContent() {
               <DialogFooter className="justify-end gap-3 border-t border-white/10 px-6 py-5 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => setAssignPermissionsOpen(false)}
+                  onClick={() => setPermissionsOpen(false)}
                   className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-300 transition hover:bg-white/10"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAssignPermissionsOpen(false)}
-                  className="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-cyan-500"
+                  onClick={handleSavePermissions}
+                  disabled={permissionsLoading || savingPermissions}
+                  className="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Save Changes
+                  {savingPermissions ? "Saving..." : "Save Changes"}
                 </button>
               </DialogFooter>
             </div>
           </DialogContent>
         </Dialog>
+
+        {error ? (
+          <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-center text-xs text-rose-300">
+            {error}
+          </p>
+        ) : null}
       </div>
     </main>
   );

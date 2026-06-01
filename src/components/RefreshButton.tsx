@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 export function RefreshButton() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -12,7 +11,7 @@ export function RefreshButton() {
     setStatus(null);
 
     try {
-      const res = await fetch(`${apiBase}/auth/refresh`, {
+      const res = await fetch("/api/auth/refresh", {
         method: "POST",
         credentials: "include",
       });

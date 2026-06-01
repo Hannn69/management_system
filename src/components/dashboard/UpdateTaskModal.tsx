@@ -86,7 +86,7 @@ export function UpdateTaskModal({ open, task, onClose }: UpdateTaskModalProps) {
 
       let res = await attemptUpdate();
       if (res.status === 401) {
-        const refresh = await fetch(`${apiBase}/auth/refresh`, {
+        const refresh = await fetch(`/api/auth/refresh`, {
           method: "POST",
           credentials: "include",
         });

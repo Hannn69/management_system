@@ -1,51 +1,114 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import { Save, ShieldCheck, X } from "lucide-react";
-
-const seedRoles = [
-  {
-    id: "1",
-    name: "Asset Control",
-    description: "Manage asset records, assignment, and status updates.",
-  },
-  {
-    id: "2",
-    name: "Request Review",
-    description: "Review submitted requests and approve workflow changes.",
-  },
-  {
-    id: "3",
-    name: "Read Only Access",
-    description: "Allow dashboard visibility without edit privileges.",
-  },
-];
-
-const fallbackRole = {
-  name: "",
-  description: "",
-};
+import { emptyRoleForm, mapRoleToForm, RoleFormState } from "@/lib/roles";
 
 export function EditRoleContent() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const { push } = useToast();
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
+  const [form, setForm] = useState<RoleFormState>(emptyRoleForm);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const initialRole = useMemo(
-    () => seedRoles.find((role) => role.id === params.id) ?? fallbackRole,
-    [params.id]
+  const canSubmit = useMemo(
+    () => !loading && Boolean(form.name.trim()),
+    [form.name, loading]
   );
 
-  const [form, setForm] = useState(initialRole);
+  const loadRole = useCallback(async () => {
+    if (!params.id) {
+      return;
+    }
 
-  const handleSubmit = (e: React.FormEvent) => {
+    setFetching(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/roles/${params.id}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to fetch role.");
+      }
+
+      const data = await res.json();
+      setForm(mapRoleToForm(data));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch role.");
+    } finally {
+      setFetching(false);
+    }
+  }, [apiBase, params.id]);
+
+  useEffect(() => {
+    loadRole();
+  }, [loadRole]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/roles");
+
+    if (!params.id || !form.name.trim()) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/roles/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: form.name.trim(),
+          description: form.description.trim(),
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to update role.");
+      }
+
+      push("Role updated successfully!", "success");
+      router.push("/roles");
+      router.refresh();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update role.";
+      setError(message);
+      push(message, "error");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (fetching) {
+    return (
+      <div className="flex h-[400px] w-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto flex w-full max-w-[1080px] flex-col gap-6">
+        {error ? (
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-300">
+            {error}
+          </div>
+        ) : null}
+
         <form onSubmit={handleSubmit} className="space-y-6 pb-12">
           <section className="rounded-[28px] border border-zinc-200 bg-white p-8 shadow-2xl dark:border-white/10 dark:bg-[#111216]">
             <div className="mb-8 flex items-center gap-4">
@@ -110,10 +173,11 @@ export function EditRoleContent() {
             </button>
             <button
               type="submit"
-              className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-3 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.5)] transition-all hover:scale-[1.02] active:scale-95"
+              disabled={!canSubmit}
+              className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-3 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.5)] transition-all hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
             >
               <Save className="h-4 w-4" />
-              <span>Save Changes</span>
+              <span>{loading ? "Saving..." : "Save Changes"}</span>
             </button>
           </div>
         </form>

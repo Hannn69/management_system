@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import {
   Table,
   TableBody,
@@ -11,59 +12,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
-import {
-  Edit2,
-  Eye,
-  Mail,
-  ShieldCheck,
-  Trash,
-  User,
-} from "lucide-react";
-
-const seedUsers = [
-  {
-    id: 1,
-    firstName: "Sonvirak",
-    lastName: "Kim",
-    email: "sonvirak@management.local",
-    loginEnabled: true,
-  },
-  {
-    id: 2,
-    firstName: "Dara",
-    lastName: "Sok",
-    email: "dara.sok@management.local",
-    loginEnabled: true,
-  },
-  {
-    id: 3,
-    firstName: "Malis",
-    lastName: "Chan",
-    email: "malis.chan@management.local",
-    loginEnabled: false,
-  },
-  {
-    id: 4,
-    firstName: "Sophy",
-    lastName: "Lim",
-    email: "sophy.lim@management.local",
-    loginEnabled: true,
-  },
-  {
-    id: 5,
-    firstName: "Narin",
-    lastName: "Chea",
-    email: "narin.chea@management.local",
-    loginEnabled: true,
-  },
-  {
-    id: 6,
-    firstName: "Kanha",
-    lastName: "Phan",
-    email: "kanha.phan@management.local",
-    loginEnabled: false,
-  },
-];
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
+import { Edit2, Eye, Mail, ShieldCheck, Trash, User } from "lucide-react";
+import { ApiUserRecord, getUserFullName } from "@/lib/users";
 
 const accentClasses = [
   "from-cyan-400 to-sky-500",
@@ -72,58 +23,114 @@ const accentClasses = [
   "from-amber-400 to-orange-500",
 ];
 
-type SortKey = "firstName" | "email";
+type SortKey = "firstName" | "email" | "createdAt";
 
 export function UsersContent() {
   const router = useRouter();
+  const { push } = useToast();
   const [search, setSearch] = useState("");
+  const [records, setRecords] = useState<ApiUserRecord[]>([]);
+  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [sort, setSort] = useState<SortKey>("firstName");
-  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [sort, setSort] = useState<SortKey>("createdAt");
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
+  const [loading, setLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [viewType, setViewType] = useState<"list" | "grid">("list");
+  const [itemToDelete, setItemToDelete] = useState<ApiUserRecord | null>(null);
 
-  const filteredUsers = useMemo(() => {
-    const query = search.trim().toLowerCase();
+  const decoratedUsers = useMemo(
+    () =>
+      records.map((record, index) => ({
+        ...record,
+        accent: accentClasses[index % accentClasses.length],
+      })),
+    [records]
+  );
 
-    const filtered = seedUsers.filter((user) => {
-        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-      return (
-        fullName.includes(query) ||
-        user.email.toLowerCase().includes(query)
-      );
-    });
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-    const sorted = [...filtered].sort((a, b) => {
-      const aValue =
-        sort === "firstName"
-          ? `${a.firstName} ${a.lastName}`
-          : a[sort];
-      const bValue =
-        sort === "firstName"
-          ? `${b.firstName} ${b.lastName}`
-          : b[sort];
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort,
+        order,
+        search,
+      });
 
-      return order === "asc"
-        ? String(aValue).localeCompare(String(bValue))
-        : String(bValue).localeCompare(String(aValue));
-    });
+      const res = await fetch(`/api/users?${params.toString()}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
 
-    return sorted.map((user, index) => ({
-      ...user,
-      accent: accentClasses[index % accentClasses.length],
-    }));
-  }, [order, search, sort]);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to fetch users.");
+      }
 
-  const total = filteredUsers.length;
-  const paginatedUsers = useMemo(() => {
-    const start = (page - 1) * limit;
-    return filteredUsers.slice(start, start + limit);
-  }, [filteredUsers, limit, page]);
+      const data = await res.json();
+      setRecords(data.records || []);
+      setTotal(data.total || 0);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch users.";
+      setError(message);
+      setRecords([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [limit, order, page, search, sort]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
+
+  const handleDelete = useCallback(async () => {
+    if (!itemToDelete) {
+      return;
+    }
+
+    setDeleteLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/users/${itemToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to delete user.");
+      }
+
+      setItemToDelete(null);
+      push("User deleted successfully!", "success");
+
+      if (records.length === 1 && page > 1) {
+        setPage((prev) => prev - 1);
+      } else {
+        await loadUsers();
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete user.";
+      setError(message);
+      push(message, "error");
+    } finally {
+      setDeleteLoading(false);
+    }
+  }, [itemToDelete, loadUsers, page, push, records.length]);
 
   return (
     <main className="px-6 pb-6 pt-5">
-      <div className="mx-auto w-full max-w-full flex flex-1 flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-full flex-1 flex-col gap-6">
         <DataTableToolbar
           search={search}
           onSearchChange={(value) => {
@@ -133,36 +140,43 @@ export function UsersContent() {
           viewType={viewType}
           onViewToggle={setViewType}
           onCreateClick={() => router.push("/users/create")}
+          onRefreshClick={loadUsers}
           sortOrder={order}
-          onSortOrderChange={setOrder}
+          onSortOrderChange={(newOrder) => {
+            setSort("createdAt");
+            setOrder(newOrder);
+          }}
         />
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <Table className="min-w-[1200px]">
-            <TableHeader className="bg-white/5 sticky top-0 z-10">
+            <TableHeader className="sticky top-0 z-10 bg-white/5">
               <TableRow className="border-white/10 hover:bg-transparent">
                 <TableHead
                   onClick={() => setSort("firstName")}
-                  className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-400"
+                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100 hover:text-cyan-400"
                 >
                   Name
                 </TableHead>
                 <TableHead
                   onClick={() => setSort("email")}
-                  className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-400"
+                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100 hover:text-cyan-400"
                 >
                   Email
                 </TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">
+                <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                  Username
+                </TableHead>
+                <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
                   Is Active
                 </TableHead>
-                <TableHead className="w-[150px] px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">
-                  Action
+                <TableHead className="w-[150px] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                  Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-white/5">
-              {paginatedUsers.map((user) => (
+              {decoratedUsers.map((user) => (
                 <TableRow
                   key={user.id}
                   className="border-white/5 transition-colors hover:bg-white/[0.03]"
@@ -176,9 +190,9 @@ export function UsersContent() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-zinc-100">
-                          {user.firstName} {user.lastName}
+                          {getUserFullName(user)}
                         </p>
-                        <p className="text-[10px] text-zinc-500 font-mono tracking-tight">
+                        <p className="font-mono text-[10px] tracking-tight text-zinc-500">
                           ID: {user.id}
                         </p>
                       </div>
@@ -190,12 +204,15 @@ export function UsersContent() {
                       <span>{user.email}</span>
                     </div>
                   </TableCell>
+                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400">
+                    {user.username || "N/A"}
+                  </TableCell>
                   <TableCell className="px-4 py-4 text-center">
                     <span
-                      className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold border ${
+                      className={`inline-flex rounded-lg border px-2.5 py-1 text-xs font-bold ${
                         user.loginEnabled
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                          : "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                          : "border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
                       }`}
                     >
                       <ShieldCheck className="mr-1 h-3.5 w-3.5" />
@@ -206,7 +223,8 @@ export function UsersContent() {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         type="button"
-                        className="p-2 rounded-xl text-zinc-500 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all active:scale-90"
+                        onClick={() => router.push(`/users/${user.id}`)}
+                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-cyan-500/10 hover:text-cyan-400"
                         title="View"
                       >
                         <Eye className="h-4 w-4" />
@@ -214,14 +232,15 @@ export function UsersContent() {
                       <button
                         type="button"
                         onClick={() => router.push(`/users/${user.id}/edit`)}
-                        className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90"
+                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-emerald-500/10 hover:text-emerald-400"
                         title="Edit"
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
                       <button
                         type="button"
-                        className="p-2 rounded-xl text-zinc-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all active:scale-90"
+                        onClick={() => setItemToDelete(user)}
+                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-rose-500/10 hover:text-rose-400"
                         title="Delete"
                       >
                         <Trash className="h-4 w-4" />
@@ -230,19 +249,28 @@ export function UsersContent() {
                   </TableCell>
                 </TableRow>
               ))}
-              {paginatedUsers.length === 0 && (
+              {decoratedUsers.length === 0 ? (
                 <TableRow className="border-white/10">
                   <TableCell
                     className="px-4 py-12 text-center text-sm text-zinc-500"
-                    colSpan={4}
+                    colSpan={5}
                   >
-                    No users found.
+                    {loading ? "Loading users..." : "No users found."}
                   </TableCell>
                 </TableRow>
-              )}
+              ) : null}
             </TableBody>
           </Table>
         </div>
+
+        <DeleteConfirmDialog
+          open={!!itemToDelete}
+          onClose={() => setItemToDelete(null)}
+          onConfirm={handleDelete}
+          title="Delete User"
+          itemName={itemToDelete ? getUserFullName(itemToDelete) : undefined}
+          loading={deleteLoading}
+        />
 
         <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
@@ -290,6 +318,12 @@ export function UsersContent() {
             </div>
           </div>
         </div>
+
+        {error ? (
+          <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-center text-xs text-rose-300">
+            {error}
+          </p>
+        ) : null}
       </div>
     </main>
   );
