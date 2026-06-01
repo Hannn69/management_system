@@ -25,6 +25,7 @@ import {
   Check,
   Edit2,
   Ellipsis,
+  Eye,
   Fingerprint,
   Search,
   ShieldCheck,
@@ -63,6 +64,7 @@ export function RolesContent() {
   const [loading, setLoading] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [assigningUsers, setAssigningUsers] = useState(false);
   const [permissionsLoading, setPermissionsLoading] = useState(false);
   const [savingPermissions, setSavingPermissions] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,11 +75,15 @@ export function RolesContent() {
   } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [assignUsersOpen, setAssignUsersOpen] = useState(false);
+  const [viewUsersOpen, setViewUsersOpen] = useState(false);
   const [permissionsOpen, setPermissionsOpen] = useState(false);
   const [createForm, setCreateForm] = useState<RoleFormState>(emptyRoleForm);
   const [itemToDelete, setItemToDelete] = useState<RoleRecord | null>(null);
   const [permissionRows, setPermissionRows] = useState<RolePermissionRecord[]>([]);
   const [availableUsers, setAvailableUsers] = useState<ApiUserRecord[]>([]);
+  const [roleUsers, setRoleUsers] = useState<ApiUserRecord[]>([]);
+  const [viewRole, setViewRole] = useState<RoleRecord | null>(null);
+  const [roleUsersLoading, setRoleUsersLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
   const [assignUserSearch, setAssignUserSearch] = useState("");
   const [selectedUserIds, setSelectedUserIds] = useState<Array<number | string>>(
@@ -328,7 +334,65 @@ export function RolesContent() {
     setAssignUserSearch("");
     setSelectedUserIds([]);
     setAssignUsersOpen(true);
-    await loadAssignableUsers();
+
+    try {
+      const [, roleUsersRes] = await Promise.all([
+        loadAssignableUsers(),
+        fetch(`${apiBase}/roles/${roleId}/users`, {
+          credentials: "include",
+          cache: "no-store",
+        }),
+      ]);
+
+      if (!roleUsersRes.ok) {
+        const data = await roleUsersRes.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to load assigned users.");
+      }
+
+      const data = await roleUsersRes.json();
+      setSelectedUserIds(
+        Array.isArray(data.users)
+          ? data.users.map((user: ApiUserRecord) => user.id)
+          : []
+      );
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load assigned users.";
+      setError(message);
+      push(message, "error");
+    }
+  };
+
+  const openViewUsersDialog = async (role: RoleRecord) => {
+    setOpenMenuId(null);
+    setMenuPosition(null);
+    setViewRole(role);
+    setRoleUsers([]);
+    setRoleUsersLoading(true);
+    setViewUsersOpen(true);
+
+    try {
+      const res = await fetch(`${apiBase}/roles/${role.id}/users`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to load assigned users.");
+      }
+
+      const data = await res.json();
+      setRoleUsers(Array.isArray(data.users) ? data.users : []);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load assigned users.";
+      setError(message);
+      push(message, "error");
+      setViewUsersOpen(false);
+    } finally {
+      setRoleUsersLoading(false);
+    }
   };
 
   const toggleUser = (userId: number | string) => {
@@ -355,18 +419,43 @@ export function RolesContent() {
     setSelectedUserIds((prev) => [...new Set([...prev, ...visibleIds])]);
   };
 
-  const handleAssignUsers = () => {
-    const selectedUsers = availableUsers.filter((user) =>
-      selectedUserIds.includes(user.id)
-    );
+  const handleAssignUsers = async () => {
+    if (!assignRole) {
+      return;
+    }
 
-    push(
-      selectedUsers.length > 0
-        ? `${selectedUsers.length} user${selectedUsers.length > 1 ? "s" : ""} selected for ${assignRole?.name || "this role"}.`
-        : "No users selected.",
-      selectedUsers.length > 0 ? "success" : "error"
-    );
-    setAssignUsersOpen(false);
+    setAssigningUsers(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${apiBase}/roles/${assignRole.id}/users`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          userIds: selectedUserIds.map(Number),
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to assign users.");
+      }
+
+      push(
+        `${selectedUserIds.length} user${selectedUserIds.length === 1 ? "" : "s"} assigned to ${assignRole.name}.`,
+        "success"
+      );
+      setAssignUsersOpen(false);
+      await loadRoles();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to assign users.";
+      setError(message);
+      push(message, "error");
+    } finally {
+      setAssigningUsers(false);
+    }
   };
 
   const openPermissionsDialog = async (roleId: number) => {
@@ -477,12 +566,12 @@ export function RolesContent() {
         />
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
-          <Table className="min-w-[1100px]">
+          <Table className="w-full table-fixed">
             <TableHeader className="sticky top-0 z-10 bg-white/5">
               <TableRow className="border-white/10 hover:bg-transparent">
                 <TableHead
                   onClick={() => setSort("name")}
-                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100 hover:text-emerald-400"
+                  className="w-[28%] cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100 hover:text-emerald-400"
                 >
                   Role
                 </TableHead>
@@ -492,10 +581,10 @@ export function RolesContent() {
                 >
                   Description
                 </TableHead>
-                <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
-                  Permissions
+                <TableHead className="w-[16%] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                  Users
                 </TableHead>
-                <TableHead className="w-[220px] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                <TableHead className="w-[14%] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-zinc-100">
                   Action
                 </TableHead>
               </TableRow>
@@ -506,7 +595,7 @@ export function RolesContent() {
                   key={role.id}
                   className="border-white/5 transition-colors hover:bg-white/[0.03]"
                 >
-                  <TableCell className="px-4 py-4">
+                  <TableCell className="w-[28%] px-4 py-4 align-middle">
                     <div className="flex items-center gap-3">
                       <div
                         className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${role.accent} text-black shadow-lg`}
@@ -523,17 +612,17 @@ export function RolesContent() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-sm text-zinc-300">
-                    <p className="max-w-[480px] text-sm text-zinc-300">
+                  <TableCell className="px-4 py-4 align-middle text-sm text-zinc-300">
+                    <p className="max-w-[44rem] text-sm leading-6 text-zinc-300">
                       {role.description || "No description provided."}
                     </p>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex min-w-[96px] items-center justify-center rounded-full border border-[#2d3442] bg-[#2c2a22] px-3 py-2 text-xs font-semibold text-white shadow-sm">
-                      {role.rolePermissions?.length || 0} modules
+                  <TableCell className="w-[16%] px-4 py-4 align-middle text-center">
+                    <span className="inline-flex min-w-[80px] items-center justify-center rounded-full border border-[#2d3442] bg-[#1e293b] px-3 py-2 text-xs font-semibold text-white shadow-sm">
+                      {role._count?.users || 0} users
                     </span>
                   </TableCell>
-                  <TableCell className="overflow-visible px-4 py-4 text-right">
+                  <TableCell className="w-[14%] overflow-visible px-4 py-4 align-middle text-right">
                     <div className="relative inline-flex items-center justify-end">
                       <button
                         type="button"
@@ -576,6 +665,18 @@ export function RolesContent() {
               left: menuPosition.left,
             }}
           >
+            <button
+              type="button"
+              onClick={() => {
+                if (activeRole) {
+                  openViewUsersDialog(activeRole);
+                }
+              }}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-100 transition hover:bg-white/5"
+            >
+              <Eye className="h-4 w-4 text-zinc-300" />
+              <span>View Users</span>
+            </button>
             <button
               type="button"
               onClick={() => openAssignUsersDialog(openMenuId)}
@@ -848,10 +949,75 @@ export function RolesContent() {
                 <button
                   type="button"
                   onClick={handleAssignUsers}
-                  disabled={usersLoading}
+                  disabled={usersLoading || assigningUsers}
                   className="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Select Users
+                  {assigningUsers ? "Saving..." : "Save Users"}
+                </button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={viewUsersOpen} onOpenChange={setViewUsersOpen}>
+          <DialogContent className="max-w-2xl border-white/10 bg-[#111216] p-0">
+            <div className="flex flex-col">
+              <DialogHeader className="border-b border-white/10 px-6 py-5">
+                <DialogTitle className="text-xl font-bold text-white">
+                  Users With {viewRole?.name ?? "Selected Role"}
+                </DialogTitle>
+                <DialogDescription>
+                  {roleUsers.length} user{roleUsers.length === 1 ? "" : "s"} assigned to this role.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="max-h-[440px] overflow-y-auto px-6 py-5">
+                {roleUsersLoading ? (
+                  <div className="py-10 text-center text-sm text-zinc-500">
+                    Loading users...
+                  </div>
+                ) : roleUsers.length === 0 ? (
+                  <div className="py-10 text-center text-sm text-zinc-500">
+                    No users are assigned to this role.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+                    {roleUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        className="flex items-center justify-between gap-4 px-4 py-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-zinc-100">
+                            {getUserFullName(user)}
+                          </p>
+                          <p className="truncate text-xs text-zinc-400">
+                            {user.email}
+                            {user.username ? ` | @${user.username}` : ""}
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                            user.loginEnabled === false
+                              ? "bg-red-500/10 text-red-300"
+                              : "bg-emerald-500/10 text-emerald-300"
+                          }`}
+                        >
+                          {user.loginEnabled === false ? "Disabled" : "Active"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter className="justify-end border-t border-white/10 px-6 py-5 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => setViewUsersOpen(false)}
+                  className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-300 transition hover:bg-white/10"
+                >
+                  Close
                 </button>
               </DialogFooter>
             </div>

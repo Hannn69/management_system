@@ -30,6 +30,9 @@ export interface RoleRecord {
   createdAt: string;
   updatedAt: string;
   rolePermissions?: RolePermissionRecord[];
+  _count?: {
+    users: number;
+  };
 }
 
 export interface RoleFormState {

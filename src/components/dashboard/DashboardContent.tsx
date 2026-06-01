@@ -70,7 +70,9 @@ export function DashboardContent() {
 
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await fetch(`${apiBase}/dashboard/summary`, { credentials: "include" });
+      const res = await fetch(`${apiBase}/api/dashboard/summary`, {
+        credentials: "include",
+      });
       if (res.ok) {
         const data = await res.json();
         setSummary(data);
@@ -127,11 +129,15 @@ export function DashboardContent() {
               key={card.label}
               className={`${card.tone} rounded-[28px] border border-zinc-200 dark:border-white/6 px-5 py-5 shadow-sm dark:shadow-[0_25px_55px_-35px_rgba(0,0,0,0.8)] transition-all hover:scale-[1.03] hover:shadow-md dark:hover:shadow-[0_30px_60px_-30px_rgba(0,0,0,0.9)] cursor-default`}
             >
-              <p className="text-sm font-medium text-zinc-500 dark:text-[#7993a1]">{card.label}</p>
+              <p className="text-sm font-medium text-zinc-500 dark:text-[#7993a1]">
+                {card.label}
+              </p>
               <p className={`mt-3 text-4xl font-bold ${card.accent}`}>
                 {card.value}
               </p>
-              <p className="mt-3 text-sm text-zinc-400 dark:text-[#688290] font-medium">{card.detail}</p>
+              <p className="mt-3 text-sm text-zinc-400 dark:text-[#688290] font-medium">
+                {card.detail}
+              </p>
             </article>
           ))}
         </section>
@@ -155,19 +161,25 @@ export function DashboardContent() {
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-white/60">
                   Active items
                 </p>
-                <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">{summary.inventoryTracked}</p>
+                <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">
+                  {summary.inventoryTracked}
+                </p>
               </div>
               <div className="rounded-[28px] border border-zinc-300 dark:border-white/8 bg-white/50 dark:bg-black/12 px-4 py-4 backdrop-blur">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-white/60">
                   Pending actions
                 </p>
-                <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">18</p>
+                <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">
+                  18
+                </p>
               </div>
               <div className="rounded-[28px] border border-zinc-300 dark:border-white/8 bg-white/50 dark:bg-black/12 px-4 py-4 backdrop-blur">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-white/60">
                   Team coverage
                 </p>
-                <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">92%</p>
+                <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">
+                  92%
+                </p>
               </div>
             </div>
           </div>
@@ -221,7 +233,9 @@ export function DashboardContent() {
                         {item.label}
                       </span>
                     </div>
-                    <span className="text-sm text-zinc-500 dark:text-[#8ca6b5]">{item.value}%</span>
+                    <span className="text-sm text-zinc-500 dark:text-[#8ca6b5]">
+                      {item.value}%
+                    </span>
                   </div>
                 ))}
               </div>
@@ -265,7 +279,9 @@ export function DashboardContent() {
                     {item.time.replace(":", "")}
                   </div>
                   <div>
-                    <p className="font-medium text-foreground dark:text-white">{item.title}</p>
+                    <p className="font-medium text-foreground dark:text-white">
+                      {item.title}
+                    </p>
                     <p className="mt-1 text-sm leading-6 text-zinc-500 dark:text-[#7691a0]">
                       {item.meta}
                     </p>
@@ -310,13 +326,17 @@ export function DashboardContent() {
                       className="border-t border-zinc-200 dark:border-white/6 bg-white dark:bg-[#121f29] text-sm text-zinc-700 dark:text-[#dce6ed]"
                     >
                       <td className="px-4 py-3 font-medium">{row.name}</td>
-                      <td className="px-4 py-3 text-zinc-400 dark:text-[#7d97a7]">{row.owner}</td>
+                      <td className="px-4 py-3 text-zinc-400 dark:text-[#7d97a7]">
+                        {row.owner}
+                      </td>
                       <td className="px-4 py-3">
                         <span className="rounded-full bg-emerald-500/10 dark:bg-[#173039] px-3 py-1 text-xs font-medium text-emerald-600 dark:text-[#56d0cb]">
                           {row.state}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-zinc-400 dark:text-[#7d97a7]">{row.updated}</td>
+                      <td className="px-4 py-3 text-zinc-400 dark:text-[#7d97a7]">
+                        {row.updated}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
