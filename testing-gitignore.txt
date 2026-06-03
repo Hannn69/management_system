@@ -1,0 +1,15 @@
+// .gitignore additions for testing
+# Add these lines to your .gitignore if not already present
+
+# Jest coverage
+coverage/
+.coverage/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Node
+node_modules/
