@@ -8,6 +8,7 @@ export default function Home() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,6 +28,7 @@ export default function Home() {
         body: JSON.stringify({
           email: email.trim(),
           password,
+          rememberMe,
         }),
       });
 
@@ -154,7 +156,16 @@ export default function Home() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                <div className="mt-3 flex justify-end">
+                <div className="mt-3 flex items-center justify-between gap-4">
+                  <label className="inline-flex cursor-pointer items-center gap-3 text-sm text-[#c7d4dc]">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="h-4 w-4 rounded border-white/10 bg-[#16232d] text-[#2ca6a4] focus:ring-2 focus:ring-[#43d3cf]/35"
+                    />
+                    <span>Remember me</span>
+                  </label>
                   <button
                     type="button"
                     disabled

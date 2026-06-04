@@ -19,9 +19,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const payload = await verifySessionToken(refreshToken, "refresh");
+    const persistentSession = payload.persistentSession ?? true;
     const [accessToken, rotatedRefreshToken] = await Promise.all([
       signAccessToken(payload.user),
-      signRefreshToken(payload.user),
+      signRefreshToken(payload.user, persistentSession),
     ]);
 
     const response = NextResponse.json({
@@ -32,12 +33,14 @@ export async function POST(request: NextRequest) {
     response.cookies.set(
       ACCESS_TOKEN_COOKIE,
       accessToken,
-      getCookieOptions(getAccessTokenMaxAge())
+      getCookieOptions(persistentSession ? getAccessTokenMaxAge() : undefined)
     );
     response.cookies.set(
       REFRESH_TOKEN_COOKIE,
       rotatedRefreshToken,
-      getCookieOptions(getRefreshTokenMaxAge())
+      getCookieOptions(
+        persistentSession ? getRefreshTokenMaxAge() : undefined
+      )
     );
 
     return response;

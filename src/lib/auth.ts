@@ -22,6 +22,7 @@ export interface SessionUser {
 export interface SessionTokenPayload extends JWTPayload {
   type: "access" | "refresh";
   user: SessionUser;
+  persistentSession?: boolean;
 }
 
 export function getJwtSecret() {
@@ -41,9 +42,10 @@ export function getRefreshTokenMaxAge() {
 async function signSessionToken(
   user: SessionUser,
   type: SessionTokenPayload["type"],
-  expiresIn: string
+  expiresIn: string,
+  persistentSession?: boolean
 ) {
-  return new SignJWT({ type, user })
+  return new SignJWT({ type, user, ...(persistentSession !== undefined ? { persistentSession } : {}) })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt()
@@ -55,8 +57,13 @@ export function signAccessToken(user: SessionUser) {
   return signSessionToken(user, "access", `${ACCESS_TOKEN_TTL_MINUTES}m`);
 }
 
-export function signRefreshToken(user: SessionUser) {
-  return signSessionToken(user, "refresh", `${REFRESH_TOKEN_TTL_DAYS}d`);
+export function signRefreshToken(user: SessionUser, persistentSession = true) {
+  return signSessionToken(
+    user,
+    "refresh",
+    `${REFRESH_TOKEN_TTL_DAYS}d`,
+    persistentSession
+  );
 }
 
 export async function verifySessionToken(
@@ -73,12 +80,12 @@ export async function verifySessionToken(
   return typedPayload;
 }
 
-export function getCookieOptions(maxAge: number) {
+export function getCookieOptions(maxAge?: number) {
   return {
     httpOnly: true,
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge,
+    ...(maxAge !== undefined ? { maxAge } : {}),
   };
 }

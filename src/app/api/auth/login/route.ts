@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const email = String(body.email || "").trim();
     const password = String(body.password || "");
+    const rememberMe = body.rememberMe === true;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     const [accessToken, refreshToken] = await Promise.all([
       signAccessToken(user),
-      signRefreshToken(user),
+      signRefreshToken(user, rememberMe),
     ]);
 
     const response = NextResponse.json({
@@ -45,12 +46,12 @@ export async function POST(request: NextRequest) {
     response.cookies.set(
       ACCESS_TOKEN_COOKIE,
       accessToken,
-      getCookieOptions(getAccessTokenMaxAge())
+      getCookieOptions(rememberMe ? getAccessTokenMaxAge() : undefined)
     );
     response.cookies.set(
       REFRESH_TOKEN_COOKIE,
       refreshToken,
-      getCookieOptions(getRefreshTokenMaxAge())
+      getCookieOptions(rememberMe ? getRefreshTokenMaxAge() : undefined)
     );
 
     return response;
