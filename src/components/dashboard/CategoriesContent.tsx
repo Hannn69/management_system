@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import {
   Table,
   TableBody,
@@ -26,6 +27,7 @@ const accentClasses = [
 export function CategoriesContent() {
   const router = useRouter();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
+  const { push } = useToast();
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<CategoryRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -50,12 +52,23 @@ export function CategoriesContent() {
     if (!itemToDelete) return;
     setDeleteLoading(true);
     try {
-      // Mock delete logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch(`${apiBase}/categories/${itemToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to delete category");
+      }
+
       setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
       setItemToDelete(null);
+      push("Category deleted successfully!", "success");
     } catch (err) {
-      setError("Failed to delete category.");
+      const errorMsg = err instanceof Error ? err.message : "Failed to delete category.";
+      setError(errorMsg);
+      push(errorMsg, "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -109,24 +122,24 @@ export function CategoriesContent() {
           }}
         />
 
-        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
+        <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] shadow-sm dark:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <Table className="min-w-[1000px]">
-            <TableHeader className="bg-white/5 sticky top-0 z-10">
-              <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-indigo-400">Name</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
-                <TableHead onClick={() => setSort("type")} className="px-4 py-3 text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-indigo-400">Type</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Qty</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Send Email</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Acceptance</TableHead>
-                <TableHead className="w-[100px] px-4 py-3 text-right text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
+            <TableHeader className="bg-zinc-100 dark:bg-white/5 sticky top-0 z-10">
+              <TableRow className="border-zinc-200 dark:border-white/10 hover:bg-transparent">
+                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">Name</TableHead>
+                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
+                <TableHead onClick={() => setSort("type")} className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">Type</TableHead>
+                <TableHead className="px-4 py-3 text-center text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Qty</TableHead>
+                <TableHead className="px-4 py-3 text-center text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Send Email</TableHead>
+                <TableHead className="px-4 py-3 text-center text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Acceptance</TableHead>
+                <TableHead className="w-[100px] px-4 py-3 text-right text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-white/5">
+            <TableBody className="divide-y divide-zinc-100 dark:divide-white/5">
               {decoratedRecords.map((record) => (
                 <TableRow 
                   key={record.id} 
-                  className="border-white/5 transition-colors hover:bg-white/[0.03]"
+                  className="border-zinc-100 dark:border-white/5 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.03]"
                 >
                   <TableCell className="px-4 py-4">
                     <div className="flex items-center gap-3">
@@ -134,7 +147,7 @@ export function CategoriesContent() {
                         <Tag className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-zinc-100">{record.name}</p>
+                        <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{record.name}</p>
                         <p className="text-[10px] text-zinc-500 font-mono tracking-tight">{record.slug}</p>
                       </div>
                     </div>
@@ -144,7 +157,7 @@ export function CategoriesContent() {
                       {record.image ? (
                         <img src={record.image} alt={record.name} className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/10" />
                       ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10">
                           <ImageIcon className="h-5 w-5 text-zinc-600" />
                         </div>
                       )}
@@ -153,18 +166,18 @@ export function CategoriesContent() {
                   <TableCell className="px-4 py-4">
                     <div className="flex items-center gap-2">
                       <Layers className="h-3.5 w-3.5 text-violet-500" />
-                      <span className="text-xs font-medium text-zinc-300">{record.type}</span>
+                      <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">{record.type}</span>
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-bold text-indigo-400 border border-indigo-500/20">
+                    <span className="inline-flex rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
                       {record.qty}
                     </span>
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center">
                     <div className="flex justify-center">
                       {record.sendEmail ? (
-                        <div className="flex items-center gap-1 text-emerald-400">
+                        <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                           <Check className="h-3.5 w-3.5" />
                           <Mail className="h-3.5 w-3.5" />
                         </div>
@@ -176,7 +189,7 @@ export function CategoriesContent() {
                   <TableCell className="px-4 py-4 text-center">
                     <div className="flex justify-center">
                       {record.acceptance ? (
-                        <div className="flex items-center gap-1 text-amber-400">
+                        <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
                           <ShieldAlert className="h-3.5 w-3.5" />
                           <span className="text-[10px] font-bold uppercase">Required</span>
                         </div>
@@ -189,14 +202,14 @@ export function CategoriesContent() {
                     <div className="flex items-center justify-end gap-2">
                       <button 
                         onClick={() => router.push(`/categories/${record.id}/edit`)}
-                        className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-400 transition-all active:scale-90" 
+                        className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all active:scale-90" 
                         title="Edit"
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
                       <button 
                         onClick={() => setItemToDelete(record)}
-                        className="p-2 rounded-xl text-zinc-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all active:scale-90" 
+                        className="p-2 rounded-xl text-zinc-500 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all active:scale-90" 
                         title="Delete"
                       >
                         <Trash className="h-4 w-4" />
@@ -206,7 +219,7 @@ export function CategoriesContent() {
                 </TableRow>
               ))}
               {decoratedRecords.length === 0 && (
-                <TableRow className="border-white/10">
+                <TableRow className="border-zinc-200 dark:border-white/10">
                   <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={7}>
                     {loading ? "Loading..." : "No categories found."}
                   </TableCell>
@@ -225,11 +238,11 @@ export function CategoriesContent() {
           loading={deleteLoading}
         />
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-400">Rows per page</span>
+            <span className="text-zinc-500 dark:text-zinc-400">Rows per page</span>
             <select
-              className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-200"
+              className="rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-1 text-xs text-zinc-800 dark:text-zinc-200"
               value={limit}
               onChange={(e) => { setPage(1); setLimit(Number(e.target.value)); }}
             >
@@ -237,12 +250,12 @@ export function CategoriesContent() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-zinc-400">
+            <span className="text-zinc-500 dark:text-zinc-400">
               {total === 0 ? "0-0" : `${(page - 1) * limit + 1}-${Math.min(page * limit, total)}`} of {total}
             </span>
             <div className="flex items-center gap-1">
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-500 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 disabled:opacity-30"
                 disabled={page === 1}
                 onClick={() => setPage(p => p - 1)}
               >
@@ -252,7 +265,7 @@ export function CategoriesContent() {
                 {page}
               </button>
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-200 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200 disabled:opacity-30"
                 disabled={page * limit >= total}
                 onClick={() => setPage(p => p + 1)}
               >
@@ -261,7 +274,7 @@ export function CategoriesContent() {
             </div>
           </div>
         </div>
-        {error && <p className="rounded-lg bg-rose-500/10 p-3 text-center text-xs text-rose-300 border border-rose-500/20">{error}</p>}
+        {error && <p className="rounded-lg bg-rose-500/10 p-3 text-center text-xs text-rose-700 dark:text-rose-300 border border-rose-500/20">{error}</p>}
       </div>
     </main>
   );

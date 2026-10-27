@@ -1,5 +1,8 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
+import { AutoFillButton } from "@/components/ui/AutoFillButton";
+import { sample } from "@/lib/sample-data";
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -33,9 +36,9 @@ function CreateLocationContentInner() {
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [quickCreateUserOpen, setQuickCreateUserOpen] = useState(false);
 
-  const [companies, setCompanies] = useState<any[]>([]);
-  const [parentLocations, setParentLocations] = useState<any[]>([]);
-  const [managers, setManagers] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<ApiRecord[]>([]);
+  const [parentLocations, setParentLocations] = useState<ApiRecord[]>([]);
+  const [managers, setManagers] = useState<ApiRecord[]>([]);
 
   // Currency & Conversion Logic
   const [activeCurrency, setActiveCurrency] = useState("USD"); // Internal baseline
@@ -115,6 +118,10 @@ function CreateLocationContentInner() {
     setActiveCurrency(newCurrency);
   };
 
+  const autoFill = () => {
+    setForm((prev) => ({ ...prev, ...sample.location({ companies }) }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -158,12 +165,13 @@ function CreateLocationContentInner() {
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 pb-12">
+          <AutoFillButton onClick={autoFill} />
           <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
@@ -188,7 +196,7 @@ function CreateLocationContentInner() {
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Parent Location</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 dark:text-zinc-400 pointer-events-none" />
                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500/50" />
                       <select 
                         className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner appearance-none"
@@ -202,7 +210,7 @@ function CreateLocationContentInner() {
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-lg active:scale-95"
                       title="New Location"
                     >
                       <Plus className="h-5 w-5" />
@@ -214,7 +222,7 @@ function CreateLocationContentInner() {
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Manager</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 dark:text-zinc-400 pointer-events-none" />
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
                       <select 
                         className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/50 transition-all shadow-inner appearance-none"
@@ -232,7 +240,7 @@ function CreateLocationContentInner() {
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateUserOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-orange-600/10 text-orange-400 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-orange-600/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-lg active:scale-95"
                       title="New Manager"
                     >
                       <Plus className="h-5 w-5" />
@@ -274,7 +282,7 @@ function CreateLocationContentInner() {
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Currency</label>
                   <div className="space-y-3">
                     <div className="relative">
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 dark:text-zinc-400 pointer-events-none" />
                       <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500/50" />
                       <select 
                         className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner appearance-none"

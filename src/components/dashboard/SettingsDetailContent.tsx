@@ -1,5 +1,6 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { 
@@ -30,7 +31,7 @@ interface SettingsDetailContentProps {
 export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps) {
   const router = useRouter();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
-  const [record, setRecord] = useState<any>(null);
+  const [record, setRecord] = useState<ApiRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,8 +72,8 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
   if (error || !record) {
     return (
       <div className="p-12 text-center">
-        <p className="text-rose-400 font-bold">{error || "Record not found"}</p>
-        <button onClick={() => router.back()} className="mt-4 text-sm text-zinc-400 hover:text-white flex items-center gap-2 mx-auto">
+        <p className="text-rose-600 dark:text-rose-400 font-bold">{error || "Record not found"}</p>
+        <button onClick={() => router.back()} className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center gap-2 mx-auto">
           <ArrowLeft className="h-4 w-4" /> Go Back
         </button>
       </div>
@@ -89,7 +90,7 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
           <div className="flex items-center gap-4">
             <button 
               onClick={() => router.back()}
-              className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-400 hover:text-foreground dark:hover:text-white transition-all shadow-sm"
+              className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:text-foreground dark:hover:text-white transition-all shadow-sm"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
@@ -132,7 +133,7 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
                   {/* Category Type */}
                   {type === "categories" && (
                     <div className="space-y-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Resource Type</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Resource Type</p>
                       <div className="flex items-center gap-2 text-foreground font-medium">
                         <Layers className="h-4 w-4 text-violet-500" />
                         {record.type}
@@ -143,7 +144,7 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
                   {/* Manufacturer/Supplier URLs */}
                   {(type === "manufacturers" || type === "suppliers") && (
                     <div className="space-y-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Website</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Website</p>
                       <div className="flex items-center gap-2 text-cyan-500 font-medium">
                         <Globe className="h-4 w-4" />
                         <a href={record.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{record.url || "N/A"}</a>
@@ -155,14 +156,14 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
                   {(record.email || record.phone) && (
                     <>
                       <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Email</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Email</p>
                         <div className="flex items-center gap-2 text-foreground font-medium">
                           <Mail className="h-4 w-4 text-emerald-500" />
                           {record.email || "N/A"}
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Phone</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Phone</p>
                         <div className="flex items-center gap-2 text-foreground font-medium">
                           <Phone className="h-4 w-4 text-blue-500" />
                           {record.phone || "N/A"}
@@ -174,7 +175,7 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
                   {/* Dept Manager */}
                   {type === "departments" && (
                     <div className="space-y-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Department Head</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Department Head</p>
                       <div className="flex items-center gap-2 text-foreground font-medium">
                         <User className="h-4 w-4 text-amber-500" />
                         {record.manager?.firstName || record.managerId ? `${record.manager?.firstName || ''} ${record.manager?.lastName || ''}` : "Admin User"}
@@ -185,7 +186,7 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
                   {/* Company Info */}
                   {record.company && (
                     <div className="space-y-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Associated Company</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Associated Company</p>
                       <div className="flex items-center gap-2 text-foreground font-medium">
                         <Building2 className="h-4 w-4 text-blue-500" />
                         {record.company.name}
@@ -196,7 +197,7 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
                   {/* Location Info */}
                   {record.location && (
                     <div className="space-y-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Primary Location</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Primary Location</p>
                       <div className="flex items-center gap-2 text-foreground font-medium">
                         <MapPin className="h-4 w-4 text-rose-500" />
                         {record.location.name}
@@ -207,7 +208,7 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
                   {/* Status Type */}
                   {type === "status-labels" && (
                     <div className="space-y-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Workflow Type</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Workflow Type</p>
                       <div className="flex items-center gap-2 text-foreground font-medium uppercase tracking-tighter">
                         <Activity className="h-4 w-4 text-amber-500" />
                         {record.type}
@@ -218,7 +219,7 @@ export function SettingsDetailContent({ slug, type }: SettingsDetailContentProps
               </div>
 
               <div className="mt-8 pt-8 border-t border-zinc-200 dark:border-white/5">
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Internal Description</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 mb-2">Internal Description</p>
                 <div className="flex gap-3 text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm">
                   <FileText className="h-4 w-4 mt-0.5 shrink-0" />
                   <p>{record.notes || `No detailed notes provided for this ${entityConfig.label.toLowerCase()}.`}</p>

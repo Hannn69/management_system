@@ -104,7 +104,7 @@ export function EditRoleContent() {
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto flex w-full max-w-[1080px] flex-col gap-6">
         {error ? (
-          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-300">
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-300">
             {error}
           </div>
         ) : null}

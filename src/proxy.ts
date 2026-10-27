@@ -12,6 +12,14 @@ import {
 const AUTH_ROUTE = "/";
 const DEFAULT_PROTECTED_ROUTE = "/dashboard";
 
+// Logged-out API calls get a JSON 401 (not a redirect to the login page) so fetch callers can react.
+function denyOrRedirect(request: NextRequest, pathname: string) {
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  }
+  return NextResponse.redirect(new URL(AUTH_ROUTE, request.url));
+}
+
 function isPublicAsset(pathname: string) {
   return (
     pathname.startsWith("/_next") ||
@@ -63,7 +71,7 @@ export async function proxy(request: NextRequest) {
     } catch {
       const response = isAuthRoute
         ? NextResponse.next()
-        : NextResponse.redirect(new URL(AUTH_ROUTE, request.url));
+        : denyOrRedirect(request, pathname);
       response.cookies.delete(ACCESS_TOKEN_COOKIE);
       response.cookies.delete(REFRESH_TOKEN_COOKIE);
       return response;
@@ -71,7 +79,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!isAuthRoute) {
-    return NextResponse.redirect(new URL(AUTH_ROUTE, request.url));
+    return denyOrRedirect(request, pathname);
   }
 
   return NextResponse.next();

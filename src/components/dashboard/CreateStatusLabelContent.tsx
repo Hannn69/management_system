@@ -1,5 +1,7 @@
 "use client";
 
+import { AutoFillButton } from "@/components/ui/AutoFillButton";
+import { sample } from "@/lib/sample-data";
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -25,6 +27,10 @@ function CreateStatusLabelContentInner() {
     } else {
       router.push("/status-labels");
     }
+  };
+
+  const autoFill = () => {
+    setForm((prev) => ({ ...prev, ...sample.statusLabel() }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,12 +67,13 @@ function CreateStatusLabelContentInner() {
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <AutoFillButton onClick={autoFill} />
           <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-sm dark:shadow-2xl backdrop-blur-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-5">

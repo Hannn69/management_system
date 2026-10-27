@@ -1,5 +1,8 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
+import { AutoFillButton } from "@/components/ui/AutoFillButton";
+import { sample } from "@/lib/sample-data";
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -33,8 +36,8 @@ function CreateAssetModelContentInner() {
   const [quickCreateCategoryOpen, setQuickCreateCategoryOpen] = useState(false);
   const [quickCreateManufacturerOpen, setQuickCreateManufacturerOpen] = useState(false);
 
-  const [categories, setCategories] = useState<any[]>([]);
-  const [manufacturers, setManufacturers] = useState<any[]>([]);
+  const [categories, setCategories] = useState<ApiRecord[]>([]);
+  const [manufacturers, setManufacturers] = useState<ApiRecord[]>([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -74,6 +77,10 @@ function CreateAssetModelContentInner() {
     } else {
       router.push("/asset-models");
     }
+  };
+
+  const autoFill = () => {
+    setForm((prev) => ({ ...prev, ...sample.assetModel({ categories, manufacturers }) }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,12 +132,13 @@ function CreateAssetModelContentInner() {
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto w-full max-w-[1380px] flex flex-1 flex-col gap-6">
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <AutoFillButton onClick={autoFill} />
           <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl backdrop-blur-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
@@ -169,7 +177,7 @@ function CreateAssetModelContentInner() {
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateCategoryOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-cyan-600/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-cyan-600/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 hover:bg-cyan-600/20 transition-all shadow-lg active:scale-95"
                       title="New Category"
                     >
                       <Plus className="h-5 w-5" />
@@ -196,7 +204,7 @@ function CreateAssetModelContentInner() {
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateManufacturerOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 hover:bg-blue-600/20 transition-all shadow-lg active:scale-95"
                       title="New Manufacturer"
                     >
                       <Plus className="h-5 w-5" />
@@ -302,7 +310,7 @@ function CreateAssetModelContentInner() {
             <button 
               type="button"
               onClick={handleBack}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>

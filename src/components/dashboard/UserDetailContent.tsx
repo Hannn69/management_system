@@ -75,12 +75,12 @@ export function UserDetailContent() {
           <button
             type="button"
             onClick={() => router.push("/users")}
-            className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:bg-white/10 hover:text-white"
+            className="inline-flex w-fit items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Users
           </button>
-          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-6 text-sm text-rose-300">
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-6 text-sm text-rose-700 dark:text-rose-300">
             {error || "User not found."}
           </div>
         </div>
@@ -104,7 +104,7 @@ export function UserDetailContent() {
           <button
             type="button"
             onClick={() => router.push("/users")}
-            className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:bg-white/10 hover:text-white"
+            className="inline-flex w-fit items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Users
@@ -119,7 +119,7 @@ export function UserDetailContent() {
           </button>
         </div>
 
-        <section className="rounded-[28px] border border-white/10 bg-[#111216] p-8 shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
+        <section className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-sm dark:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="flex items-center gap-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-cyan-400 to-blue-500 text-black shadow-lg">
@@ -129,10 +129,10 @@ export function UserDetailContent() {
                 <p className="text-xs font-bold uppercase tracking-[0.28em] text-zinc-500">
                   User Profile
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">
+                <h2 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">
                   {getUserFullName(record)}
                 </h2>
-                <p className="mt-1 text-sm text-zinc-400">@{record.username}</p>
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">@{record.username}</p>
               </div>
             </div>
             <span
@@ -195,12 +195,12 @@ function DetailCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+    <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03] p-5">
       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">
-        <span className="text-cyan-400">{icon}</span>
+        <span className="text-cyan-600 dark:text-cyan-400">{icon}</span>
         {label}
       </div>
-      <p className="mt-3 break-words text-sm font-medium text-zinc-100">
+      <p className="mt-3 break-words text-sm font-medium text-zinc-900 dark:text-zinc-100">
         {value}
       </p>
     </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { AutoFillButton } from "@/components/ui/AutoFillButton";
+import { sample } from "@/lib/sample-data";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -84,6 +86,10 @@ export function CreateUserContent() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const autoFill = () => {
+    setForm((prev) => ({ ...prev, ...sample.user({ companies, locations }) }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -136,12 +142,13 @@ export function CreateUserContent() {
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-6">
         {error ? (
-          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-300">
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-300">
             {error}
           </div>
         ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-6 pb-12">
+          <AutoFillButton onClick={autoFill} />
           <section className="rounded-[28px] border border-zinc-200 bg-white p-8 shadow-2xl dark:border-white/10 dark:bg-[#111216]">
             <div className="mb-8 flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-500">
@@ -312,11 +319,11 @@ export function CreateUserContent() {
                 <label className="flex items-center gap-3 pt-2">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 rounded border-white/10 bg-white/5"
+                    className="h-4 w-4 rounded border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5"
                     checked={form.loginEnabled}
                     onChange={(e) => updateField("loginEnabled", e.target.checked)}
                   />
-                  <span className="text-sm text-zinc-400">Login Enabled</span>
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">Login Enabled</span>
                 </label>
               </div>
             </div>
@@ -399,7 +406,7 @@ export function CreateUserContent() {
                   </button>
                 </div>
                 {passwordMismatch ? (
-                  <p className="ml-1 text-xs text-rose-400">
+                  <p className="ml-1 text-xs text-rose-600 dark:text-rose-400">
                     Password and confirm password do not match.
                   </p>
                 ) : null}

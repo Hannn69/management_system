@@ -1,5 +1,8 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
+import { AutoFillButton } from "@/components/ui/AutoFillButton";
+import { sample } from "@/lib/sample-data";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -50,12 +53,12 @@ export function CreateAssetContent() {
   const [assetItems, setAssetItems] = useState([{ tag: "", serial: "" }]);
 
   // Dropdown data
-  const [companies, setCompanies] = useState<any[]>([]);
-  const [models, setModels] = useState<any[]>([]);
-  const [statuses, setStatuses] = useState<any[]>([]);
-  const [locations, setLocations] = useState<any[]>([]);
-  const [suppliers, setSuppliers] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]); 
+  const [companies, setCompanies] = useState<ApiRecord[]>([]);
+  const [models, setModels] = useState<ApiRecord[]>([]);
+  const [statuses, setStatuses] = useState<ApiRecord[]>([]);
+  const [locations, setLocations] = useState<ApiRecord[]>([]);
+  const [suppliers, setSuppliers] = useState<ApiRecord[]>([]);
+  const [users, setUsers] = useState<ApiRecord[]>([]); 
 
   const [form, setForm] = useState({
     companyId: "",
@@ -146,6 +149,18 @@ export function CreateAssetContent() {
     setCurrencySymbol(newCurrency === "USD" ? "$" : "៛");
   };
 
+  const autoFill = () => {
+    const { serial, ...fields } = sample.asset({ companies, models, statuses, locations, suppliers });
+
+    setForm((prev) => ({ ...prev, ...fields }));
+
+    setAssetItems((prev) => prev.map((item, i) => (i === 0 ? { ...item, serial } : item)));
+
+    setIsOptionalOpen(true);
+
+    setIsOrderOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -228,16 +243,17 @@ export function CreateAssetContent() {
     <main className="px-6 pb-12 pt-5">
       <div className="mx-auto flex w-full max-w-[1380px] flex-1 flex-col gap-6">
         {error && (
-          <div className="mb-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+          <div className="mb-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <AutoFillButton onClick={autoFill} />
           <div className="rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                   <Building2 className="h-3 w-3" /> Company
                 </label>
                 <select 
@@ -251,7 +267,7 @@ export function CreateAssetContent() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                   <Box className="h-3 w-3" /> Model
                 </label>
                 <div className="flex gap-2">
@@ -264,7 +280,7 @@ export function CreateAssetContent() {
                     <option value="" className="bg-white dark:bg-[#111216]">Select Model</option>
                     {models.map(m => <option key={m.id} value={m.id} className="bg-white dark:bg-[#111216]">{m.name}</option>)}
                   </select>
-                  <button type="button" onClick={() => router.push("/asset-models/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button type="button" onClick={() => router.push("/asset-models/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
@@ -272,11 +288,11 @@ export function CreateAssetContent() {
 
               <div className="md:col-span-2 space-y-4">
                 <div className="flex items-center justify-between">
-                   <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Assets to Create ({assetItems.length})</label>
+                   <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Assets to Create ({assetItems.length})</label>
                    <button 
                     type="button" 
                     onClick={addAssetItem}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-600/10 text-emerald-400 text-[10px] font-bold uppercase tracking-widest border border-emerald-500/20 hover:bg-emerald-600/20 transition-all active:scale-95"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-widest border border-emerald-500/20 hover:bg-emerald-600/20 transition-all active:scale-95"
                    >
                      <Plus className="h-3 w-3" /> Add More
                    </button>
@@ -289,13 +305,13 @@ export function CreateAssetContent() {
                           <label className="text-[10px] font-bold uppercase text-zinc-500 flex items-center justify-between">
                             <span>Asset Tag {index + 1}</span>
                             {assetItems.length > 1 && (
-                              <button type="button" onClick={() => removeAssetItem(index)} className="text-rose-500 hover:text-rose-400 transition-colors">
+                              <button type="button" onClick={() => removeAssetItem(index)} className="text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
                                 <Trash2 className="h-3 w-3" />
                               </button>
                             )}
                           </label>
                           <div className="relative">
-                            <Barcode className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                            <Barcode className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
                             <input 
                               type="text" 
                               placeholder="AST-00001"
@@ -308,7 +324,7 @@ export function CreateAssetContent() {
                        <div className="flex flex-col gap-2">
                           <label className="text-[10px] font-bold uppercase text-zinc-500">Serial {index + 1}</label>
                           <div className="relative">
-                            <Cpu className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                            <Cpu className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
                             <input 
                               type="text" 
                               placeholder="Serial Number"
@@ -324,7 +340,7 @@ export function CreateAssetContent() {
               </div>
 
               <div className="flex flex-col gap-2 pt-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                   <ShieldCheck className="h-3 w-3" /> Status
                 </label>
                 <div className="flex gap-2">
@@ -337,14 +353,14 @@ export function CreateAssetContent() {
                     <option value="" className="bg-white dark:bg-[#111216]">Select Status</option>
                     {statuses.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-[#111216]">{s.name}</option>)}
                   </select>
-                  <button type="button" onClick={() => router.push("/status-labels/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button type="button" onClick={() => router.push("/status-labels/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 pt-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                   <User className="h-3 w-3" /> Checkout to
                 </label>
                 <div className="flex gap-2">
@@ -359,7 +375,7 @@ export function CreateAssetContent() {
                   <button 
                     type="button" 
                     onClick={() => setQuickCreateUserOpen(true)}
-                    className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95"
+                    className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95"
                   >
                     NEW
                   </button>
@@ -367,7 +383,7 @@ export function CreateAssetContent() {
               </div>
 
               <div className="flex flex-col gap-2 pt-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                   <MapPin className="h-3 w-3" /> Default Location
                 </label>
                 <div className="flex gap-2">
@@ -379,7 +395,7 @@ export function CreateAssetContent() {
                     <option value="" className="bg-white dark:bg-[#111216]">Select Location</option>
                     {locations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
                   </select>
-                  <button type="button" onClick={() => router.push("/locations/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                  <button type="button" onClick={() => router.push("/locations/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                     NEW
                   </button>
                 </div>
@@ -399,7 +415,7 @@ export function CreateAssetContent() {
               </div>
 
               <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                   <FileText className="h-3 w-3" /> Notes
                 </label>
                 <textarea 
@@ -426,7 +442,7 @@ export function CreateAssetContent() {
               className="flex w-full items-center justify-between px-8 py-5 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                   <Info className="h-4 w-4" />
                 </div>
                 <span className="text-sm font-bold uppercase tracking-wider text-foreground">Optional Information</span>
@@ -437,7 +453,7 @@ export function CreateAssetContent() {
             {isOptionalOpen && (
               <div className="px-8 pb-8 pt-2 grid gap-6 md:grid-cols-2 border-t border-zinc-200 dark:border-white/5">
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                     <Tag className="h-3 w-3" /> Asset Name
                   </label>
                   <input 
@@ -450,7 +466,7 @@ export function CreateAssetContent() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                     <History className="h-3 w-3" /> Warranty (months)
                   </label>
                   <input 
@@ -463,7 +479,7 @@ export function CreateAssetContent() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                     <Calendar className="h-3 w-3" /> Expected Checkin Date
                   </label>
                   <input 
@@ -475,7 +491,7 @@ export function CreateAssetContent() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                     <Calendar className="h-3 w-3" /> Next Audit Date
                   </label>
                   <input 
@@ -512,7 +528,7 @@ export function CreateAssetContent() {
               className="flex w-full items-center justify-between px-8 py-5 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
                   <Truck className="h-4 w-4" />
                 </div>
                 <span className="text-sm font-bold uppercase tracking-wider text-foreground">Order Related Information</span>
@@ -523,7 +539,7 @@ export function CreateAssetContent() {
             {isOrderOpen && (
               <div className="px-8 pb-8 pt-2 grid gap-6 md:grid-cols-2 border-t border-zinc-200 dark:border-white/5">
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                     <Barcode className="h-3 w-3" /> Order Number
                   </label>
                   <input 
@@ -536,7 +552,7 @@ export function CreateAssetContent() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                     <Calendar className="h-3 w-3" /> Purchase Date
                   </label>
                   <input 
@@ -548,7 +564,7 @@ export function CreateAssetContent() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                     <Calendar className="h-3 w-3" /> EOL Date
                   </label>
                   <input 
@@ -560,7 +576,7 @@ export function CreateAssetContent() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                     <Truck className="h-3 w-3" /> Supplier
                   </label>
                   <div className="flex gap-2">
@@ -572,20 +588,20 @@ export function CreateAssetContent() {
                       <option value="" className="bg-white dark:bg-[#111216]">Select Supplier</option>
                       {suppliers.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-[#111216]">{s.name}</option>)}
                     </select>
-                    <button type="button" onClick={() => router.push("/suppliers/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
+                    <button type="button" onClick={() => router.push("/suppliers/create?returnTo=/assets/create")} className="flex items-center gap-2 rounded-xl bg-emerald-600/10 px-4 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20 transition-all active:scale-95">
                       NEW
                     </button>
                     </div>
                     </div>
 
                     <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                     <DollarSign className="h-3 w-3" /> Purchase Cost
                     </label>
 
                   <div className="flex flex-col gap-3">
                     <div className="relative">
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 dark:text-zinc-400 pointer-events-none" />
                       <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500/50" />
                       <select 
                         className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner appearance-none"

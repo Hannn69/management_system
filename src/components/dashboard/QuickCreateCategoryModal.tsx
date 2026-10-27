@@ -1,5 +1,6 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
 import { useState } from "react";
 import { 
   X, 
@@ -12,7 +13,7 @@ import { useToast } from "@/components/ui/toast";
 interface QuickCreateCategoryModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: (category: any) => void;
+  onSuccess: (category: ApiRecord) => void;
 }
 
 export function QuickCreateCategoryModal({ open, onClose, onSuccess }: QuickCreateCategoryModalProps) {
@@ -61,7 +62,7 @@ export function QuickCreateCategoryModal({ open, onClose, onSuccess }: QuickCrea
             <h3 className="text-xl font-bold text-foreground">New Category</h3>
           </div>
           <button onClick={onClose} className="rounded-xl p-2 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">
-            <X className="h-5 w-5 text-zinc-400" />
+            <X className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
           </button>
         </div>
 

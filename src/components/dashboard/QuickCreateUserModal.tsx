@@ -1,5 +1,6 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
 import { useState } from "react";
 import { 
   X, 
@@ -29,9 +30,9 @@ import { useToast } from "@/components/ui/toast";
 interface QuickCreateUserModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: (newUser: any) => void;
-  companies: any[];
-  locations: any[];
+  onSuccess: (newUser: ApiRecord) => void;
+  companies: ApiRecord[];
+  locations: ApiRecord[];
 }
 
 export function QuickCreateUserModal({ open, onClose, onSuccess, companies, locations }: QuickCreateUserModalProps) {
@@ -108,16 +109,16 @@ export function QuickCreateUserModal({ open, onClose, onSuccess, companies, loca
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] bg-[#111216] border-white/10 p-0 overflow-hidden rounded-[28px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] bg-white dark:bg-[#111216] border-zinc-200 dark:border-white/10 p-0 overflow-hidden rounded-[28px] max-h-[90vh] overflow-y-auto">
         <div className="p-8">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+            <DialogTitle className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
               <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500">
                 <UserSquare2 className="h-5 w-5" />
               </div>
               Quick Create Manager
             </DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-zinc-500 dark:text-zinc-400">
               Fill in the manager details below to add a new manager.
             </DialogDescription>
           </DialogHeader>
@@ -135,8 +136,8 @@ export function QuickCreateUserModal({ open, onClose, onSuccess, companies, loca
                     value={form.companyId}
                     onChange={(e) => setForm({ ...form, companyId: e.target.value })}
                   >
-                    <option value="" className="bg-[#111216]">Select Company</option>
-                    {companies.map(c => <option key={c.id} value={c.id} className="bg-[#111216]">{c.name}</option>)}
+                    <option value="" className="bg-white dark:bg-[#111216]">Select Company</option>
+                    {companies.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#111216]">{c.name}</option>)}
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
                 </div>
@@ -153,8 +154,8 @@ export function QuickCreateUserModal({ open, onClose, onSuccess, companies, loca
                     value={form.locationId}
                     onChange={(e) => setForm({ ...form, locationId: e.target.value })}
                   >
-                    <option value="" className="bg-[#111216]">Select Location</option>
-                    {locations.map(l => <option key={l.id} value={l.id} className="bg-[#111216]">{l.name}</option>)}
+                    <option value="" className="bg-white dark:bg-[#111216]">Select Location</option>
+                    {locations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
                 </div>
@@ -240,7 +241,7 @@ export function QuickCreateUserModal({ open, onClose, onSuccess, companies, loca
                   <button 
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -297,16 +298,16 @@ export function QuickCreateUserModal({ open, onClose, onSuccess, companies, loca
                     onChange={(e) => setForm({ ...form, loginEnabled: e.target.checked })}
                   />
                   <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
-                  <span className="ml-3 text-sm font-medium text-zinc-400">Login Enabled</span>
+                  <span className="ml-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">Login Enabled</span>
                 </label>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/5 mt-2">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-white/5 mt-2">
               <button 
                 type="button"
                 onClick={onClose}
-                className="px-6 py-3 rounded-2xl border border-white/10 bg-white/5 text-sm font-bold text-zinc-400 hover:bg-white/10 hover:text-white transition-all active:scale-95"
+                className="px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white transition-all active:scale-95"
               >
                 Cancel
               </button>

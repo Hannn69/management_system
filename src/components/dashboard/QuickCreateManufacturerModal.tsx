@@ -1,5 +1,6 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
 import { useState } from "react";
 import { 
   X, 
@@ -12,7 +13,7 @@ import { useToast } from "@/components/ui/toast";
 interface QuickCreateManufacturerModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: (manufacturer: any) => void;
+  onSuccess: (manufacturer: ApiRecord) => void;
 }
 
 export function QuickCreateManufacturerModal({ open, onClose, onSuccess }: QuickCreateManufacturerModalProps) {
@@ -61,7 +62,7 @@ export function QuickCreateManufacturerModal({ open, onClose, onSuccess }: Quick
             <h3 className="text-xl font-bold text-foreground">New Manufacturer</h3>
           </div>
           <button onClick={onClose} className="rounded-xl p-2 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">
-            <X className="h-5 w-5 text-zinc-400" />
+            <X className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
           </button>
         </div>
 

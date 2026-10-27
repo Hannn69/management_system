@@ -37,7 +37,7 @@ export function ImageUpload({ value, onChange, label = "Upload Image", className
 
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
-      <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+      <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
         <Upload className="h-3 w-3" /> {label}
       </label>
       
@@ -54,7 +54,7 @@ export function ImageUpload({ value, onChange, label = "Upload Image", className
         />
 
         {value ? (
-          <div className="relative w-full aspect-video md:aspect-auto md:h-32 rounded-xl overflow-hidden shadow-lg border border-white/10">
+          <div className="relative w-full aspect-video md:aspect-auto md:h-32 rounded-xl overflow-hidden shadow-lg border border-zinc-200 dark:border-white/10">
             <img src={value} alt="Preview" className="h-full w-full object-contain" />
             <button 
               onClick={handleClear}
@@ -73,7 +73,7 @@ export function ImageUpload({ value, onChange, label = "Upload Image", className
               <p className="text-sm font-bold text-zinc-600 dark:text-zinc-200">
                 {fileName || "Click to select file"}
               </p>
-              <p className="text-[10px] text-zinc-400 mt-1 uppercase tracking-widest font-medium">
+              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 uppercase tracking-widest font-medium">
                 PNG, JPG or SVG (Max 2MB)
               </p>
             </div>

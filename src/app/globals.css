@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* `dark:` follows the .dark class set by the theme toggle, not the operating system setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
@@ -66,3 +69,4 @@ html {
 *::-webkit-scrollbar-corner {
   background: transparent;
 }
+
