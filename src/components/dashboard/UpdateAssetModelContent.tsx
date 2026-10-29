@@ -1,5 +1,6 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -38,8 +39,8 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
   const [quickCreateCategoryOpen, setQuickCreateCategoryOpen] = useState(false);
   const [quickCreateManufacturerOpen, setQuickCreateManufacturerOpen] = useState(false);
 
-  const [categories, setCategories] = useState<any[]>([]);
-  const [manufacturers, setManufacturers] = useState<any[]>([]);
+  const [categories, setCategories] = useState<ApiRecord[]>([]);
+  const [manufacturers, setManufacturers] = useState<ApiRecord[]>([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -153,18 +154,18 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/asset-models")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
+            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
             <h2 className="text-2xl font-bold text-foreground tracking-tight">Update Asset Model</h2>
-            <p className="text-zinc-400 text-sm">Modify existing asset model template for {form.name}.</p>
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Modify existing asset model template for {form.name}.</p>
           </div>
         </div>
 
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}
@@ -210,7 +211,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateCategoryOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-cyan-600/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-cyan-600/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 hover:bg-cyan-600/20 transition-all shadow-lg active:scale-95"
                       title="New Category"
                     >
                       <Plus className="h-5 w-5" />
@@ -238,7 +239,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateManufacturerOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 hover:bg-blue-600/20 transition-all shadow-lg active:scale-95"
                       title="New Manufacturer"
                     >
                       <Plus className="h-5 w-5" />
@@ -359,7 +360,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
             <button 
               type="button"
               onClick={() => router.push("/asset-models")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>

@@ -1,64 +1,37 @@
-import { compare } from "bcryptjs";
 import { SessionUser } from "@/lib/auth";
-import { ApiUserRecord } from "@/lib/users";
-import { getStoredUserByEmail } from "@/lib/user-store";
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
-const developmentFallbackPassword =
-  process.env.NODE_ENV !== "production"
-    ? process.env.DEV_LOGIN_PASSWORD || "password123"
-    : null;
 
-interface BackendUserRecord extends ApiUserRecord {
-  passwordHash?: string;
+interface SignInUser {
+  id: number | string;
+  email: string;
+  username?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  displayName?: string | null;
 }
 
-export async function findUserByEmail(email: string) {
-  const params = new URLSearchParams({
-    search: email,
-    page: "1",
-    limit: "25",
-    sort: "createdAt",
-    order: "desc",
-  });
-
-  const response = await fetch(`${apiBase}/users?${params.toString()}`, {
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    throw new Error("Unable to load users from backend.");
-  }
-
-  const data = await response.json();
-  const records = (data.records || []) as BackendUserRecord[];
-
-  return (
-    records.find(
-      (record) => record.email.toLowerCase() === email.trim().toLowerCase()
-    ) || null
-  );
-}
-
+/** Checks the credentials against the API, which owns the password hashes. */
 export async function validateUserCredentials(
   email: string,
   password: string
 ): Promise<SessionUser | null> {
-  const user = (await getStoredUserByEmail(email)) || (await findUserByEmail(email));
+  const response = await fetch(`${apiBase}/auth/signin`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+    cache: "no-store",
+  });
 
-  if (!user?.passwordHash) {
+  if (response.status === 400 || response.status === 401) {
     return null;
   }
 
-  const isValid = await compare(password, user.passwordHash);
-
-  const allowDevelopmentFallback =
-    Boolean(developmentFallbackPassword) &&
-    password === developmentFallbackPassword;
-
-  if (!isValid && !allowDevelopmentFallback) {
-    return null;
+  if (!response.ok) {
+    throw new Error("Unable to reach the authentication service.");
   }
+
+  const { user } = (await response.json()) as { user: SignInUser };
 
   return {
     id: String(user.id),

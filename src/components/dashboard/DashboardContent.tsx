@@ -1,76 +1,28 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { buildSummaryCards, emptySummary, timeAgo } from "@/lib/dashboard";
 
-const activityFeed = [
-  {
-    time: "3:33 AM",
-    title: "Macbook check-in completed",
-    meta: "Admin User reassigned Abdul Salam's device to Josefa.",
-  },
-  {
-    time: "3:33 AM",
-    title: "New workspace created",
-    meta: "MSB workspace was created under Operations.",
-  },
-  {
-    time: "3:30 AM",
-    title: "License allocation updated",
-    meta: "Photoshop license linked to Macbook Pro 13.",
-  },
-  {
-    time: "3:26 AM",
-    title: "New team member added",
-    meta: "Deckow Wellington profile was created.",
-  },
-];
+const STATUS_COLORS: Record<string, string> = {
+  Deployable: "#20a39e",
+  Pending: "#f18f01",
+  Archived: "#4f86c6",
+  Undeployable: "#d1495b",
+};
 
-const tableRows = [
-  {
-    name: "Macbook Pro 13",
-    owner: "Abdul Salam",
-    state: "In service",
-    updated: "5 min ago",
-  },
-  {
-    name: "Photoshop License",
-    owner: "Design Team",
-    state: "Assigned",
-    updated: "8 min ago",
-  },
-  {
-    name: "Docking Station",
-    owner: "Operations",
-    state: "Ready",
-    updated: "22 min ago",
-  },
-  {
-    name: "Onboarding Kit",
-    owner: "People Ops",
-    state: "Pending",
-    updated: "1 hr ago",
-  },
-];
-
-const statusBars = [
-  { label: "Ready", value: 74, color: "#20a39e" },
-  { label: "Pending", value: 14, color: "#f18f01" },
-  { label: "Archived", value: 9, color: "#4f86c6" },
-  { label: "Maintenance", value: 3, color: "#d1495b" },
-];
+const STATUS_NAMES: Record<string, string> = {
+  Deployable: "Ready",
+  Pending: "Pending",
+  Archived: "Archived",
+  Undeployable: "Un-deployable",
+};
 
 export function DashboardContent() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-  const [summary, setSummary] = useState({
-    inventoryTracked: 0,
-    openLicenses: 0,
-    accessoriesReady: 0,
-    supplyAlerts: 0,
-  });
+  const [summary, setSummary] = useState(emptySummary);
 
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await fetch(`${apiBase}/api/dashboard/summary`, {
+      const res = await fetch("/api/dashboard/summary", {
         credentials: "include",
       });
       if (res.ok) {
@@ -80,7 +32,7 @@ export function DashboardContent() {
     } catch (err) {
       console.error("Failed to fetch dashboard summary", err);
     }
-  }, [apiBase]);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -89,36 +41,28 @@ export function DashboardContent() {
     return () => clearTimeout(timer);
   }, [fetchSummary]);
 
-  const summaryCards = [
-    {
-      label: "Inventory Tracked",
-      value: summary.inventoryTracked.toLocaleString(),
-      detail: "+8.4% this month",
-      tone: "bg-white dark:bg-[#121f29]",
-      accent: "text-emerald-600 dark:text-[#43d3cf]",
-    },
-    {
-      label: "Open Licenses",
-      value: summary.openLicenses.toLocaleString(),
-      detail: "12 renewals soon",
-      tone: "bg-white dark:bg-[#121f29]",
-      accent: "text-rose-600 dark:text-[#ff5b9a]",
-    },
-    {
-      label: "Accessories Ready",
-      value: summary.accessoriesReady.toLocaleString(),
-      detail: "1 awaiting assignment",
-      tone: "bg-white dark:bg-[#121f29]",
-      accent: "text-amber-600 dark:text-[#ffb24d]",
-    },
-    {
-      label: "Supply Alerts",
-      value: summary.supplyAlerts.toLocaleString(),
-      detail: "Low-stock watchlist",
-      tone: "bg-white dark:bg-[#121f29]",
-      accent: "text-indigo-600 dark:text-[#9c8cff]",
-    },
-  ];
+  const tone = "bg-white dark:bg-[#121f29]";
+  const summaryCards = buildSummaryCards(summary).map((card) => ({ ...card, tone }));
+
+  const total = summary.statusMix.reduce((sum, item) => sum + item.count, 0);
+  const statusBars = summary.statusMix.map((item) => ({
+    label: STATUS_NAMES[item.type] ?? item.type,
+    value: total ? Math.round((item.count / total) * 100) : 0,
+    count: item.count,
+    color: STATUS_COLORS[item.type] ?? "#999999",
+  }));
+  let angle = 0;
+  const donutStops = statusBars
+    .map((item) => {
+      const start = angle;
+      angle += total ? (item.count / total) * 360 : 0;
+      return `${item.color} ${start}deg ${angle}deg`;
+    })
+    .join(", ");
+  const healthyPercent = statusBars.find((item) => item.label === "Ready")?.value ?? 0;
+  const pendingActions = summary.pending + summary.dueForAudit + summary.overdueCheckin;
+  const assigned = summary.deployed + summary.readyToDeploy;
+  const utilization = assigned ? Math.round((summary.deployed / assigned) * 100) : 0;
 
   return (
     <main className="px-6 pb-6 pt-5">
@@ -148,21 +92,19 @@ export function DashboardContent() {
               Live Workspace
             </p>
             <h2 className="mt-3 max-w-xl text-3xl font-semibold leading-tight">
-              Manage assets, requests, and team operations from a single view.
+              Track every asset, who holds it, and what needs attention.
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-white/80">
-              This dashboard is tailored for your project and keeps the familiar
-              operational overview, but with its own visual system and content
-              structure.
+              Figures below are live from your inventory.
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               <div className="rounded-[28px] border border-zinc-300 dark:border-white/8 bg-white/50 dark:bg-black/12 px-4 py-4 backdrop-blur">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-white/60">
-                  Active items
+                  Deployed
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">
-                  {summary.inventoryTracked}
+                  {summary.deployed}
                 </p>
               </div>
               <div className="rounded-[28px] border border-zinc-300 dark:border-white/8 bg-white/50 dark:bg-black/12 px-4 py-4 backdrop-blur">
@@ -170,15 +112,15 @@ export function DashboardContent() {
                   Pending actions
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">
-                  18
+                  {pendingActions}
                 </p>
               </div>
               <div className="rounded-[28px] border border-zinc-300 dark:border-white/8 bg-white/50 dark:bg-black/12 px-4 py-4 backdrop-blur">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-white/60">
-                  Team coverage
+                  Utilization
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-foreground dark:text-white">
-                  92%
+                  {utilization}%
                 </p>
               </div>
             </div>
@@ -195,7 +137,7 @@ export function DashboardContent() {
                 </h3>
               </div>
               <span className="rounded-full bg-slate-100 dark:bg-[#1a2b36] px-3 py-1 text-xs font-medium text-zinc-500 dark:text-[#8ca7b6]">
-                Updated now
+                Live
               </span>
             </div>
 
@@ -205,7 +147,7 @@ export function DashboardContent() {
                   className="h-[240px] w-[240px] rounded-full"
                   style={{
                     background:
-                      "conic-gradient(#20a39e 0deg 266.4deg, #f18f01 266.4deg 316.8deg, #4f86c6 316.8deg 349.2deg, #d1495b 349.2deg 360deg)",
+                      total ? `conic-gradient(${donutStops})` : "#d4d4d8",
                   }}
                 />
                 <div className="absolute flex h-[138px] w-[138px] flex-col items-center justify-center rounded-full border border-zinc-200 dark:border-white/6 bg-white dark:bg-[#121f29] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]">
@@ -213,7 +155,7 @@ export function DashboardContent() {
                     Healthy
                   </span>
                   <span className="mt-2 text-4xl font-semibold text-foreground dark:text-white">
-                    74%
+                    {healthyPercent}%
                   </span>
                 </div>
               </div>
@@ -234,7 +176,7 @@ export function DashboardContent() {
                       </span>
                     </div>
                     <span className="text-sm text-zinc-500 dark:text-[#8ca6b5]">
-                      {item.value}%
+                      {item.count} · {item.value}%
                     </span>
                   </div>
                 ))}
@@ -270,13 +212,16 @@ export function DashboardContent() {
             </div>
 
             <div className="mt-6 space-y-4">
-              {activityFeed.map((item) => (
+              {summary.activity.length === 0 && (
+                <p className="text-sm text-zinc-500">No activity yet.</p>
+              )}
+              {summary.activity.map((item) => (
                 <div
-                  key={`${item.time}-${item.title}`}
+                  key={`${item.at}-${item.title}`}
                   className="flex gap-4 rounded-[28px] border border-zinc-200 dark:border-white/5 bg-slate-50 dark:bg-[#182732] px-4 py-4"
                 >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[28px] bg-blue-600 dark:bg-[#223948] text-xs font-bold text-white">
-                    {item.time.replace(":", "")}
+                    {new Date(item.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </div>
                   <div>
                     <p className="font-medium text-foreground dark:text-white">
@@ -320,14 +265,14 @@ export function DashboardContent() {
                   </tr>
                 </thead>
                 <tbody>
-                  {tableRows.map((row, index) => (
+                  {summary.recentAssets.map((row, index) => (
                     <tr
                       key={`${row.name}-${index}`}
                       className="border-t border-zinc-200 dark:border-white/6 bg-white dark:bg-[#121f29] text-sm text-zinc-700 dark:text-[#dce6ed]"
                     >
                       <td className="px-4 py-3 font-medium">{row.name}</td>
                       <td className="px-4 py-3 text-zinc-400 dark:text-[#7d97a7]">
-                        {row.owner}
+                        {row.owner ?? "—"}
                       </td>
                       <td className="px-4 py-3">
                         <span className="rounded-full bg-emerald-500/10 dark:bg-[#173039] px-3 py-1 text-xs font-medium text-emerald-600 dark:text-[#56d0cb]">
@@ -335,7 +280,7 @@ export function DashboardContent() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-zinc-400 dark:text-[#7d97a7]">
-                        {row.updated}
+                        {timeAgo(row.updatedAt)}
                       </td>
                     </tr>
                   ))}

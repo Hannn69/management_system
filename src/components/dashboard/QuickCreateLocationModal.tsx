@@ -1,5 +1,6 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
 import { useState } from "react";
 import { 
   X, 
@@ -22,8 +23,8 @@ import { useToast } from "@/components/ui/toast";
 interface QuickCreateLocationModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: (newLocation: any) => void;
-  companies: any[];
+  onSuccess: (newLocation: ApiRecord) => void;
+  companies: ApiRecord[];
 }
 
 export function QuickCreateLocationModal({ open, onClose, onSuccess, companies }: QuickCreateLocationModalProps) {
@@ -74,16 +75,16 @@ export function QuickCreateLocationModal({ open, onClose, onSuccess, companies }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-[#111216] border-white/10 p-0 overflow-hidden rounded-[28px]">
+      <DialogContent className="sm:max-w-[500px] bg-white dark:bg-[#111216] border-zinc-200 dark:border-white/10 p-0 overflow-hidden rounded-[28px]">
         <div className="p-8">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+            <DialogTitle className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
               <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
                 <MapPin className="h-5 w-5" />
               </div>
               Quick Create Location
             </DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-zinc-500 dark:text-zinc-400">
               Enter the location details below to create a new location.
             </DialogDescription>
           </DialogHeader>
@@ -114,8 +115,8 @@ export function QuickCreateLocationModal({ open, onClose, onSuccess, companies }
                   value={form.companyId}
                   onChange={(e) => setForm({ ...form, companyId: e.target.value })}
                 >
-                  <option value="" className="bg-[#111216]">Select Company</option>
-                  {companies.map(c => <option key={c.id} value={c.id} className="bg-[#111216]">{c.name}</option>)}
+                  <option value="" className="bg-white dark:bg-[#111216]">Select Company</option>
+                  {companies.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#111216]">{c.name}</option>)}
                 </select>
                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
               </div>
@@ -154,7 +155,7 @@ export function QuickCreateLocationModal({ open, onClose, onSuccess, companies }
               <button 
                 type="button"
                 onClick={onClose}
-                className="px-6 py-3 rounded-2xl border border-white/10 bg-white/5 text-sm font-bold text-zinc-400 hover:bg-white/10 hover:text-white transition-all"
+                className="px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white transition-all"
               >
                 Cancel
               </button>

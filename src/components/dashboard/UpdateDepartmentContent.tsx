@@ -1,5 +1,6 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -34,9 +35,9 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
   const [quickCreateLocationOpen, setQuickCreateLocationOpen] = useState(false);
   const [quickCreateUserOpen, setQuickCreateUserOpen] = useState(false);
 
-  const [companies, setCompanies] = useState<any[]>([]);
-  const [locations, setLocations] = useState<any[]>([]);
-  const [managers, setManagers] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<ApiRecord[]>([]);
+  const [locations, setLocations] = useState<ApiRecord[]>([]);
+  const [managers, setManagers] = useState<ApiRecord[]>([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -135,18 +136,18 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/departments")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
+            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
             <h2 className="text-2xl font-bold text-foreground tracking-tight">Update Department</h2>
-            <p className="text-zinc-400 text-sm">Modify existing department details for {form.name}.</p>
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Modify existing department details for {form.name}.</p>
           </div>
         </div>
 
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}
@@ -206,7 +207,7 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateLocationOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-lg active:scale-95"
                     >
                       <Plus className="h-5 w-5" />
                     </button>
@@ -235,7 +236,7 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateUserOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-orange-600/10 text-orange-400 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-orange-600/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-lg active:scale-95"
                     >
                       <Plus className="h-5 w-5" />
                     </button>

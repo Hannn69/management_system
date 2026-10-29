@@ -565,35 +565,35 @@ export function RolesContent() {
           onSortOrderChange={setOrder}
         />
 
-        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
+        <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] shadow-sm dark:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <Table className="w-full table-fixed">
-            <TableHeader className="sticky top-0 z-10 bg-white/5">
-              <TableRow className="border-white/10 hover:bg-transparent">
+            <TableHeader className="sticky top-0 z-10 bg-zinc-100 dark:bg-white/5">
+              <TableRow className="border-zinc-200 dark:border-white/10 hover:bg-transparent">
                 <TableHead
                   onClick={() => setSort("name")}
-                  className="w-[28%] cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100 hover:text-emerald-400"
+                  className="w-[28%] cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100 hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Role
                 </TableHead>
                 <TableHead
                   onClick={() => setSort("description")}
-                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100 hover:text-emerald-400"
+                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100 hover:text-emerald-600 dark:hover:text-emerald-400"
                 >
                   Description
                 </TableHead>
-                <TableHead className="w-[16%] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                <TableHead className="w-[16%] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
                   Users
                 </TableHead>
-                <TableHead className="w-[14%] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                <TableHead className="w-[14%] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
                   Action
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-white/5">
+            <TableBody className="divide-y divide-zinc-100 dark:divide-white/5">
               {paginatedRoles.map((role) => (
                 <TableRow
                   key={role.id}
-                  className="border-white/5 transition-colors hover:bg-white/[0.03]"
+                  className="border-zinc-100 dark:border-white/5 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.03]"
                 >
                   <TableCell className="w-[28%] px-4 py-4 align-middle">
                     <div className="flex items-center gap-3">
@@ -603,7 +603,7 @@ export function RolesContent() {
                         <ShieldCheck className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-zinc-100">
+                        <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
                           {role.name}
                         </p>
                         <p className="font-mono text-[10px] tracking-tight text-zinc-500">
@@ -612,8 +612,8 @@ export function RolesContent() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 align-middle text-sm text-zinc-300">
-                    <p className="max-w-[44rem] text-sm leading-6 text-zinc-300">
+                  <TableCell className="px-4 py-4 align-middle text-sm text-zinc-600 dark:text-zinc-300">
+                    <p className="max-w-[44rem] text-sm leading-6 text-zinc-600 dark:text-zinc-300">
                       {role.description || "No description provided."}
                     </p>
                   </TableCell>
@@ -644,7 +644,7 @@ export function RolesContent() {
                 </TableRow>
               ))}
               {paginatedRoles.length === 0 ? (
-                <TableRow className="border-white/10">
+                <TableRow className="border-zinc-200 dark:border-white/10">
                   <TableCell
                     className="px-4 py-12 text-center text-sm text-zinc-500"
                     colSpan={4}
@@ -659,7 +659,7 @@ export function RolesContent() {
 
         {openMenuId !== null && menuPosition ? (
           <div
-            className="fixed z-50 min-w-[170px] rounded-xl border border-[#3b3a34] bg-[#1e1c19] p-2 shadow-[0_18px_45px_-20px_rgba(0,0,0,0.9)]"
+            className="fixed z-50 min-w-[170px] rounded-xl border border-[#3b3a34] bg-[#1e1c19] p-2 shadow-sm dark:shadow-[0_18px_45px_-20px_rgba(0,0,0,0.9)]"
             style={{
               top: menuPosition.top,
               left: menuPosition.left,
@@ -672,41 +672,41 @@ export function RolesContent() {
                   openViewUsersDialog(activeRole);
                 }
               }}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-100 transition hover:bg-white/5"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 transition hover:bg-zinc-100 dark:hover:bg-white/5"
             >
-              <Eye className="h-4 w-4 text-zinc-300" />
+              <Eye className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
               <span>View Users</span>
             </button>
             <button
               type="button"
               onClick={() => openAssignUsersDialog(openMenuId)}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-100 transition hover:bg-white/5"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 transition hover:bg-zinc-100 dark:hover:bg-white/5"
             >
-              <UserPlus className="h-4 w-4 text-zinc-300" />
+              <UserPlus className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
               <span>Assign User</span>
             </button>
             <button
               type="button"
               onClick={() => openPermissionsDialog(openMenuId)}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-100 transition hover:bg-white/5"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 transition hover:bg-zinc-100 dark:hover:bg-white/5"
             >
-              <Fingerprint className="h-4 w-4 text-zinc-300" />
+              <Fingerprint className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
               <span>Permission</span>
             </button>
             <button
               type="button"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-100 transition hover:bg-white/5"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 transition hover:bg-zinc-100 dark:hover:bg-white/5"
               onClick={() => {
                 router.push(`/roles/${openMenuId}/edit`);
                 setOpenMenuId(null);
               }}
             >
-              <Edit2 className="h-4 w-4 text-zinc-300" />
+              <Edit2 className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
               <span>Edit</span>
             </button>
             <button
               type="button"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-500 transition hover:bg-white/5"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-500 transition hover:bg-zinc-100 dark:hover:bg-white/5"
               onClick={() => {
                 if (activeRole) {
                   setItemToDelete(activeRole);
@@ -729,11 +729,11 @@ export function RolesContent() {
           loading={deleteLoading}
         />
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-400">Rows per page</span>
+            <span className="text-zinc-500 dark:text-zinc-400">Rows per page</span>
             <select
-              className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-200"
+              className="rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-1 text-xs text-zinc-800 dark:text-zinc-200"
               value={limit}
               onChange={(e) => {
                 setPage(1);
@@ -748,7 +748,7 @@ export function RolesContent() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-zinc-400">
+            <span className="text-zinc-500 dark:text-zinc-400">
               {total === 0
                 ? "0-0"
                 : `${(page - 1) * limit + 1}-${Math.min(page * limit, total)}`}{" "}
@@ -756,7 +756,7 @@ export function RolesContent() {
             </span>
             <div className="flex items-center gap-1">
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-500 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 disabled:opacity-30"
                 disabled={page === 1}
                 onClick={() => setPage((prev) => prev - 1)}
               >
@@ -766,7 +766,7 @@ export function RolesContent() {
                 {page}
               </button>
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-200 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200 disabled:opacity-30"
                 disabled={page * limit >= total}
                 onClick={() => setPage((prev) => prev + 1)}
               >
@@ -777,10 +777,10 @@ export function RolesContent() {
         </div>
 
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogContent className="max-w-md border-white/10 bg-[#111216] p-0">
+          <DialogContent className="max-w-md border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-0">
             <div className="flex flex-col">
-              <DialogHeader className="border-b border-white/10 px-6 py-5">
-                <DialogTitle className="text-xl font-bold text-white">
+              <DialogHeader className="border-b border-zinc-200 dark:border-white/10 px-6 py-5">
+                <DialogTitle className="text-xl font-bold text-zinc-900 dark:text-white">
                   Create Role
                 </DialogTitle>
                 <DialogDescription>
@@ -796,7 +796,7 @@ export function RolesContent() {
                   <input
                     type="text"
                     placeholder="Admin, Editor, Viewer..."
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                    className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
                     value={createForm.name}
                     onChange={(e) =>
                       setCreateForm((prev) => ({
@@ -814,7 +814,7 @@ export function RolesContent() {
                   <textarea
                     rows={4}
                     placeholder="Describe this role..."
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                    className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
                     value={createForm.description}
                     onChange={(e) =>
                       setCreateForm((prev) => ({
@@ -826,11 +826,11 @@ export function RolesContent() {
                 </div>
               </div>
 
-              <DialogFooter className="justify-end gap-3 border-t border-white/10 px-6 py-5 sm:flex-row">
+              <DialogFooter className="justify-end gap-3 border-t border-zinc-200 dark:border-white/10 px-6 py-5 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => setCreateOpen(false)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-300 transition hover:bg-white/10"
+                  className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-200 dark:hover:bg-white/10"
                 >
                   Cancel
                 </button>
@@ -848,15 +848,15 @@ export function RolesContent() {
         </Dialog>
 
         <Dialog open={assignUsersOpen} onOpenChange={setAssignUsersOpen}>
-          <DialogContent className="max-w-2xl border-white/10 bg-[#111216] p-0">
+          <DialogContent className="max-w-2xl border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-0">
             <div className="flex flex-col">
-              <DialogHeader className="border-b border-white/10 px-6 py-5">
-                <DialogTitle className="text-xl font-bold text-white">
+              <DialogHeader className="border-b border-zinc-200 dark:border-white/10 px-6 py-5">
+                <DialogTitle className="text-xl font-bold text-zinc-900 dark:text-white">
                   Assign User
                 </DialogTitle>
                 <DialogDescription>
                   Search and select users for{" "}
-                  <span className="font-medium text-zinc-200">
+                  <span className="font-medium text-zinc-800 dark:text-zinc-200">
                     {assignRole?.name ?? "Selected Role"}
                   </span>
                   .
@@ -869,7 +869,7 @@ export function RolesContent() {
                   <input
                     type="text"
                     placeholder="Search users by name, email, or username..."
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-11 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                    className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 py-3 pl-11 pr-4 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
                     value={assignUserSearch}
                     onChange={(e) => setAssignUserSearch(e.target.value)}
                   />
@@ -878,20 +878,20 @@ export function RolesContent() {
                 <button
                   type="button"
                   onClick={handleSelectAllUsers}
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 transition hover:bg-white/10"
+                  className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-3 py-2 text-sm text-zinc-800 dark:text-zinc-200 transition hover:bg-zinc-200 dark:hover:bg-white/10"
                 >
-                  <span className="flex h-4 w-4 items-center justify-center rounded border border-white/20 bg-white/5">
+                  <span className="flex h-4 w-4 items-center justify-center rounded border border-white/20 bg-zinc-100 dark:bg-white/5">
                     {filteredAssignableUsers.length > 0 &&
                     filteredAssignableUsers.every((user) =>
                       selectedUserIds.includes(user.id)
                     ) ? (
-                      <Check className="h-3 w-3 text-cyan-400" />
+                      <Check className="h-3 w-3 text-cyan-600 dark:text-cyan-400" />
                     ) : null}
                   </span>
                   Select All Visible
                 </button>
 
-                <div className="max-h-[380px] overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.03]">
+                <div className="max-h-[380px] overflow-y-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03]">
                   {usersLoading ? (
                     <div className="px-4 py-10 text-center text-sm text-zinc-500">
                       Loading users...
@@ -901,7 +901,7 @@ export function RolesContent() {
                       No users found.
                     </div>
                   ) : (
-                    <div className="divide-y divide-white/5">
+                    <div className="divide-y divide-zinc-100 dark:divide-white/5">
                       {filteredAssignableUsers.map((user) => {
                         const checked = selectedUserIds.includes(user.id);
 
@@ -910,22 +910,22 @@ export function RolesContent() {
                             key={user.id}
                             type="button"
                             onClick={() => toggleUser(user.id)}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-white/5"
+                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-zinc-100 dark:hover:bg-white/5"
                           >
                             <span
                               className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
                                 checked
                                   ? "border-cyan-500 bg-cyan-500 text-white"
-                                  : "border-white/20 bg-white/5 text-transparent"
+                                  : "border-zinc-300 bg-white text-transparent dark:border-white/20 dark:bg-white/5"
                               }`}
                             >
                               <Check className="h-3.5 w-3.5" />
                             </span>
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-medium text-zinc-100">
+                              <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
                                 {getUserFullName(user)}
                               </p>
-                              <p className="truncate text-xs text-zinc-400">
+                              <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
                                 {user.email}
                                 {user.username ? ` • @${user.username}` : ""}
                               </p>
@@ -938,11 +938,11 @@ export function RolesContent() {
                 </div>
               </div>
 
-              <DialogFooter className="justify-end gap-3 border-t border-white/10 px-6 py-5 sm:flex-row">
+              <DialogFooter className="justify-end gap-3 border-t border-zinc-200 dark:border-white/10 px-6 py-5 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => setAssignUsersOpen(false)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-300 transition hover:bg-white/10"
+                  className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-200 dark:hover:bg-white/10"
                 >
                   Cancel
                 </button>
@@ -960,10 +960,10 @@ export function RolesContent() {
         </Dialog>
 
         <Dialog open={viewUsersOpen} onOpenChange={setViewUsersOpen}>
-          <DialogContent className="max-w-2xl border-white/10 bg-[#111216] p-0">
+          <DialogContent className="max-w-2xl border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-0">
             <div className="flex flex-col">
-              <DialogHeader className="border-b border-white/10 px-6 py-5">
-                <DialogTitle className="text-xl font-bold text-white">
+              <DialogHeader className="border-b border-zinc-200 dark:border-white/10 px-6 py-5">
+                <DialogTitle className="text-xl font-bold text-zinc-900 dark:text-white">
                   Users With {viewRole?.name ?? "Selected Role"}
                 </DialogTitle>
                 <DialogDescription>
@@ -981,17 +981,17 @@ export function RolesContent() {
                     No users are assigned to this role.
                   </div>
                 ) : (
-                  <div className="divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+                  <div className="divide-y divide-zinc-100 dark:divide-white/5 overflow-hidden rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03]">
                     {roleUsers.map((user) => (
                       <div
                         key={user.id}
                         className="flex items-center justify-between gap-4 px-4 py-3"
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-zinc-100">
+                          <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
                             {getUserFullName(user)}
                           </p>
-                          <p className="truncate text-xs text-zinc-400">
+                          <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
                             {user.email}
                             {user.username ? ` | @${user.username}` : ""}
                           </p>
@@ -1000,7 +1000,7 @@ export function RolesContent() {
                           className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
                             user.loginEnabled === false
                               ? "bg-red-500/10 text-red-300"
-                              : "bg-emerald-500/10 text-emerald-300"
+                              : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                           }`}
                         >
                           {user.loginEnabled === false ? "Disabled" : "Active"}
@@ -1011,11 +1011,11 @@ export function RolesContent() {
                 )}
               </div>
 
-              <DialogFooter className="justify-end border-t border-white/10 px-6 py-5 sm:flex-row">
+              <DialogFooter className="justify-end border-t border-zinc-200 dark:border-white/10 px-6 py-5 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => setViewUsersOpen(false)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-300 transition hover:bg-white/10"
+                  className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-200 dark:hover:bg-white/10"
                 >
                   Close
                 </button>
@@ -1025,15 +1025,15 @@ export function RolesContent() {
         </Dialog>
 
         <Dialog open={permissionsOpen} onOpenChange={setPermissionsOpen}>
-          <DialogContent className="max-w-4xl border-white/10 bg-[#111216] p-0">
+          <DialogContent className="max-w-4xl border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-0">
             <div className="flex flex-col">
-              <DialogHeader className="border-b border-white/10 px-6 py-5">
-                <DialogTitle className="text-xl font-bold text-white">
+              <DialogHeader className="border-b border-zinc-200 dark:border-white/10 px-6 py-5">
+                <DialogTitle className="text-xl font-bold text-zinc-900 dark:text-white">
                   Assign Permissions
                 </DialogTitle>
                 <DialogDescription>
                   Configure module permissions for{" "}
-                  <span className="font-medium text-zinc-200">
+                  <span className="font-medium text-zinc-800 dark:text-zinc-200">
                     {permissionRole?.name ?? "Selected Role"}
                   </span>
                   .
@@ -1041,30 +1041,30 @@ export function RolesContent() {
               </DialogHeader>
 
               <div className="px-6 py-5">
-                <div className="overflow-hidden rounded-2xl border border-white/10">
+                <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-white/10">
                   <Table className="min-w-full">
-                    <TableHeader className="bg-white/5">
-                      <TableRow className="border-white/10 hover:bg-transparent">
-                        <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                    <TableHeader className="bg-zinc-100 dark:bg-white/5">
+                      <TableRow className="border-zinc-200 dark:border-white/10 hover:bg-transparent">
+                        <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
                           Module
                         </TableHead>
-                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
                           Create
                         </TableHead>
-                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
                           Read
                         </TableHead>
-                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
                           Update
                         </TableHead>
-                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                        <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
                           Delete
                         </TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody className="divide-y divide-white/5">
+                    <TableBody className="divide-y divide-zinc-100 dark:divide-white/5">
                       {permissionsLoading ? (
-                        <TableRow className="border-white/10">
+                        <TableRow className="border-zinc-200 dark:border-white/10">
                           <TableCell
                             colSpan={5}
                             className="px-4 py-10 text-center text-sm text-zinc-500"
@@ -1073,7 +1073,7 @@ export function RolesContent() {
                           </TableCell>
                         </TableRow>
                       ) : permissionRows.length === 0 ? (
-                        <TableRow className="border-white/10">
+                        <TableRow className="border-zinc-200 dark:border-white/10">
                           <TableCell
                             colSpan={5}
                             className="px-4 py-10 text-center text-sm text-zinc-500"
@@ -1085,9 +1085,9 @@ export function RolesContent() {
                         permissionRows.map((row) => (
                           <TableRow
                             key={row.permissionId}
-                            className="border-white/5 hover:bg-white/[0.03]"
+                            className="border-zinc-100 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-white/[0.03]"
                           >
-                            <TableCell className="px-4 py-4 text-sm font-medium text-zinc-200">
+                            <TableCell className="px-4 py-4 text-sm font-medium text-zinc-800 dark:text-zinc-200">
                               {row.permission?.label || row.permission?.name || row.slug}
                             </TableCell>
                             {(["create", "read", "update", "delete"] as const).map(
@@ -1113,7 +1113,7 @@ export function RolesContent() {
                                       className={`flex h-5 w-5 items-center justify-center rounded border transition ${
                                         row[permissionKey]
                                           ? "border-cyan-500 bg-cyan-500 text-white"
-                                          : "border-white/20 bg-white/5 text-transparent"
+                                          : "border-zinc-300 bg-white text-transparent dark:border-white/20 dark:bg-white/5"
                                       }`}
                                     >
                                       <Check className="h-3.5 w-3.5" />
@@ -1130,11 +1130,11 @@ export function RolesContent() {
                 </div>
               </div>
 
-              <DialogFooter className="justify-end gap-3 border-t border-white/10 px-6 py-5 sm:flex-row">
+              <DialogFooter className="justify-end gap-3 border-t border-zinc-200 dark:border-white/10 px-6 py-5 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => setPermissionsOpen(false)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-300 transition hover:bg-white/10"
+                  className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-5 py-2.5 text-sm font-bold text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-200 dark:hover:bg-white/10"
                 >
                   Cancel
                 </button>
@@ -1152,7 +1152,7 @@ export function RolesContent() {
         </Dialog>
 
         {error ? (
-          <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-center text-xs text-rose-300">
+          <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-center text-xs text-rose-700 dark:text-rose-300">
             {error}
           </p>
         ) : null}

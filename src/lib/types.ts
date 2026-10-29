@@ -145,5 +145,17 @@ export interface TaskRecord {
   startDate?: string;
   category?: string;
   team?: string;
-  subtasks?: any[];
+  subtasks?: unknown[];
+}
+
+/**
+ * A record as the API returns it: `id` is always there and `name` usually is; the remaining
+ * columns differ per resource and are read by key, so they stay loosely typed.
+ */
+export interface ApiRecord {
+  id: number;
+  slug?: string;
+  name?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [field: string]: any;
 }

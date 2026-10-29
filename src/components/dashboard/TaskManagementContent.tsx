@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { UpdateTaskModal } from "@/components/dashboard/UpdateTaskModal";
+import type { ApiRecord } from "@/lib/types";
 import { DeleteTaskModal } from "@/components/dashboard/DeleteTaskModal";
 import {
   Table,
@@ -33,110 +34,17 @@ export type Task = {
   team: string;
 };
 
-const seedTasks = [
-  {
-    key: "TASK-101",
-    slug: "task-101",
-    summary: "Finalize admin role permissions matrix",
-    status: "In progress",
-    priority: "High",
-    assignee: "S. Carter",
-    updated: "2h ago",
-    space: "task (TASK)",
-    workType: "Task",
-    description: "",
-    reporter: "sonvirak",
-    labels: "",
-    dueDate: "",
-    startDate: "",
-    category: "",
-    team: "",
-  },
-  {
-    key: "TASK-102",
-    slug: "task-102",
-    summary: "Add MFA enrollment flow",
-    status: "To do",
-    priority: "Medium",
-    assignee: "J. Nguyen",
-    updated: "6h ago",
-    space: "task (TASK)",
-    workType: "Task",
-    description: "",
-    reporter: "sonvirak",
-    labels: "",
-    dueDate: "",
-    startDate: "",
-    category: "",
-    team: "",
-  },
-  {
-    key: "TASK-103",
-    slug: "task-103",
-    summary: "Audit login attempts export",
-    status: "Review",
-    priority: "High",
-    assignee: "M. Patel",
-    updated: "1d ago",
-    space: "task (TASK)",
-    workType: "Task",
-    description: "",
-    reporter: "sonvirak",
-    labels: "",
-    dueDate: "",
-    startDate: "",
-    category: "",
-    team: "",
-  },
-  {
-    key: "TASK-104",
-    slug: "task-104",
-    summary: "Update dashboard onboarding tips",
-    status: "Done",
-    priority: "Low",
-    assignee: "R. Blake",
-    updated: "2d ago",
-    space: "task (TASK)",
-    workType: "Task",
-    description: "",
-    reporter: "sonvirak",
-    labels: "",
-    dueDate: "",
-    startDate: "",
-    category: "",
-    team: "",
-  },
-  {
-    key: "TASK-105",
-    slug: "task-105",
-    summary: "Improve refresh token rotation logs",
-    status: "In progress",
-    priority: "Medium",
-    assignee: "T. Silva",
-    updated: "3d ago",
-    space: "task (TASK)",
-    workType: "Task",
-    description: "",
-    reporter: "sonvirak",
-    labels: "",
-    dueDate: "",
-    startDate: "",
-    category: "",
-    team: "",
-  },
-];
-
 const statusStyles: Record<string, string> = {
-  "To do": "bg-slate-500/15 text-slate-200",
-  "In progress": "bg-amber-500/15 text-amber-200",
-  Review: "bg-blue-500/15 text-blue-200",
-  Done: "bg-emerald-500/15 text-emerald-200",
+  "To do": "bg-slate-500/15 text-slate-700 dark:text-slate-200",
+  "In progress": "bg-amber-500/15 text-amber-700 dark:text-amber-200",
+  Review: "bg-blue-500/15 text-blue-700 dark:text-blue-200",
+  Done: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-200",
 };
 
 const priorityStyles: Record<string, string> = {
-  High: "bg-rose-500/15 text-rose-200",
-  Medium: "bg-amber-500/15 text-amber-200",
-  Low: "bg-emerald-500/15 text-emerald-200",
+  High: "bg-rose-500/15 text-rose-700 dark:text-rose-200",
+  Medium: "bg-amber-500/15 text-amber-700 dark:text-amber-200",
+  Low: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-200",
 };
 
 type TaskManagementContentProps = {
@@ -151,7 +59,7 @@ function TaskManagementContentInner({
   lockSpace = false,
 }: TaskManagementContentProps) {
   const searchParams = useSearchParams();
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [tasks, setTasks] = useState<Task[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -233,7 +141,7 @@ function TaskManagementContentInner({
         if (!Array.isArray(data.tasks)) {
           throw new Error("Invalid tasks response.");
         }
-        const mapped: Task[] = data.tasks.map((task: any) => ({
+        const mapped: Task[] = data.tasks.map((task: ApiRecord) => ({
           key: task.key,
           slug: task.slug,
           summary: task.summary,
@@ -315,19 +223,17 @@ function TaskManagementContentInner({
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur sm:p-6">
+    <main className="flex flex-1 flex-col gap-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur sm:p-6">
       <div className="flex flex-col gap-2">
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Your work / Task management
           {resolvedSpaceLabel ? (
-            <span className="ml-2 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-zinc-300">
+            <span className="ml-2 rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-0.5 text-[11px] text-zinc-600 dark:text-zinc-300">
               {resolvedSpaceLabel}
             </span>
           ) : null}
         </p>
-        <h2 className="text-lg font-semibold text-zinc-100">
-          Jira-style task listing
-        </h2>
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Tasks</h2>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -336,10 +242,10 @@ function TaskManagementContentInner({
             {["All", "To do", "In progress", "Review", "Done"].map((item) => (
               <button
                 key={item}
-                className={`rounded-full border border-white/10 px-4 py-1.5 text-xs font-medium transition ${
+                className={`rounded-full border border-zinc-200 dark:border-white/10 px-4 py-1.5 text-xs font-medium transition ${
                   statusFilter === item
-                    ? "bg-white/10 text-white"
-                    : "text-zinc-300 hover:bg-white/5 hover:text-white"
+                    ? "bg-zinc-900 text-white dark:bg-white/10"
+                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white"
                 }`}
                 type="button"
                 onClick={() => {
@@ -352,7 +258,7 @@ function TaskManagementContentInner({
             ))}
           </div>
           <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-            <div className="flex w-full items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-300 sm:max-w-[320px]">
+            <div className="flex w-full items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-2 text-sm text-zinc-600 dark:text-zinc-300 sm:max-w-[320px]">
               <svg
                 aria-hidden
                 className="h-4 w-4 text-zinc-500"
@@ -365,7 +271,7 @@ function TaskManagementContentInner({
                 <path d="m16.5 16.5 4 4" />
               </svg>
               <input
-                className="w-full bg-transparent text-sm text-zinc-200 placeholder:text-zinc-500 focus:outline-none"
+                className="w-full bg-transparent text-sm text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 focus:outline-none"
                 placeholder="Search tasks"
                 type="text"
                 value={search}
@@ -373,12 +279,12 @@ function TaskManagementContentInner({
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-xs text-zinc-400" htmlFor="sort">
+              <label className="text-xs text-zinc-500 dark:text-zinc-400" htmlFor="sort">
                 Sort
               </label>
               <select
                 id="sort"
-                className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-200"
+                className="rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-3 py-2 text-xs text-zinc-800 dark:text-zinc-200"
                 value={sort}
                 onChange={(event) => setSort(event.target.value)}
               >
@@ -388,7 +294,7 @@ function TaskManagementContentInner({
                 <option value="status">Status</option>
               </select>
               <select
-                className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-200"
+                className="rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-3 py-2 text-xs text-zinc-800 dark:text-zinc-200"
                 value={order}
                 onChange={(event) => setOrder(event.target.value)}
               >
@@ -399,11 +305,11 @@ function TaskManagementContentInner({
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#121318] shadow-[0_25px_60px_-45px_rgba(0,0,0,0.9)]">
+        <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#121318] shadow-sm dark:shadow-[0_25px_60px_-45px_rgba(0,0,0,0.9)]">
           <div className="overflow-x-auto">
             <Table className="min-w-[920px]">
-              <TableHeader className="bg-white/5">
-                <TableRow className="border-white/10">
+              <TableHeader className="bg-zinc-100 dark:bg-white/5">
+                <TableRow className="border-zinc-200 dark:border-white/10">
                   <TableHead className="w-[120px] px-5">Key</TableHead>
                   <TableHead className="px-3">Summary</TableHead>
                   <TableHead className="w-[140px] px-3">Status</TableHead>
@@ -413,9 +319,9 @@ function TaskManagementContentInner({
                   <TableHead className="w-[180px] px-3">Action</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody className="divide-y divide-white/10">
+              <TableBody className="divide-y divide-zinc-200 dark:divide-white/10">
                 {loading ? (
-                  <TableRow className="border-white/10">
+                  <TableRow className="border-zinc-200 dark:border-white/10">
                     <TableCell
                       colSpan={7}
                       className="px-5 py-6 text-sm text-zinc-500"
@@ -425,7 +331,7 @@ function TaskManagementContentInner({
                   </TableRow>
                 ) : null}
                 {!loading && !tasks.length ? (
-                  <TableRow className="border-white/10">
+                  <TableRow className="border-zinc-200 dark:border-white/10">
                     <TableCell
                       colSpan={7}
                       className="px-5 py-6 text-sm text-zinc-500"
@@ -437,14 +343,14 @@ function TaskManagementContentInner({
                 {tasks.map((task, index) => (
                   <TableRow
                     key={task.key}
-                    className={`border-white/10 transition-colors hover:bg-white/5 ${
-                      index % 2 === 1 ? "bg-white/[0.02]" : ""
+                    className={`border-zinc-200 dark:border-white/10 transition-colors hover:bg-zinc-100 dark:hover:bg-white/5 ${
+                      index % 2 === 1 ? "bg-zinc-50 dark:bg-white/[0.02]" : ""
                     }`}
                   >
-                    <TableCell className="px-5 text-xs font-semibold text-zinc-400">
+                    <TableCell className="px-5 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
                       {task.key}
                     </TableCell>
-                    <TableCell className="text-sm text-zinc-100">
+                    <TableCell className="text-sm text-zinc-900 dark:text-zinc-100">
                       {task.summary}
                     </TableCell>
                     <TableCell>
@@ -465,30 +371,30 @@ function TaskManagementContentInner({
                         {task.priority}
                       </span>
                     </TableCell>
-                    <TableCell className="text-sm text-zinc-300">
+                    <TableCell className="text-sm text-zinc-600 dark:text-zinc-300">
                       {task.assignee}
                     </TableCell>
-                    <TableCell className="text-xs text-zinc-400">
+                    <TableCell className="text-xs text-zinc-500 dark:text-zinc-400">
                       {task.updated}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/task-management/${task.slug}`}
-                          className="w-fit rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-200 transition hover:bg-white/10"
+                          className="w-fit rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-3 py-1 text-xs text-zinc-800 dark:text-zinc-200 transition hover:bg-zinc-200 dark:hover:bg-white/10"
                         >
                           View
                         </Link>
                         <button
                           type="button"
                           onClick={() => setEditTask(task)}
-                          className="w-fit rounded-full border border-blue-400/40 bg-blue-500/10 px-3 py-1 text-xs text-blue-200 transition hover:bg-blue-500/20"
+                          className="w-fit rounded-full border border-blue-400/40 bg-blue-500/10 px-3 py-1 text-xs text-blue-700 dark:text-blue-200 transition hover:bg-blue-500/20"
                         >
                           Edit
                         </button>
                         <button
                           type="button"
-                          className="w-fit rounded-full border border-rose-400/40 bg-rose-500/10 px-3 py-1 text-xs text-rose-200 hover:bg-rose-500/20"
+                          className="w-fit rounded-full border border-rose-400/40 bg-rose-500/10 px-3 py-1 text-xs text-rose-700 dark:text-rose-200 hover:bg-rose-500/20"
                           onClick={() => setDeleteTask(task)}
                         >
                           Delete
@@ -502,11 +408,11 @@ function TaskManagementContentInner({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-400">Rows per page</span>
+            <span className="text-zinc-500 dark:text-zinc-400">Rows per page</span>
             <select
-              className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-200"
+              className="rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-1 text-xs text-zinc-800 dark:text-zinc-200"
               value={limit}
               onChange={(event) => {
                 setPage(1);
@@ -519,7 +425,7 @@ function TaskManagementContentInner({
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-zinc-400">
+            <span className="text-zinc-500 dark:text-zinc-400">
               {total === 0
                 ? "0-0"
                 : `${(page - 1) * limit + 1}-${Math.min(
@@ -530,7 +436,7 @@ function TaskManagementContentInner({
             </span>
             <div className="flex items-center gap-1">
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-500"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500"
                 type="button"
                 aria-label="Previous page"
                 disabled={page === 1}
@@ -539,7 +445,7 @@ function TaskManagementContentInner({
                 &lt;
               </button>
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-white/10"
                 type="button"
                 aria-label="Next page"
                 disabled={page * limit >= total}
@@ -552,7 +458,7 @@ function TaskManagementContentInner({
         </div>
       </div>
       {loadError ? (
-        <p className="text-xs text-rose-300">{loadError}</p>
+        <p className="text-xs text-rose-700 dark:text-rose-300">{loadError}</p>
       ) : null}
       <UpdateTaskModal
         open={!!editTask}

@@ -15,7 +15,7 @@ describe('Utility Functions', () => {
   describe('classNames', () => {
     it('should combine class names', () => {
       // Example with clsx which is already in your dependencies
-      const clsx = (...args: any[]) => args.filter(Boolean).join(' ')
+      const clsx = (...args: unknown[]) => args.filter(Boolean).join(' ')
       
       const result = clsx('btn', true && 'btn-primary', false && 'btn-large')
       expect(result).toBe('btn btn-primary')

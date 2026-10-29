@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { AssetCheckoutDialog } from "@/components/dashboard/AssetCheckoutDialog";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 import {
   Table,
   TableBody,
@@ -14,7 +16,6 @@ import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { 
   Package, 
-  Copy, 
   Edit2, 
   Trash, 
   Eye,
@@ -28,7 +29,6 @@ import {
   DollarSign, 
   TrendingUp, 
   ArrowLeftRight, 
-  ClipboardCheck,
 } from "lucide-react";
 
 const accentClasses = [
@@ -68,6 +68,7 @@ export function AssetsContent({
 }: AssetsContentProps) {
   const router = useRouter();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
+  const { push } = useToast();
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState<AssetRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -78,6 +79,7 @@ export function AssetsContent({
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<AssetRecord | null>(null);
+  const [checkAction, setCheckAction] = useState<{ mode: "checkout" | "checkin"; record: AssetRecord } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewType, setViewType] = useState<"list" | "grid">("list");
 
@@ -92,12 +94,23 @@ export function AssetsContent({
     if (!itemToDelete) return;
     setDeleteLoading(true);
     try {
-      // Mock delete logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch(`${apiBase}/assets/${itemToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to delete asset");
+      }
+
       setRecords(prev => prev.filter(r => r.id !== itemToDelete.id));
       setItemToDelete(null);
-    } catch {
-      setError("Failed to delete asset.");
+      push("Asset deleted successfully!", "success");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Failed to delete asset.";
+      setError(errorMsg);
+      push(errorMsg, "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -280,12 +293,12 @@ export function AssetsContent({
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center">
                     {record.checkedOutTo ? (
-                      <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all active:scale-95 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20">
+                      <button onClick={() => setCheckAction({ mode: "checkin", record })} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all active:scale-95 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20">
                         <ArrowLeftRight className="h-3.5 w-3.5" />
                         Checkin
                       </button>
                     ) : record.status === "Ready to Deploy" ? (
-                      <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all active:scale-95 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20">
+                      <button onClick={() => setCheckAction({ mode: "checkout", record })} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all active:scale-95 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20">
                         <ArrowLeftRight className="h-3.5 w-3.5" />
                         Checkout
                       </button>
@@ -301,12 +314,6 @@ export function AssetsContent({
                         title="View Details"
                       >
                         <Eye className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 rounded-xl text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all active:scale-90" title="Clone Item">
-                        <Copy className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 rounded-xl text-zinc-400 dark:text-zinc-500 hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all active:scale-90" title="Audit">
-                        <ClipboardCheck className="h-4 w-4" />
                       </button>
                       <button 
                         onClick={() => router.push(`/assets/${record.slug}/edit`)}
@@ -346,6 +353,18 @@ export function AssetsContent({
           loading={deleteLoading}
         />
 
+        <AssetCheckoutDialog
+          open={!!checkAction}
+          mode={checkAction?.mode ?? "checkout"}
+          asset={checkAction?.record ?? null}
+          apiBase={apiBase}
+          onClose={() => setCheckAction(null)}
+          onDone={(message) => {
+            push(message, "success");
+            loadRecords();
+          }}
+        />
+
         <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <span className="text-zinc-500 dark:text-zinc-400">Rows per page</span>
@@ -382,7 +401,7 @@ export function AssetsContent({
             </div>
           </div>
         </div>
-        {error && <p className="rounded-lg bg-rose-500/10 p-3 text-center text-xs text-rose-300 border border-rose-500/20">{error}</p>}
+        {error && <p className="rounded-lg bg-rose-500/10 p-3 text-center text-xs text-rose-700 dark:text-rose-300 border border-rose-500/20">{error}</p>}
       </div>
     </main>
   );

@@ -127,8 +127,26 @@ export function TaskDetailContent({
   task,
   onEdit,
 }: TaskDetailContentProps) {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-  const assigneeOptions = ["Unassigned", "sonvirak", "alex", "maria"];
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
+  const [people, setPeople] = useState<string[]>([]);
+  const [me, setMe] = useState("");
+  const assigneeOptions = ["Unassigned", ...people];
+  useEffect(() => {
+    let active = true;
+    const nameOf = (u: { displayName?: string | null; username?: string | null; email: string }) =>
+      u.displayName || u.username || u.email;
+    fetch(`${apiBase}/users?limit=100`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : { records: [] }))
+      .then((data) => active && setPeople((data.records ?? []).map(nameOf)))
+      .catch(() => {});
+    fetch("/api/auth/session", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => active && data?.user && setMe(nameOf(data.user)))
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [apiBase]);
   const priorityOptions = ["Low", "Medium", "High"];
   const categoryOptions = ["Admin", "Security", "Design", "Platform"];
   const labelSuggestions = [
@@ -257,7 +275,7 @@ export function TaskDetailContent({
     const nextReporter =
       typeof task?.reporter === "string" && task.reporter.trim()
         ? task.reporter.trim()
-        : "sonvirak";
+        : "Unknown";
     setReporterValue(nextReporter);
     if (!editingReporter) {
       setReporterDraft(nextReporter);
@@ -353,7 +371,7 @@ export function TaskDetailContent({
       setSavingSubtasks(true);
       setSubtaskError(null);
       const attemptUpdate = () =>
-        fetch(`${apiBase}/task/${task.key}`, {
+        fetch(`${apiBase}/tasks/${task.key}`, {
           method: "PATCH",
           credentials: "include",
           headers: {
@@ -410,7 +428,7 @@ export function TaskDetailContent({
     setDeleteError(null);
     try {
       const attemptUpdate = () =>
-        fetch(`${apiBase}/task/${task.key}`, {
+        fetch(`${apiBase}/tasks/${task.key}`, {
           method: "PATCH",
           credentials: "include",
           headers: {
@@ -431,7 +449,7 @@ export function TaskDetailContent({
       }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to delete subtask.");
+        throw new Error(data.message || data.error || "Failed to delete subtask.");
       }
       setSubtasks(nextSubtasks);
       setDeleteSubtask(null);
@@ -450,7 +468,7 @@ export function TaskDetailContent({
       return;
     }
     const attemptUpdate = () =>
-      fetch(`${apiBase}/task/${task.key}`, {
+      fetch(`${apiBase}/tasks/${task.key}`, {
         method: "PATCH",
         credentials: "include",
         headers: {
@@ -470,7 +488,7 @@ export function TaskDetailContent({
     }
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || "Failed to update task.");
+      throw new Error(data.message || data.error || "Failed to update task.");
     }
     window.dispatchEvent(new CustomEvent("task:updated"));
   };
@@ -537,7 +555,7 @@ export function TaskDetailContent({
 
   const handleAssignToMe = async () => {
     const previous = assigneeValue;
-    const nextAssignee = "sonvirak";
+    const nextAssignee = me || assigneeValue;
     if (nextAssignee === assigneeValue) {
       return;
     }
@@ -685,7 +703,7 @@ export function TaskDetailContent({
   const status = task?.status ?? "To do";
   const priority = priorityValue || "Medium";
   const assignee = assigneeValue || "Unassigned";
-  const reporter = reporterValue || "sonvirak";
+  const reporter = reporterValue || "Unknown";
   const timeTrackingSummary =
     timeSpent || timeRemaining
       ? `${timeSpent || "0m"} spent / ${timeRemaining || "0m"} remaining`
@@ -698,66 +716,66 @@ export function TaskDetailContent({
     : "subtask";
   return (
     <>
-      <main className="flex flex-1 flex-col gap-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur sm:p-6">
-      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-400">
-        <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase">
+      <main className="flex flex-1 flex-col gap-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.04] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur sm:p-6">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="rounded-full border border-zinc-200 dark:border-white/10 px-2 py-1 text-[10px] uppercase">
           Spaces
         </span>
         <span>/</span>
         <span>Task</span>
         <span>/</span>
-        <span className="text-zinc-200">{(task?.key ?? slug).toUpperCase()}</span>
+        <span className="text-zinc-800 dark:text-zinc-200">{(task?.key ?? slug).toUpperCase()}</span>
       </div>
 
       <div className="flex flex-col gap-6 xl:flex-row">
         <section className="flex min-w-0 flex-1 flex-col gap-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-zinc-100">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-200 dark:bg-white/10 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               A
             </div>
             <div>
-              <h2 className="text-2xl font-semibold text-zinc-100">
+              <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                 {title}
               </h2>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 {task?.summary ? "Task detail overview." : "Build out the task detail experience."}
               </p>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+          <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/40 p-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-zinc-100">Description</h3>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Description</h3>
               <button
-                className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300 hover:bg-white/5"
+                className="rounded-full border border-zinc-200 dark:border-white/10 px-3 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                 type="button"
                 onClick={onEdit}
               >
                 Edit
               </button>
             </div>
-            <p className="mt-3 text-sm text-zinc-300">
+            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">
               {task?.description?.trim()
                 ? task.description
                 : "Draft the requirements, acceptance criteria, and dependencies for this work item."}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+          <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/40 p-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-zinc-100">Subtasks</h3>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Subtasks</h3>
               <button
-                className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300 hover:bg-white/5"
+                className="rounded-full border border-zinc-200 dark:border-white/10 px-3 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                 type="button"
                 onClick={() => setShowSubtaskInput(true)}
               >
                 Add subtask
               </button>
             </div>
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/5">
+            <div className="mt-4 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5">
               <Table className="text-xs">
-                <TableHeader className="bg-black/30">
-                  <TableRow className="border-white/10">
+                <TableHeader className="bg-zinc-100 dark:bg-black/30">
+                  <TableRow className="border-zinc-200 dark:border-white/10">
                     <TableHead className="px-4 py-3 text-[10px] tracking-[0.2em]">
                       Work
                     </TableHead>
@@ -779,49 +797,49 @@ export function TaskDetailContent({
                   {subtasks.map((item) => (
                     <TableRow
                       key={item.id}
-                      className="border-white/10 hover:bg-white/5"
+                      className="border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5"
                     >
                       <TableCell className="px-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-blue-300">
+                          <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
                             {keyPrefix}-{item.id}
                           </span>
-                          <span className="text-sm text-zinc-200">
+                          <span className="text-sm text-zinc-800 dark:text-zinc-200">
                             {item.title}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="px-4 text-zinc-200">
+                      <TableCell className="px-4 text-zinc-800 dark:text-zinc-200">
                         <span className="inline-flex items-center gap-2">
                           <span className="h-2 w-2 rounded-full bg-amber-400" />
                           {item.priority}
                         </span>
                       </TableCell>
-                      <TableCell className="px-4 text-zinc-200">
+                      <TableCell className="px-4 text-zinc-800 dark:text-zinc-200">
                         <span className="inline-flex items-center gap-2">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-[10px] text-zinc-300">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-200 dark:bg-white/10 text-[10px] text-zinc-600 dark:text-zinc-300">
                             ?
                           </span>
                           {item.assignee}
                         </span>
                       </TableCell>
-                      <TableCell className="px-4 text-zinc-200">
-                        <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-200">
+                      <TableCell className="px-4 text-zinc-800 dark:text-zinc-200">
+                        <span className="rounded-md border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-800 dark:text-zinc-200">
                           {item.status}
                         </span>
                       </TableCell>
-                      <TableCell className="px-4 text-zinc-200">
+                      <TableCell className="px-4 text-zinc-800 dark:text-zinc-200">
                         <div className="flex flex-wrap items-center gap-2">
                           <button
                             type="button"
-                            className="rounded-full border border-white/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-300 hover:bg-white/5"
+                            className="rounded-full border border-zinc-200 dark:border-white/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                             onClick={() => setActiveSubtask(item)}
                           >
                             View
                           </button>
                           <button
                             type="button"
-                            className="rounded-full border border-rose-300/40 bg-rose-500/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-rose-200 hover:bg-rose-500/20"
+                            className="rounded-full border border-rose-300/40 bg-rose-500/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-rose-700 dark:text-rose-200 hover:bg-rose-500/20"
                             onClick={() => setDeleteSubtask(item)}
                           >
                             Delete
@@ -835,7 +853,7 @@ export function TaskDetailContent({
             </div>
             {showSubtaskInput ? (
               <form
-                className="mt-4 rounded-2xl border border-blue-400/40 bg-black/30 p-3"
+                className="mt-4 rounded-2xl border border-blue-400/40 bg-zinc-100 dark:bg-black/30 p-3"
                 onSubmit={(event) => {
                   event.preventDefault();
                   handleAddSubtask();
@@ -844,7 +862,7 @@ export function TaskDetailContent({
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <input
                     ref={inputRef}
-                    className="flex-1 rounded-xl border border-white/10 bg-[#23252a] px-3 py-2 text-sm text-zinc-100 outline-none focus:border-blue-400/60"
+                    className="flex-1 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:border-blue-400/60"
                     placeholder="What needs to be done?"
                     value={subtaskTitle}
                     onChange={(event) => setSubtaskTitle(event.target.value)}
@@ -859,7 +877,7 @@ export function TaskDetailContent({
                     </button>
                     <button
                       type="button"
-                      className="rounded-full border border-white/10 px-4 py-2 text-xs text-zinc-300 hover:bg-white/5"
+                      className="rounded-full border border-zinc-200 dark:border-white/10 px-4 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                       onClick={() => {
                         setShowSubtaskInput(false);
                         setSubtaskTitle("");
@@ -870,24 +888,24 @@ export function TaskDetailContent({
                   </div>
                 </div>
                 {subtaskError ? (
-                  <p className="mt-2 text-xs text-rose-300">{subtaskError}</p>
+                  <p className="mt-2 text-xs text-rose-700 dark:text-rose-300">{subtaskError}</p>
                 ) : null}
               </form>
             ) : null}
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+          <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/40 p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold text-zinc-100">Activity</h3>
-              <div className="flex flex-wrap gap-2 text-xs text-zinc-400">
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Activity</h3>
+              <div className="flex flex-wrap gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                 {["All", "Comments", "History", "Work log", "Approvals"].map(
                   (item, index) => (
                     <button
                       key={item}
                       className={`rounded-full border px-3 py-1 ${
                         index === 1
-                          ? "border-blue-400/40 bg-blue-400/10 text-blue-200"
-                          : "border-white/10 text-zinc-300 hover:bg-white/5"
+                          ? "border-blue-400/40 bg-blue-400/10 text-blue-700 dark:text-blue-200"
+                          : "border-zinc-200 text-zinc-600 hover:bg-zinc-100 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5"
                       }`}
                       type="button"
                     >
@@ -898,10 +916,10 @@ export function TaskDetailContent({
               </div>
             </div>
             <div className="mt-4 flex gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-500/20 text-xs text-rose-200">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-500/20 text-xs text-rose-700 dark:text-rose-200">
                 S
               </div>
-              <div className="flex-1 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-400">
+              <div className="flex-1 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 p-4 text-sm text-zinc-500 dark:text-zinc-400">
                 Add a comment...
                 <div className="mt-3 flex flex-wrap gap-2 text-xs text-zinc-500">
                   {[
@@ -911,7 +929,7 @@ export function TaskDetailContent({
                   ].map((item) => (
                     <span
                       key={item}
-                      className="rounded-full border border-white/10 px-3 py-1"
+                      className="rounded-full border border-zinc-200 dark:border-white/10 px-3 py-1"
                     >
                       {item}
                     </span>
@@ -927,17 +945,17 @@ export function TaskDetailContent({
 
         <aside className="w-full max-w-full shrink-0 xl:w-[340px]">
           <div className="flex flex-col gap-4">
-            <div className="rounded-2xl border border-white/10 bg-black/40 p-5">
+            <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/40 p-5">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-zinc-100">Details</h3>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Details</h3>
                 <button
-                  className="rounded-full border border-white/10 px-2 py-1 text-xs text-zinc-300 hover:bg-white/5"
+                  className="rounded-full border border-zinc-200 dark:border-white/10 px-2 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                   type="button"
                 >
                   ⚙
                 </button>
               </div>
-              <div className="mt-4 space-y-3 text-sm text-zinc-300">
+              <div className="mt-4 space-y-3 text-sm text-zinc-600 dark:text-zinc-300">
                 {[
                   ["Status", status],
                   ["Assignee", assignee],
@@ -952,15 +970,15 @@ export function TaskDetailContent({
                 ].map(([label, value]) => (
                   <div key={label} className="flex items-center justify-between">
                     <span className="text-xs text-zinc-500">{label}</span>
-                    <span className="text-xs text-zinc-200">{value}</span>
+                    <span className="text-xs text-zinc-800 dark:text-zinc-200">{value}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-black/40 p-5 text-sm text-zinc-300">
+            <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/40 p-5 text-sm text-zinc-600 dark:text-zinc-300">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-zinc-100">
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   Automation
                 </h3>
                 <span className="text-xs text-zinc-500">Rule executions</span>
@@ -970,7 +988,7 @@ export function TaskDetailContent({
               </p>
               <p className="text-xs text-zinc-500">Updated 4 minutes ago</p>
               <button
-                className="mt-4 rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300 hover:bg-white/5"
+                className="mt-4 rounded-full border border-zinc-200 dark:border-white/10 px-3 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                 type="button"
               >
                 Configure
@@ -994,62 +1012,62 @@ export function TaskDetailContent({
             <DialogTitle className="sr-only">
               {activeSubtask.title}
             </DialogTitle>
-            <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4 text-xs text-zinc-400">
+            <div className="flex items-center gap-3 border-b border-zinc-200 dark:border-white/10 px-5 py-4 text-xs text-zinc-500 dark:text-zinc-400">
               <button
                 type="button"
-                className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300 hover:bg-white/5"
+                className="rounded-full border border-zinc-200 dark:border-white/10 px-3 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                 onClick={() => setActiveSubtask(null)}
               >
                 Back
               </button>
-              <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase">
+              <span className="rounded-full border border-zinc-200 dark:border-white/10 px-2 py-1 text-[10px] uppercase">
                 Task
               </span>
               <span>/</span>
-              <span className="text-zinc-200">{activeSubtaskKey}</span>
+              <span className="text-zinc-800 dark:text-zinc-200">{activeSubtaskKey}</span>
             </div>
             <div className="flex-1 overflow-hidden">
               <div className="grid h-full grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px]">
                 <div className="h-full overflow-y-auto px-6 py-5">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h2 className="text-2xl font-semibold text-zinc-100">
+                      <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
                         {activeSubtask.title}
                       </h2>
-                      <p className="mt-1 text-sm text-zinc-400">
+                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                         Subtask detail overview.
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300 hover:bg-white/5"
+                        className="rounded-full border border-zinc-200 dark:border-white/10 px-3 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                       >
                         Share
                       </button>
                       <button
                         type="button"
-                        className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300 hover:bg-white/5"
+                        className="rounded-full border border-zinc-200 dark:border-white/10 px-3 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                       >
                         More
                       </button>
                     </div>
                   </div>
 
-                  <div className="mt-6 rounded-2xl border border-white/10 bg-[#1f2126]">
-                    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs text-zinc-300">
-                      <span className="font-semibold uppercase tracking-wide text-[10px] text-zinc-400">
+                  <div className="mt-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-[#1f2126]">
+                    <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-300">
+                      <span className="font-semibold uppercase tracking-wide text-[10px] text-zinc-500 dark:text-zinc-400">
                         Description
                       </span>
                       <button
                         type="button"
-                        className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300 hover:bg-white/5"
+                        className="rounded-full border border-zinc-200 dark:border-white/10 px-3 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                       >
                         Edit
                       </button>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 border-b border-white/10 px-4 py-2 text-xs text-zinc-400">
-                      <span className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[10px]">
+                    <div className="flex flex-wrap items-center gap-3 border-b border-zinc-200 dark:border-white/10 px-4 py-2 text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="rounded border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-1 text-[10px]">
                         Normal text
                       </span>
                       <span className="font-semibold">B</span>
@@ -1061,11 +1079,10 @@ export function TaskDetailContent({
                       <span className="text-zinc-500">Todo</span>
                       <span className="text-zinc-500">Link</span>
                     </div>
-                    <div className="px-4 py-6 text-sm text-zinc-400">
-                      Type /ai for Atlassian Intelligence or @ to mention and
-                      notify someone.
+                    <div className="px-4 py-6 text-sm text-zinc-500 dark:text-zinc-400">
+                      Write a description for this task.
                     </div>
-                    <div className="flex items-center gap-2 border-t border-white/10 px-4 py-3">
+                    <div className="flex items-center gap-2 border-t border-zinc-200 dark:border-white/10 px-4 py-3">
                       <button
                         type="button"
                         className="rounded-full bg-blue-500 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-400"
@@ -1074,26 +1091,26 @@ export function TaskDetailContent({
                       </button>
                       <button
                         type="button"
-                        className="rounded-full border border-white/10 px-4 py-2 text-xs text-zinc-300 hover:bg-white/5"
+                        className="rounded-full border border-zinc-200 dark:border-white/10 px-4 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                       >
                         Cancel
                       </button>
                     </div>
                   </div>
 
-                  <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
+                  <div className="mt-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 p-5">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <h3 className="text-sm font-semibold text-zinc-100">
+                      <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                         Activity
                       </h3>
-                      <div className="flex flex-wrap gap-2 text-xs text-zinc-400">
+                      <div className="flex flex-wrap gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                         {["All", "Comments", "History"].map((item, index) => (
                           <button
                             key={item}
                             className={`rounded-full border px-3 py-1 ${
                               index === 1
-                                ? "border-blue-400/40 bg-blue-400/10 text-blue-200"
-                                : "border-white/10 text-zinc-300 hover:bg-white/5"
+                                ? "border-blue-400/40 bg-blue-400/10 text-blue-700 dark:text-blue-200"
+                                : "border-zinc-200 text-zinc-600 hover:bg-zinc-100 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5"
                             }`}
                             type="button"
                           >
@@ -1103,10 +1120,10 @@ export function TaskDetailContent({
                       </div>
                     </div>
                     <div className="mt-4 flex gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-500/20 text-xs text-rose-200">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-500/20 text-xs text-rose-700 dark:text-rose-200">
                         S
                       </div>
-                      <div className="flex-1 rounded-2xl border border-white/10 bg-[#23252a] p-4 text-sm text-zinc-400">
+                      <div className="flex-1 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] p-4 text-sm text-zinc-500 dark:text-zinc-400">
                         Add a comment...
                         <div className="mt-3 flex flex-wrap gap-2 text-xs text-zinc-500">
                           {[
@@ -1116,7 +1133,7 @@ export function TaskDetailContent({
                           ].map((item) => (
                             <span
                               key={item}
-                              className="rounded-full border border-white/10 px-3 py-1"
+                              className="rounded-full border border-zinc-200 dark:border-white/10 px-3 py-1"
                             >
                               {item}
                             </span>
@@ -1130,26 +1147,26 @@ export function TaskDetailContent({
                   </div>
                 </div>
 
-                <aside className="h-full overflow-y-auto border-l border-white/10 bg-black/30 px-5 py-5">
+                <aside className="h-full overflow-y-auto border-l border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-black/30 px-5 py-5">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-zinc-100">
+                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                       Details
                     </h3>
                     <button
                       type="button"
-                      className="rounded-full border border-white/10 px-2 py-1 text-xs text-zinc-300 hover:bg-white/5"
+                      className="rounded-full border border-zinc-200 dark:border-white/10 px-2 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                     >
                       Settings
                     </button>
                   </div>
-                  <div className="mt-4 space-y-3 text-sm text-zinc-300">
+                  <div className="mt-4 space-y-3 text-sm text-zinc-600 dark:text-zinc-300">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-zinc-500">Assignee</span>
-                      <div className="text-right text-xs text-zinc-200">
+                      <div className="text-right text-xs text-zinc-800 dark:text-zinc-200">
                         <div className="flex flex-col items-end gap-1">
                           {editingAssignee ? (
                             <select
-                              className="rounded-lg border border-white/10 bg-[#23252a] px-2 py-1 text-xs text-zinc-100"
+                              className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100"
                               value={assigneeDraft}
                               onChange={(event) => {
                                 const value = event.target.value;
@@ -1166,7 +1183,7 @@ export function TaskDetailContent({
                           ) : (
                             <button
                               type="button"
-                              className="text-xs text-zinc-200 hover:text-white"
+                              className="text-xs text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white"
                               onClick={() => setEditingAssignee(true)}
                             >
                               {assignee}
@@ -1174,7 +1191,7 @@ export function TaskDetailContent({
                           )}
                           <button
                             type="button"
-                            className="text-[11px] text-blue-300 hover:text-blue-200"
+                            className="text-[11px] text-blue-700 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200"
                             onClick={handleAssignToMe}
                           >
                             Assign to me
@@ -1188,7 +1205,7 @@ export function TaskDetailContent({
                         {editingReporter ? (
                           <div className="flex w-full items-center gap-2">
                             <input
-                              className="w-full rounded-lg border border-white/10 bg-[#23252a] px-2 py-1 text-xs text-zinc-100"
+                              className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100"
                               value={reporterDraft}
                               onChange={(event) =>
                                 setReporterDraft(event.target.value)
@@ -1211,7 +1228,7 @@ export function TaskDetailContent({
                         ) : (
                           <button
                             type="button"
-                            className="text-xs text-zinc-200 hover:text-white"
+                            className="text-xs text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white"
                             onClick={() => {
                               setReporterDraft(reporter);
                               setEditingReporter(true);
@@ -1221,7 +1238,7 @@ export function TaskDetailContent({
                           </button>
                         )}
                         {reporterError ? (
-                          <span className="text-[11px] text-rose-300">
+                          <span className="text-[11px] text-rose-700 dark:text-rose-300">
                             {reporterError}
                           </span>
                         ) : null}
@@ -1231,7 +1248,7 @@ export function TaskDetailContent({
                       <span className="text-xs text-zinc-500">Priority</span>
                       {editingPriority ? (
                         <select
-                          className="rounded-lg border border-white/10 bg-[#23252a] px-2 py-1 text-xs text-zinc-100"
+                          className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100"
                           value={priorityDraft}
                           onChange={(event) => {
                             const value = event.target.value;
@@ -1248,7 +1265,7 @@ export function TaskDetailContent({
                       ) : (
                         <button
                           type="button"
-                          className="text-xs text-zinc-200 hover:text-white"
+                          className="text-xs text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white"
                           onClick={() => setEditingPriority(true)}
                         >
                           {priorityValue || activeSubtask.priority}
@@ -1259,7 +1276,7 @@ export function TaskDetailContent({
                       <span className="text-xs text-zinc-500">Status</span>
                       {editingStatus ? (
                         <select
-                          className="rounded-lg border border-white/10 bg-[#23252a] px-2 py-1 text-xs text-zinc-100"
+                          className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100"
                           value={statusDraft}
                           onChange={(event) => {
                             const value = event.target
@@ -1277,7 +1294,7 @@ export function TaskDetailContent({
                       ) : (
                         <button
                           type="button"
-                          className="text-xs text-zinc-200 hover:text-white"
+                          className="text-xs text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white"
                           onClick={() => setEditingStatus(true)}
                         >
                           {activeSubtask.status}
@@ -1303,7 +1320,7 @@ export function TaskDetailContent({
                                         prev.filter((item) => item !== label)
                                       )
                                     }
-                                    className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-zinc-200 hover:border-white/20"
+                                    className="rounded-full border border-zinc-200 dark:border-white/10 px-2 py-0.5 text-[10px] text-zinc-800 dark:text-zinc-200 hover:border-white/20"
                                   >
                                     {label}
                                   </button>
@@ -1315,7 +1332,7 @@ export function TaskDetailContent({
                               )}
                             </div>
                             <input
-                              className="w-full rounded-lg border border-white/10 bg-[#23252a] px-2 py-1 text-xs text-zinc-100"
+                              className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100"
                               placeholder="Add or create label"
                               value={labelsDraft}
                               onChange={(event) =>
@@ -1349,7 +1366,7 @@ export function TaskDetailContent({
                         ) : (
                           <button
                             type="button"
-                            className="text-xs text-zinc-200 hover:text-white"
+                            className="text-xs text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white"
                             onClick={() => setEditingLabels(true)}
                           >
                             {labelsValue.length
@@ -1363,7 +1380,7 @@ export function TaskDetailContent({
                       <span className="text-xs text-zinc-500">Due date</span>
                       {editingDueDate ? (
                         <input
-                          className="rounded-lg border border-white/10 bg-[#23252a] px-2 py-1 text-xs text-zinc-100"
+                          className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100"
                           type="date"
                           value={dueDateDraft}
                           onChange={(event) =>
@@ -1375,7 +1392,7 @@ export function TaskDetailContent({
                       ) : (
                         <button
                           type="button"
-                          className="text-xs text-zinc-200 hover:text-white"
+                          className="text-xs text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white"
                           onClick={() => setEditingDueDate(true)}
                         >
                           {dueDateValue || "None"}
@@ -1386,7 +1403,7 @@ export function TaskDetailContent({
                       <span className="text-xs text-zinc-500">Time tracking</span>
                       <button
                         type="button"
-                        className="text-xs text-zinc-200 hover:text-white"
+                        className="text-xs text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white"
                         onClick={() => setTimeTrackingOpen(true)}
                       >
                         {timeTrackingSummary}
@@ -1396,7 +1413,7 @@ export function TaskDetailContent({
                       <span className="text-xs text-zinc-500">Start date</span>
                       {editingStartDate ? (
                         <input
-                          className="rounded-lg border border-white/10 bg-[#23252a] px-2 py-1 text-xs text-zinc-100"
+                          className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100"
                           type="date"
                           value={startDateDraft}
                           onChange={(event) =>
@@ -1408,7 +1425,7 @@ export function TaskDetailContent({
                       ) : (
                         <button
                           type="button"
-                          className="text-xs text-zinc-200 hover:text-white"
+                          className="text-xs text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white"
                           onClick={() => setEditingStartDate(true)}
                         >
                           {startDateValue || "None"}
@@ -1419,7 +1436,7 @@ export function TaskDetailContent({
                       <span className="text-xs text-zinc-500">Category</span>
                       {editingCategory ? (
                         <select
-                          className="rounded-lg border border-white/10 bg-[#23252a] px-2 py-1 text-xs text-zinc-100"
+                          className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100"
                           value={categoryDraft}
                           onChange={(event) => {
                             const value = event.target.value;
@@ -1437,7 +1454,7 @@ export function TaskDetailContent({
                       ) : (
                         <button
                           type="button"
-                          className="text-xs text-zinc-200 hover:text-white"
+                          className="text-xs text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white"
                           onClick={() => setEditingCategory(true)}
                         >
                           {categoryValue || "Add option"}
@@ -1446,9 +1463,9 @@ export function TaskDetailContent({
                     </div>
                   </div>
 
-                  <div className="mt-6 rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-zinc-300">
+                  <div className="mt-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/40 p-4 text-sm text-zinc-600 dark:text-zinc-300">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-zinc-100">
+                      <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                         Automation
                       </h3>
                       <span className="text-xs text-zinc-500">
@@ -1461,7 +1478,7 @@ export function TaskDetailContent({
                     <p className="text-xs text-zinc-500">Updated yesterday</p>
                     <button
                       type="button"
-                      className="mt-4 rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300 hover:bg-white/5"
+                      className="mt-4 rounded-full border border-zinc-200 dark:border-white/10 px-3 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5"
                     >
                       Configure
                     </button>
@@ -1481,27 +1498,27 @@ export function TaskDetailContent({
     >
       <DialogContent className="max-w-md p-0">
         <div className="flex flex-col">
-          <DialogHeader className="border-b border-white/10 px-5 py-4">
+          <DialogHeader className="border-b border-zinc-200 dark:border-white/10 px-5 py-4">
             <DialogTitle>Time tracking</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-zinc-500 dark:text-zinc-400">
               Log time spent and remaining.
             </DialogDescription>
           </DialogHeader>
-          <div className="px-5 py-4 text-sm text-zinc-300">
+          <div className="px-5 py-4 text-sm text-zinc-600 dark:text-zinc-300">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="text-xs text-zinc-400">Time spent</label>
+                <label className="text-xs text-zinc-500 dark:text-zinc-400">Time spent</label>
                 <input
-                  className="mt-2 w-full rounded-lg border border-white/10 bg-[#23252a] px-3 py-2 text-sm text-zinc-100"
+                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
                   placeholder="2w 4d 6h 45m"
                   value={timeSpentDraft}
                   onChange={(event) => setTimeSpentDraft(event.target.value)}
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-400">Time remaining</label>
+                <label className="text-xs text-zinc-500 dark:text-zinc-400">Time remaining</label>
                 <input
-                  className="mt-2 w-full rounded-lg border border-white/10 bg-[#23252a] px-3 py-2 text-sm text-zinc-100"
+                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
                   placeholder="1w 2d"
                   value={timeRemainingDraft}
                   onChange={(event) =>
@@ -1510,8 +1527,8 @@ export function TaskDetailContent({
                 />
               </div>
             </div>
-            <div className="mt-4 text-xs text-zinc-400">
-              <p className="font-semibold text-zinc-300">
+            <div className="mt-4 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="font-semibold text-zinc-600 dark:text-zinc-300">
                 Use the format:
               </p>
               <ul className="mt-2 flex flex-col gap-1">
@@ -1523,11 +1540,11 @@ export function TaskDetailContent({
               </ul>
             </div>
           </div>
-          <DialogFooter className="border-t border-white/10 px-5 py-4 text-xs text-zinc-400 sm:items-center sm:justify-end">
+          <DialogFooter className="border-t border-zinc-200 dark:border-white/10 px-5 py-4 text-xs text-zinc-500 dark:text-zinc-400 sm:items-center sm:justify-end">
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="rounded-full border border-white/10 px-4 py-2 text-xs text-zinc-300 hover:bg-white/10"
+                className="rounded-full border border-zinc-200 dark:border-white/10 px-4 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/10"
                 onClick={() => setTimeTrackingOpen(false)}
               >
                 Cancel
@@ -1554,40 +1571,40 @@ export function TaskDetailContent({
     >
       <DialogContent className="max-w-md p-0">
         <div className="flex flex-col">
-          <DialogHeader className="border-b border-white/10 px-5 py-4">
+          <DialogHeader className="border-b border-zinc-200 dark:border-white/10 px-5 py-4">
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500/15 text-rose-300">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300">
                 <AlertTriangle className="h-4 w-4" />
               </span>
               <DialogTitle>Delete {deleteSubtaskKey}?</DialogTitle>
             </div>
-            <DialogDescription className="mt-2 text-zinc-400">
+            <DialogDescription className="mt-2 text-zinc-500 dark:text-zinc-400">
               Deleting a subtask is irreversible. It permanently removes the
               subtask and its activity history from this task.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="px-5 py-4 text-sm text-zinc-300">
-            <label className="text-xs text-zinc-400">
-              Type <span className="font-semibold text-zinc-200">delete</span>{" "}
+          <div className="px-5 py-4 text-sm text-zinc-600 dark:text-zinc-300">
+            <label className="text-xs text-zinc-500 dark:text-zinc-400">
+              Type <span className="font-semibold text-zinc-800 dark:text-zinc-200">delete</span>{" "}
               to continue
             </label>
             <input
-              className="mt-2 w-full rounded-xl border border-white/10 bg-[#23252a] px-3 py-2 text-sm text-zinc-100"
+              className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
               value={deleteConfirm}
               onChange={(event) => setDeleteConfirm(event.target.value)}
               placeholder="delete"
             />
             {deleteError ? (
-              <p className="mt-2 text-xs text-rose-300">{deleteError}</p>
+              <p className="mt-2 text-xs text-rose-700 dark:text-rose-300">{deleteError}</p>
             ) : null}
           </div>
 
-          <DialogFooter className="border-t border-white/10 px-5 py-4 text-xs text-zinc-400 sm:items-center sm:justify-end">
+          <DialogFooter className="border-t border-zinc-200 dark:border-white/10 px-5 py-4 text-xs text-zinc-500 dark:text-zinc-400 sm:items-center sm:justify-end">
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="rounded-full border border-white/10 px-4 py-2 text-xs text-zinc-300 hover:bg-white/10"
+                className="rounded-full border border-zinc-200 dark:border-white/10 px-4 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/10"
                 onClick={() => setDeleteSubtask(null)}
                 disabled={deletingSubtask}
               >
@@ -1595,7 +1612,7 @@ export function TaskDetailContent({
               </button>
               <button
                 type="button"
-                className="rounded-full border border-white/10 px-4 py-2 text-xs text-zinc-300 hover:bg-white/10"
+                className="rounded-full border border-zinc-200 dark:border-white/10 px-4 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/10"
                 disabled={deletingSubtask}
               >
                 Archive
@@ -1606,7 +1623,7 @@ export function TaskDetailContent({
                 className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
                   isDeleteConfirmValid && !deletingSubtask
                     ? "bg-rose-500 text-white hover:bg-rose-400"
-                    : "cursor-not-allowed bg-rose-500/30 text-rose-200/60"
+                    : "cursor-not-allowed bg-rose-500/30 text-rose-700/60 dark:text-rose-200/60"
                 }`}
                 onClick={handleDeleteSubtask}
               >

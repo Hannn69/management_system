@@ -148,38 +148,38 @@ export function UsersContent() {
           }}
         />
 
-        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#111216] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
+        <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] shadow-sm dark:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
           <Table className="min-w-[1200px]">
-            <TableHeader className="sticky top-0 z-10 bg-white/5">
-              <TableRow className="border-white/10 hover:bg-transparent">
+            <TableHeader className="sticky top-0 z-10 bg-zinc-100 dark:bg-white/5">
+              <TableRow className="border-zinc-200 dark:border-white/10 hover:bg-transparent">
                 <TableHead
                   onClick={() => setSort("firstName")}
-                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100 hover:text-cyan-400"
+                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100 hover:text-cyan-600 dark:hover:text-cyan-400"
                 >
                   Name
                 </TableHead>
                 <TableHead
                   onClick={() => setSort("email")}
-                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-100 hover:text-cyan-400"
+                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100 hover:text-cyan-600 dark:hover:text-cyan-400"
                 >
                   Email
                 </TableHead>
-                <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
                   Username
                 </TableHead>
-                <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
                   Is Active
                 </TableHead>
-                <TableHead className="w-[150px] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-zinc-100">
+                <TableHead className="w-[150px] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
                   Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="divide-y divide-white/5">
+            <TableBody className="divide-y divide-zinc-100 dark:divide-white/5">
               {decoratedUsers.map((user) => (
                 <TableRow
                   key={user.id}
-                  className="border-white/5 transition-colors hover:bg-white/[0.03]"
+                  className="border-zinc-100 dark:border-white/5 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.03]"
                 >
                   <TableCell className="px-4 py-4">
                     <div className="flex items-center gap-3">
@@ -189,7 +189,7 @@ export function UsersContent() {
                         <User className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-zinc-100">
+                        <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
                           {getUserFullName(user)}
                         </p>
                         <p className="font-mono text-[10px] tracking-tight text-zinc-500">
@@ -198,13 +198,13 @@ export function UsersContent() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-xs text-zinc-400">
+                  <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">
                     <div className="flex items-center gap-2">
                       <Mail className="h-3.5 w-3.5 text-zinc-600" />
                       <span>{user.email}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-400">
+                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
                     {user.username || "N/A"}
                   </TableCell>
                   <TableCell className="px-4 py-4 text-center">
@@ -224,7 +224,7 @@ export function UsersContent() {
                       <button
                         type="button"
                         onClick={() => router.push(`/users/${user.id}`)}
-                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-cyan-500/10 hover:text-cyan-400"
+                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-cyan-500/10 hover:text-cyan-600 dark:hover:text-cyan-400"
                         title="View"
                       >
                         <Eye className="h-4 w-4" />
@@ -232,7 +232,7 @@ export function UsersContent() {
                       <button
                         type="button"
                         onClick={() => router.push(`/users/${user.id}/edit`)}
-                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-emerald-500/10 hover:text-emerald-400"
+                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400"
                         title="Edit"
                       >
                         <Edit2 className="h-4 w-4" />
@@ -240,7 +240,7 @@ export function UsersContent() {
                       <button
                         type="button"
                         onClick={() => setItemToDelete(user)}
-                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-rose-500/10 hover:text-rose-400"
+                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400"
                         title="Delete"
                       >
                         <Trash className="h-4 w-4" />
@@ -250,7 +250,7 @@ export function UsersContent() {
                 </TableRow>
               ))}
               {decoratedUsers.length === 0 ? (
-                <TableRow className="border-white/10">
+                <TableRow className="border-zinc-200 dark:border-white/10">
                   <TableCell
                     className="px-4 py-12 text-center text-sm text-zinc-500"
                     colSpan={5}
@@ -272,11 +272,11 @@ export function UsersContent() {
           loading={deleteLoading}
         />
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-400">Rows per page</span>
+            <span className="text-zinc-500 dark:text-zinc-400">Rows per page</span>
             <select
-              className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-200"
+              className="rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-1 text-xs text-zinc-800 dark:text-zinc-200"
               value={limit}
               onChange={(e) => {
                 setPage(1);
@@ -291,7 +291,7 @@ export function UsersContent() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-zinc-400">
+            <span className="text-zinc-500 dark:text-zinc-400">
               {total === 0
                 ? "0-0"
                 : `${(page - 1) * limit + 1}-${Math.min(page * limit, total)}`}{" "}
@@ -299,7 +299,7 @@ export function UsersContent() {
             </span>
             <div className="flex items-center gap-1">
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-500 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 disabled:opacity-30"
                 disabled={page === 1}
                 onClick={() => setPage((prev) => prev - 1)}
               >
@@ -309,7 +309,7 @@ export function UsersContent() {
                 {page}
               </button>
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-200 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200 disabled:opacity-30"
                 disabled={page * limit >= total}
                 onClick={() => setPage((prev) => prev + 1)}
               >
@@ -320,7 +320,7 @@ export function UsersContent() {
         </div>
 
         {error ? (
-          <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-center text-xs text-rose-300">
+          <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-center text-xs text-rose-700 dark:text-rose-300">
             {error}
           </p>
         ) : null}

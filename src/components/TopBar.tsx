@@ -138,7 +138,7 @@ function TopBarContent() {
               </button>
 
               {menuOpen ? (
-                <div className="absolute right-0 top-12 z-50 w-56 rounded-xl border border-zinc-200 bg-white shadow-[0_25px_60px_-35px_rgba(0,0,0,0.75)] dark:border-white/8 dark:bg-[#17242d]">
+                <div className="absolute right-0 top-12 z-50 w-56 rounded-xl border border-zinc-200 bg-white shadow-sm dark:shadow-[0_25px_60px_-35px_rgba(0,0,0,0.75)] dark:border-white/8 dark:bg-[#17242d]">
                   <div className="px-4 py-3">
                     <p className="text-sm font-semibold text-zinc-800 dark:text-white">
                       {getUserLabel(user)}

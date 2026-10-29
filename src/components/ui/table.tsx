@@ -43,7 +43,7 @@ const TableFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
-    className={cn("border-t bg-white/5 font-medium", className)}
+    className={cn("border-t bg-zinc-100 dark:bg-white/5 font-medium", className)}
     {...props}
   />
 ));
@@ -68,7 +68,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-10 px-3 text-left align-middle text-xs font-semibold uppercase tracking-[0.24em] text-zinc-400",
+      "h-10 px-3 text-left align-middle text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400",
       className
     )}
     {...props}
@@ -82,7 +82,7 @@ const TableCell = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("p-3 align-middle text-sm text-zinc-200", className)}
+    className={cn("p-3 align-middle text-sm text-zinc-800 dark:text-zinc-200", className)}
     {...props}
   />
 ));

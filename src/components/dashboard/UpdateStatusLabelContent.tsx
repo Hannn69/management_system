@@ -95,7 +95,7 @@ export function UpdateStatusLabelContent({ slug }: UpdateStatusLabelContentProps
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/status-labels")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-sm"
+            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-sm"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -106,7 +106,7 @@ export function UpdateStatusLabelContent({ slug }: UpdateStatusLabelContentProps
         </div>
 
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}

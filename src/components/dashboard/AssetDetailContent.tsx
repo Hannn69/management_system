@@ -61,8 +61,8 @@ export function AssetDetailContent({ slug }: AssetDetailContentProps) {
   if (error || !record) {
     return (
       <div className="p-12 text-center">
-        <p className="text-rose-400 font-bold">{error || "Asset not found"}</p>
-        <button onClick={() => router.back()} className="mt-4 text-sm text-zinc-400 hover:text-white flex items-center gap-2 mx-auto">
+        <p className="text-rose-600 dark:text-rose-400 font-bold">{error || "Asset not found"}</p>
+        <button onClick={() => router.back()} className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center gap-2 mx-auto">
           <ArrowLeft className="h-4 w-4" /> Go Back
         </button>
       </div>
@@ -77,7 +77,7 @@ export function AssetDetailContent({ slug }: AssetDetailContentProps) {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => router.back()}
-              className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-400 hover:text-foreground dark:hover:text-white transition-all"
+              className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:text-foreground dark:hover:text-white transition-all"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
@@ -110,7 +110,7 @@ export function AssetDetailContent({ slug }: AssetDetailContentProps) {
                   {record.image ? (
                     <img src={record.image} alt={record.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="flex flex-col items-center gap-3 text-zinc-400">
+                    <div className="flex flex-col items-center gap-3 text-zinc-500 dark:text-zinc-400">
                       <ImageIcon className="h-12 w-12 opacity-20" />
                       <span className="text-[10px] font-bold uppercase tracking-widest">No Preview</span>
                     </div>
@@ -172,7 +172,7 @@ export function AssetDetailContent({ slug }: AssetDetailContentProps) {
                     <div className="h-2 w-2 rounded-full bg-emerald-500" />
                     <div>
                       <p className="text-sm font-bold text-foreground">Asset Seeded</p>
-                      <p className="text-[10px] text-zinc-400">System initialization</p>
+                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">System initialization</p>
                     </div>
                   </div>
                   <span className="text-xs text-zinc-500 font-mono">2026-05-18</span>
@@ -251,7 +251,7 @@ export function AssetDetailContent({ slug }: AssetDetailContentProps) {
                     <Clock className="h-4 w-4 text-rose-500" />
                     <span className="text-xs font-bold uppercase tracking-wider">EOL Date</span>
                   </div>
-                  <span className="text-xs font-mono text-rose-400 font-bold">2029-05-18</span>
+                  <span className="text-xs font-mono text-rose-600 dark:text-rose-400 font-bold">2029-05-18</span>
                 </div>
               </div>
             </div>

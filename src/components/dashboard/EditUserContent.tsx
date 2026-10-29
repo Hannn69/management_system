@@ -173,7 +173,7 @@ export function EditUserContent() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/users")}
-            className="rounded-xl border border-zinc-200 bg-zinc-100 p-2 text-zinc-400 shadow-lg transition-all hover:bg-zinc-200 hover:text-foreground dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-white"
+            className="rounded-xl border border-zinc-200 bg-zinc-100 p-2 text-zinc-500 dark:text-zinc-400 shadow-lg transition-all hover:bg-zinc-200 hover:text-foreground dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-white"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -181,14 +181,14 @@ export function EditUserContent() {
             <h2 className="text-2xl font-bold tracking-tight text-foreground">
               Update User
             </h2>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
               Edit the user record and save your changes.
             </p>
           </div>
         </div>
 
         {error ? (
-          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-300">
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-300">
             {error}
           </div>
         ) : null}
@@ -312,8 +312,8 @@ export function EditUserContent() {
                 </div>
 
                 <label className="flex items-center gap-3 pt-2">
-                  <input type="checkbox" className="h-4 w-4 rounded border-white/10 bg-white/5" checked={form.loginEnabled} onChange={(e) => updateField("loginEnabled", e.target.checked)} />
-                  <span className="text-sm text-zinc-400">Login Enabled</span>
+                  <input type="checkbox" className="h-4 w-4 rounded border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5" checked={form.loginEnabled} onChange={(e) => updateField("loginEnabled", e.target.checked)} />
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">Login Enabled</span>
                 </label>
               </div>
             </div>
@@ -360,7 +360,7 @@ export function EditUserContent() {
                   </button>
                 </div>
                 {passwordMismatch ? (
-                  <p className="ml-1 text-xs text-rose-400">
+                  <p className="ml-1 text-xs text-rose-600 dark:text-rose-400">
                     Password and confirm password do not match.
                   </p>
                 ) : null}

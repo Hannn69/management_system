@@ -1,5 +1,7 @@
 "use client";
 
+import { AutoFillButton } from "@/components/ui/AutoFillButton";
+import { sample } from "@/lib/sample-data";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -29,6 +31,10 @@ export function CreateCompanyContent() {
     notes: "",
     logo: null as string | null,
   });
+
+  const autoFill = () => {
+    setForm((prev) => ({ ...prev, ...sample.company() }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,12 +69,13 @@ export function CreateCompanyContent() {
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <AutoFillButton onClick={autoFill} />
           <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/[0.04] p-8 shadow-2xl backdrop-blur-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
@@ -161,7 +168,7 @@ export function CreateCompanyContent() {
             <button 
               type="button"
               onClick={() => router.push("/companies")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>

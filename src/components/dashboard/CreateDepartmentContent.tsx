@@ -1,5 +1,8 @@
 "use client";
 
+import type { ApiRecord } from "@/lib/types";
+import { AutoFillButton } from "@/components/ui/AutoFillButton";
+import { sample } from "@/lib/sample-data";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -28,9 +31,9 @@ export function CreateDepartmentContent() {
   const [quickCreateLocationOpen, setQuickCreateLocationOpen] = useState(false);
   const [quickCreateUserOpen, setQuickCreateUserOpen] = useState(false);
 
-  const [companies, setCompanies] = useState<any[]>([]);
-  const [locations, setLocations] = useState<any[]>([]);
-  const [managers, setManagers] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<ApiRecord[]>([]);
+  const [locations, setLocations] = useState<ApiRecord[]>([]);
+  const [managers, setManagers] = useState<ApiRecord[]>([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -62,6 +65,10 @@ export function CreateDepartmentContent() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const autoFill = () => {
+    setForm((prev) => ({ ...prev, ...sample.department({ companies, locations, managers }) }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,12 +110,13 @@ export function CreateDepartmentContent() {
     <main className="px-6 pb-6 pt-5">
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <AutoFillButton onClick={autoFill} />
           <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/[0.04] p-8 shadow-2xl backdrop-blur-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
@@ -163,7 +171,7 @@ export function CreateDepartmentContent() {
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateLocationOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-lg active:scale-95"
                     >
                       <Plus className="h-5 w-5" />
                     </button>
@@ -192,7 +200,7 @@ export function CreateDepartmentContent() {
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateUserOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-orange-600/10 text-orange-400 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-2xl bg-orange-600/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-lg active:scale-95"
                     >
                       <Plus className="h-5 w-5" />
                     </button>

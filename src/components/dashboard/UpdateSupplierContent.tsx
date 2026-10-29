@@ -121,18 +121,18 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/suppliers")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
+            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
             <h2 className="text-2xl font-bold text-foreground tracking-tight">Update Supplier</h2>
-            <p className="text-zinc-400 text-sm">Modify information for {form.name}.</p>
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Modify information for {form.name}.</p>
           </div>
         </div>
 
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}

@@ -32,12 +32,12 @@ export function RefreshButton() {
       <button
         type="button"
         onClick={handleRefresh}
-        className="rounded-md border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10"
+        className="rounded-md border border-white/20 px-4 py-2 text-sm font-semibold text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-white/10"
         disabled={loading}
       >
         {loading ? "Refreshing..." : "Refresh session"}
       </button>
-      {status ? <p className="text-xs text-zinc-300">{status}</p> : null}
+      {status ? <p className="text-xs text-zinc-600 dark:text-zinc-300">{status}</p> : null}
     </div>
   );
 }

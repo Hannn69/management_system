@@ -3,7 +3,7 @@
 
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import RefreshButton from "@/components/RefreshButton";
+import { RefreshButton } from "@/components/RefreshButton";
 
 describe("RefreshButton Component", () => {
   it("renders the refresh button", () => {

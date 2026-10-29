@@ -59,8 +59,8 @@ export function AssetModelDetailContent({ slug }: AssetModelDetailContentProps) 
   if (error || !record) {
     return (
       <div className="p-12 text-center">
-        <p className="text-rose-400 font-bold">{error || "Asset Model not found"}</p>
-        <button onClick={() => router.back()} className="mt-4 text-sm text-zinc-400 hover:text-white flex items-center gap-2 mx-auto">
+        <p className="text-rose-600 dark:text-rose-400 font-bold">{error || "Asset Model not found"}</p>
+        <button onClick={() => router.back()} className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center gap-2 mx-auto">
           <ArrowLeft className="h-4 w-4" /> Go Back
         </button>
       </div>
@@ -75,7 +75,7 @@ export function AssetModelDetailContent({ slug }: AssetModelDetailContentProps) 
           <div className="flex items-center gap-4">
             <button 
               onClick={() => router.back()}
-              className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-400 hover:text-foreground dark:hover:text-white transition-all"
+              className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:text-foreground dark:hover:text-white transition-all"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
@@ -115,7 +115,7 @@ export function AssetModelDetailContent({ slug }: AssetModelDetailContentProps) 
                   <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Model Number</p>
                     <div className="flex items-center gap-2 text-foreground font-mono font-medium">
-                      <Hash className="h-4 w-4 text-zinc-400" />
+                      <Hash className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
                       {record.modelNo || "N/A"}
                     </div>
                   </div>
@@ -147,11 +147,11 @@ export function AssetModelDetailContent({ slug }: AssetModelDetailContentProps) 
                 <h4 className="text-sm font-bold text-foreground mb-4">Configuration Requirements</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 p-4 rounded-2xl border border-zinc-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
-                    {record.requireSerialNumber ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <XCircle className="h-5 w-5 text-zinc-400" />}
+                    {record.requireSerialNumber ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <XCircle className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />}
                     <span className="text-sm text-zinc-600 dark:text-zinc-400">Requires Serial Number</span>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-2xl border border-zinc-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
-                    {record.isRequestable ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <XCircle className="h-5 w-5 text-zinc-400" />}
+                    {record.isRequestable ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <XCircle className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />}
                     <span className="text-sm text-zinc-600 dark:text-zinc-400">Requestable by Users</span>
                   </div>
                 </div>
@@ -191,7 +191,7 @@ export function AssetModelDetailContent({ slug }: AssetModelDetailContentProps) 
             <div className="rounded-[32px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-sm">
               <h3 className="text-lg font-bold text-foreground mb-4">Technical Notes</h3>
               <div className="flex gap-3 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                <FileText className="h-4 w-4 mt-0.5 shrink-0 text-zinc-400" />
+                <FileText className="h-4 w-4 mt-0.5 shrink-0 text-zinc-500 dark:text-zinc-400" />
                 <p>{record.notes || "No technical notes provided for this model."}</p>
               </div>
             </div>
