@@ -7,7 +7,6 @@ import {
   ChevronDown,
   ChevronRight,
   LayoutDashboard,
-  ListChecks,
   Settings,
   Package as AssetsIcon,
   Users,
@@ -125,22 +124,6 @@ export function DashboardSidebar() {
                 <LayoutDashboard className="h-4 w-4" />
               </span>
               <span>Dashboard</span>
-            </Link>
-
-            <Link
-              href="/task-management"
-              className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] transition ${
-                pathname.startsWith("/task-management")
-                  ? "bg-slate-200/50 dark:bg-[#213847] text-foreground dark:text-white shadow-sm dark:shadow-[0_18px_35px_-26px_rgba(0,0,0,0.8)]"
-                  : "text-zinc-500 dark:text-[#9eb6c3] hover:bg-slate-200 dark:hover:bg-[#17242d] hover:text-foreground dark:hover:text-white"
-              }`}
-            >
-              <span className={`inline-flex w-8 justify-center rounded-xl px-2 py-1 text-[10px] font-bold ${
-                pathname.startsWith("/task-management") ? "bg-white/16 text-white" : "bg-slate-200 dark:bg-[#1f3442] text-blue-600 dark:text-[#8ec8e6]"
-              }`}>
-                <ListChecks className="h-4 w-4" />
-              </span>
-              <span>Tasks</span>
             </Link>
 
             {/* Assets Toggle Group */}
