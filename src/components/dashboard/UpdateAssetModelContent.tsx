@@ -149,34 +149,34 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
   }
 
   return (
-    <main className="px-6 pb-6 pt-5">
+    <div className="space-y-6">
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/asset-models")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
+            className="p-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-foreground transition-all shadow-sm active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
             <h2 className="text-2xl font-bold text-foreground tracking-tight">Update Asset Model</h2>
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Modify existing asset model template for {form.name}.</p>
+            <p className="text-gray-500 text-sm">Modify existing asset model template for {form.name}.</p>
           </div>
         </div>
 
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
+          <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 pb-12">
-          <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl backdrop-blur-xl">
+          <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
               
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Name</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-gray-500 ml-1">Name</label>
                   <div className="relative">
                     <Package className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
                     <input 
@@ -186,32 +186,32 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                       value={form.name}
                       onChange={handleChange}
                       placeholder="e.g. MacBook Pro M3, ThinkPad X1" 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner" 
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner" 
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Category</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-gray-500 ml-1">Category</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
+                      <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                       <select 
                         required
                         name="categoryId"
                         value={form.categoryId}
                         onChange={handleChange}
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none shadow-inner"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none shadow-inner"
                       >
-                        <option value="" className="bg-white dark:bg-[#111216]">Select Category</option>
-                        {categories.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#111216]">{c.name}</option>)}
+                        <option value="" className="bg-white">Select Category</option>
+                        {categories.map(c => <option key={c.id} value={c.id} className="bg-white">{c.name}</option>)}
                       </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
                     </div>
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateCategoryOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-cyan-600/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 hover:bg-cyan-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-xl bg-blue-600/10 text-blue-600 border border-blue-500/20 hover:bg-blue-600/20 transition-all shadow-sm active:scale-95"
                       title="New Category"
                     >
                       <Plus className="h-5 w-5" />
@@ -220,7 +220,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Manufacturer</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-gray-500 ml-1">Manufacturer</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <Factory className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
@@ -229,17 +229,17 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                         name="manufacturerId"
                         value={form.manufacturerId}
                         onChange={handleChange}
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none shadow-inner"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-10 py-3.5 text-sm text-foreground appearance-none focus:outline-none shadow-inner"
                       >
-                        <option value="" className="bg-white dark:bg-[#111216]">Select Manufacturer</option>
-                        {manufacturers.map(m => <option key={m.id} value={m.id} className="bg-white dark:bg-[#111216]">{m.name}</option>)}
+                        <option value="" className="bg-white">Select Manufacturer</option>
+                        {manufacturers.map(m => <option key={m.id} value={m.id} className="bg-white">{m.name}</option>)}
                       </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
                     </div>
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateManufacturerOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 hover:bg-blue-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-xl bg-blue-600/10 text-blue-600 border border-blue-500/20 hover:bg-blue-600/20 transition-all shadow-sm active:scale-95"
                       title="New Manufacturer"
                     >
                       <Plus className="h-5 w-5" />
@@ -248,16 +248,16 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Model Number</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-gray-500 ml-1">Model Number</label>
                   <div className="relative">
-                    <Hash className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                    <Hash className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                     <input 
                       type="text" 
                       name="modelNumber"
                       value={form.modelNumber}
                       onChange={handleChange}
                       placeholder="Model No." 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none shadow-inner" 
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none shadow-inner" 
                     />
                   </div>
                 </div>
@@ -266,33 +266,33 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Min. QTY</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-500 ml-1">Min. QTY</label>
                     <div className="relative">
-                      <Inbox className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                      <Inbox className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                       <input 
                         type="number" 
                         name="minQty"
                         value={form.minQty}
                         onChange={handleChange}
                         placeholder="0" 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none shadow-inner" 
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none shadow-inner" 
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">EOL (End of Life)</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-500 ml-1">EOL (End of Life)</label>
                     <div className="relative">
-                      <CalendarClock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                      <CalendarClock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                       <input 
                         type="number" 
                         name="eolMonths"
                         value={form.eolMonths}
                         onChange={handleChange}
                         placeholder="Months" 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none shadow-inner" 
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none shadow-inner" 
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-tighter">Months</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Months</span>
                     </div>
                   </div>
                 </div>
@@ -306,16 +306,16 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-gray-500 ml-1">Notes</label>
                   <div className="relative">
-                    <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-600" />
+                    <FileText className="absolute left-4 top-4 h-4 w-4 text-gray-600" />
                     <textarea 
                       rows={3} 
                       name="notes"
                       value={form.notes}
                       onChange={handleChange}
                       placeholder="Technical specifications, model variations or other info..." 
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none resize-none shadow-inner" 
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none resize-none shadow-inner" 
                     />
                   </div>
                 </div>
@@ -328,12 +328,12 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                           name="requireSerialNumber"
                           checked={form.requireSerialNumber}
                           onChange={handleChange}
-                          className="w-4 h-4 rounded border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-amber-600 focus:ring-amber-500/20" 
+                          className="w-4 h-4 rounded border-gray-200 bg-gray-100 text-amber-600 focus:ring-amber-500/20" 
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                        <Barcode className="h-3.5 w-3.5 text-zinc-500" />
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 group-hover:text-foreground dark:group-hover:text-zinc-200 transition-colors">Require Serial</span>
+                        <Barcode className="h-3.5 w-3.5 text-gray-500" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 group-hover:text-foreground transition-colors">Require Serial</span>
                       </div>
                    </label>
                    <label className="flex items-center gap-3 cursor-pointer group">
@@ -343,12 +343,12 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
                         name="isRequestable"
                         checked={form.isRequestable}
                         onChange={handleChange}
-                        className="w-4 h-4 rounded border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-amber-600 focus:ring-amber-500/20" 
+                        className="w-4 h-4 rounded border-gray-200 bg-gray-100 text-amber-600 focus:ring-amber-500/20" 
                       />
                     </div>
                     <div className="flex items-center gap-2">
-                      <UserCheck className="h-3.5 w-3.5 text-zinc-500" />
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 group-hover:text-foreground dark:group-hover:text-zinc-200 transition-colors">Requestable</span>
+                      <UserCheck className="h-3.5 w-3.5 text-gray-500" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 group-hover:text-foreground transition-colors">Requestable</span>
                     </div>
                   </label>
                 </div>
@@ -360,7 +360,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
             <button 
               type="button"
               onClick={() => router.push("/asset-models")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 bg-gray-100 text-sm font-bold text-gray-500 hover:bg-gray-200 hover:text-foreground transition-all shadow-sm active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>
@@ -368,7 +368,7 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
             <button 
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(217,119,6,0.5)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-sm font-bold text-white shadow-sm hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
             >
               {loading ? (
                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -398,6 +398,6 @@ export function UpdateAssetModelContent({ id }: UpdateAssetModelContentProps) {
           }}
         />
       </div>
-    </main>
+    </div>
   );
 }

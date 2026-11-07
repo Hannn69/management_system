@@ -12,16 +12,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
+import { RecordGrid, display } from "@/components/admin/RecordGrid";
+import { ListFilters, type FilterField, type FilterValues } from "@/components/admin/ListFilters";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { Package, Copy, Edit2, Trash, Image as ImageIcon, Tag, Hash, TrendingDown, ClipboardList, Layers, Check, Mail, ShieldAlert } from "lucide-react";
 
 import { CategoryRecord } from "@/lib/types";
 
 const accentClasses = [
-  "from-emerald-400 to-cyan-500",
-  "from-cyan-400 to-blue-500",
-  "from-indigo-400 to-violet-500",
+  "from-emerald-400 to-blue-500",
+  "from-blue-400 to-blue-500",
+  "from-blue-400 to-blue-500",
   "from-rose-400 to-pink-500",
+];
+
+const FILTER_FIELDS: FilterField[] = [
+  { key: "type", label: "Type", options: [{ value: "Asset", label: "Asset" }, { value: "Accessory", label: "Accessory" }, { value: "Consumable", label: "Consumable" }, { value: "Component", label: "Component" }] },
 ];
 
 export function CategoriesContent() {
@@ -29,6 +35,7 @@ export function CategoriesContent() {
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const { push } = useToast();
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<FilterValues>({});
   const [records, setRecords] = useState<CategoryRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -86,6 +93,9 @@ export function CategoriesContent() {
         search,
       });
 
+      Object.entries(filters).forEach(([key, value]) => value && params.set(key, value));
+
+
       const res = await fetch(`${apiBase}/categories?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch data");
       const data = await res.json();
@@ -99,14 +109,14 @@ export function CategoriesContent() {
     } finally {
       setLoading(false);
     }
-  }, [apiBase, page, limit, sort, order, search]);
+  }, [apiBase, page, limit, sort, order, search, filters]);
 
   useEffect(() => {
     loadRecords();
   }, [loadRecords]);
 
   return (
-    <main className="px-6 pb-6 pt-5">
+    <div className="space-y-6">
       <div className="mx-auto w-full max-w-full flex flex-1 flex-col gap-6">
         <DataTableToolbar 
           search={search}
@@ -121,113 +131,140 @@ export function CategoriesContent() {
             setOrder(newOrder);
           }}
         />
+        <ListFilters
+          fields={FILTER_FIELDS}
+          values={filters}
+          onChange={(next) => {
+            setFilters(next);
+            setPage(1);
+          }}
+        />
 
-        <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] shadow-sm dark:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
-          <Table className="min-w-[1000px]">
-            <TableHeader className="bg-zinc-100 dark:bg-white/5 sticky top-0 z-10">
-              <TableRow className="border-zinc-200 dark:border-white/10 hover:bg-transparent">
-                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">Name</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] text-center">Image</TableHead>
-                <TableHead onClick={() => setSort("type")} className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">Type</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Qty</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Send Email</TableHead>
-                <TableHead className="px-4 py-3 text-center text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Acceptance</TableHead>
-                <TableHead className="w-[100px] px-4 py-3 text-right text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="divide-y divide-zinc-100 dark:divide-white/5">
-              {decoratedRecords.map((record) => (
-                <TableRow 
-                  key={record.id} 
-                  className="border-zinc-100 dark:border-white/5 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.03]"
-                >
-                  <TableCell className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${record.accent} text-black shadow-lg`}>
-                        <Tag className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{record.name}</p>
-                        <p className="text-[10px] text-zinc-500 font-mono tracking-tight">{record.slug}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4">
-                    <div className="flex items-center justify-center">
-                      {record.image ? (
-                        <img src={record.image} alt={record.name} className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/10" />
-                      ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10">
-                          <ImageIcon className="h-5 w-5 text-zinc-600" />
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <Layers className="h-3.5 w-3.5 text-violet-500" />
-                      <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">{record.type}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span className="inline-flex rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                      {record.qty}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <div className="flex justify-center">
-                      {record.sendEmail ? (
-                        <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                          <Check className="h-3.5 w-3.5" />
-                          <Mail className="h-3.5 w-3.5" />
-                        </div>
-                      ) : (
-                        <span className="text-zinc-600">—</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <div className="flex justify-center">
-                      {record.acceptance ? (
-                        <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                          <ShieldAlert className="h-3.5 w-3.5" />
-                          <span className="text-[10px] font-bold uppercase">Required</span>
-                        </div>
-                      ) : (
-                        <span className="text-zinc-600">—</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => router.push(`/categories/${record.id}/edit`)}
-                        className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all active:scale-90" 
-                        title="Edit"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button 
-                        onClick={() => setItemToDelete(record)}
-                        className="p-2 rounded-xl text-zinc-500 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all active:scale-90" 
-                        title="Delete"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </TableCell>
+        {viewType === "grid" ? (
+          <RecordGrid
+            loading={loading}
+            cards={decoratedRecords.map((record) => ({
+              key: record.id,
+              title: record.name,
+              image: record.image,
+              badge: record.type ? { label: display(record.type) } : undefined,
+              stats: [
+                { label: "Qty", value: display(record.qty, "0") },
+                { label: "Send email", value: record.sendEmail ? "Yes" : "No" },
+                { label: "Acceptance", value: record.acceptance ? "Required" : "—" },
+              ],
+              onEdit: () => router.push(`/categories/${record.id}/edit`),
+              onDelete: () => setItemToDelete(record),
+            }))}
+          />
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+            <Table className="min-w-[1000px]">
+              <TableHeader className="bg-gray-50 sticky top-0 z-10">
+                <TableRow className="border-gray-200 hover:bg-transparent">
+                  <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-gray-500 text-xs font-semibold cursor-pointer hover:text-blue-600">Name</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold text-center">Image</TableHead>
+                  <TableHead onClick={() => setSort("type")} className="px-4 py-3 text-gray-500 text-xs font-semibold cursor-pointer hover:text-blue-600">Type</TableHead>
+                  <TableHead className="px-4 py-3 text-center text-gray-500 text-xs font-semibold">Qty</TableHead>
+                  <TableHead className="px-4 py-3 text-center text-gray-500 text-xs font-semibold">Send Email</TableHead>
+                  <TableHead className="px-4 py-3 text-center text-gray-500 text-xs font-semibold">Acceptance</TableHead>
+                  <TableHead className="w-[100px] px-4 py-3 text-right text-gray-500 text-xs font-semibold">Actions</TableHead>
                 </TableRow>
-              ))}
-              {decoratedRecords.length === 0 && (
-                <TableRow className="border-zinc-200 dark:border-white/10">
-                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={7}>
-                    {loading ? "Loading..." : "No categories found."}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody className="divide-y divide-gray-100">
+                {decoratedRecords.map((record) => (
+                  <TableRow 
+                    key={record.id} 
+                    className="border-gray-100 transition-colors hover:bg-gray-50"
+                  >
+                    <TableCell className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${record.accent} text-black shadow-sm`}>
+                          <Tag className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">{record.name}</p>
+                          <p className="text-[10px] text-gray-500 font-mono tracking-tight">{record.slug}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-4">
+                      <div className="flex items-center justify-center">
+                        {record.image ? (
+                          <img src={record.image} alt={record.name} className="h-10 w-10 rounded-xl object-cover ring-1 ring-white/10" />
+                        ) : (
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 border border-gray-200">
+                            <ImageIcon className="h-5 w-5 text-gray-600" />
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <Layers className="h-3.5 w-3.5 text-blue-500" />
+                        <span className="text-xs font-medium text-gray-600">{record.type}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-center">
+                      <span className="inline-flex rounded-lg bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-600 border border-blue-500/20">
+                        {record.qty}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-center">
+                      <div className="flex justify-center">
+                        {record.sendEmail ? (
+                          <div className="flex items-center gap-1 text-emerald-600">
+                            <Check className="h-3.5 w-3.5" />
+                            <Mail className="h-3.5 w-3.5" />
+                          </div>
+                        ) : (
+                          <span className="text-gray-600">—</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-center">
+                      <div className="flex justify-center">
+                        {record.acceptance ? (
+                          <div className="flex items-center gap-1 text-amber-600">
+                            <ShieldAlert className="h-3.5 w-3.5" />
+                            <span className="text-[10px] font-bold uppercase">Required</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-600">—</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => router.push(`/categories/${record.id}/edit`)}
+                          className="p-2 rounded-xl text-gray-500 hover:bg-emerald-500/10 hover:text-emerald-600 transition-all active:scale-90" 
+                          title="Edit"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button 
+                          onClick={() => setItemToDelete(record)}
+                          className="p-2 rounded-xl text-gray-500 hover:bg-rose-500/10 hover:text-rose-600 transition-all active:scale-90" 
+                          title="Delete"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {decoratedRecords.length === 0 && (
+                  <TableRow className="border-gray-200">
+                    <TableCell className="px-4 py-12 text-center text-sm text-gray-500" colSpan={7}>
+                      {loading ? "Loading..." : "No categories found."}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
         <DeleteConfirmDialog 
           open={!!itemToDelete}
@@ -238,11 +275,11 @@ export function CategoriesContent() {
           loading={deleteLoading}
         />
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-xs text-gray-600 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500 dark:text-zinc-400">Rows per page</span>
+            <span className="text-gray-500">Rows per page</span>
             <select
-              className="rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-1 text-xs text-zinc-800 dark:text-zinc-200"
+              className="rounded-full border border-gray-200 bg-gray-100 px-2 py-1 text-xs text-gray-800"
               value={limit}
               onChange={(e) => { setPage(1); setLimit(Number(e.target.value)); }}
             >
@@ -250,22 +287,22 @@ export function CategoriesContent() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-zinc-500 dark:text-zinc-400">
+            <span className="text-gray-500">
               {total === 0 ? "0-0" : `${(page - 1) * limit + 1}-${Math.min(page * limit, total)}`} of {total}
             </span>
             <div className="flex items-center gap-1">
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-500 disabled:opacity-30"
                 disabled={page === 1}
                 onClick={() => setPage(p => p - 1)}
               >
                 &lt;
               </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg">
+              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm">
                 {page}
               </button>
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-800 disabled:opacity-30"
                 disabled={page * limit >= total}
                 onClick={() => setPage(p => p + 1)}
               >
@@ -274,8 +311,8 @@ export function CategoriesContent() {
             </div>
           </div>
         </div>
-        {error && <p className="rounded-lg bg-rose-500/10 p-3 text-center text-xs text-rose-700 dark:text-rose-300 border border-rose-500/20">{error}</p>}
+        {error && <p className="rounded-lg bg-rose-500/10 p-3 text-center text-xs text-rose-700 border border-rose-500/20">{error}</p>}
       </div>
-    </main>
+    </div>
   );
 }

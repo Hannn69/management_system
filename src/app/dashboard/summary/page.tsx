@@ -29,17 +29,17 @@ export default function SummaryPage() {
   }, [fetchSummary]);
 
   const tones = [
-    "bg-[linear-gradient(145deg,#ffffff_0%,#effaf7_100%)] dark:bg-[#121f29]",
-    "bg-[linear-gradient(145deg,#ffffff_0%,#fff5f7_100%)] dark:bg-[#121f29]",
-    "bg-[linear-gradient(145deg,#ffffff_0%,#fff8ed_100%)] dark:bg-[#121f29]",
-    "bg-[linear-gradient(145deg,#ffffff_0%,#f3f1ff_100%)] dark:bg-[#121f29]",
+    "bg-[linear-gradient(145deg,#ffffff_0%,#effaf7_100%)] ",
+    "bg-[linear-gradient(145deg,#ffffff_0%,#fff5f7_100%)] ",
+    "bg-[linear-gradient(145deg,#ffffff_0%,#fff8ed_100%)] ",
+    "bg-[linear-gradient(145deg,#ffffff_0%,#f3f1ff_100%)] ",
   ];
   const summaryCards = buildSummaryCards(summary).map((card, i) => ({ ...card, tone: tones[i] }));
 
   return (
     <div className="flex flex-1 flex-col min-w-0">
       <DashboardHeader title="Summary" />
-      <main className="px-6 pb-6 pt-5">
+      <div className="space-y-6">
         <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
@@ -50,15 +50,15 @@ export default function SummaryPage() {
               {summaryCards.map((card) => (
                 <article
                   key={card.label}
-                  className={`${card.tone} rounded-[28px] border border-[color:var(--border)] px-5 py-5 shadow-[var(--panel-shadow)] transition-all hover:-translate-y-1 hover:shadow-[var(--panel-shadow-hover)] cursor-default`}
+                  className={`${card.tone} rounded-xl border border-[color:var(--border)] px-5 py-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-sm cursor-default`}
                 >
-                  <p className="text-sm font-medium text-zinc-500 dark:text-[#7993a1]">
+                  <p className="text-sm font-medium text-gray-500">
                     {card.label}
                   </p>
                   <p className={`mt-3 text-4xl font-bold ${card.accent}`}>
                     {card.value}
                   </p>
-                  <p className="mt-3 text-sm text-zinc-400 dark:text-[#688290] font-medium">
+                  <p className="mt-3 text-sm text-gray-400 font-medium">
                     {card.detail}
                   </p>
                 </article>
@@ -66,7 +66,7 @@ export default function SummaryPage() {
             </section>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,5 @@
 "use client";
 
-import { AutoFillButton } from "@/components/ui/AutoFillButton";
-import { sample } from "@/lib/sample-data";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -86,10 +84,6 @@ export function CreateUserContent() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const autoFill = () => {
-    setForm((prev) => ({ ...prev, ...sample.user({ companies, locations }) }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -139,23 +133,22 @@ export function CreateUserContent() {
   };
 
   return (
-    <main className="px-6 pb-6 pt-5">
+    <div className="space-y-6">
       <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-6">
         {error ? (
-          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-300">
+          <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-700">
             {error}
           </div>
         ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-6 pb-12">
-          <AutoFillButton onClick={autoFill} />
-          <section className="rounded-[28px] border border-zinc-200 bg-white p-8 shadow-2xl dark:border-white/10 dark:bg-[#111216]">
+          <section className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
             <div className="mb-8 flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-500">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
                 <User className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-500">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-gray-500">
                   Database User
                 </p>
                 <h2 className="mt-1 text-xl font-semibold text-foreground">
@@ -167,16 +160,16 @@ export function CreateUserContent() {
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-gray-500">
                     First Name
                   </label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-500" />
+                    <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-500" />
                     <input
                       required
                       type="text"
                       placeholder="John"
-                      className="w-full rounded-2xl border border-zinc-200 bg-zinc-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-zinc-400 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-zinc-600"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-gray-400 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                       value={form.firstName}
                       onChange={(e) => updateField("firstName", e.target.value)}
                     />
@@ -184,7 +177,7 @@ export function CreateUserContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-gray-500">
                     Last Name
                   </label>
                   <div className="relative">
@@ -193,7 +186,7 @@ export function CreateUserContent() {
                       required
                       type="text"
                       placeholder="Doe"
-                      className="w-full rounded-2xl border border-zinc-200 bg-zinc-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-zinc-400 focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-zinc-600"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-gray-400 focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                       value={form.lastName}
                       onChange={(e) => updateField("lastName", e.target.value)}
                     />
@@ -201,7 +194,7 @@ export function CreateUserContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-gray-500">
                     Email Address
                   </label>
                   <div className="relative">
@@ -210,7 +203,7 @@ export function CreateUserContent() {
                       required
                       type="email"
                       placeholder="user@company.com"
-                      className="w-full rounded-2xl border border-zinc-200 bg-zinc-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-zinc-400 focus:border-amber-500/50 focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-zinc-600"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-gray-400 focus:border-amber-500/50 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                       value={form.email}
                       onChange={(e) => updateField("email", e.target.value)}
                     />
@@ -218,7 +211,7 @@ export function CreateUserContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-gray-500">
                     Phone Number
                   </label>
                   <div className="relative">
@@ -226,7 +219,7 @@ export function CreateUserContent() {
                     <input
                       type="tel"
                       placeholder="012 345 678"
-                      className="w-full rounded-2xl border border-zinc-200 bg-zinc-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-zinc-400 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-zinc-600"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-gray-400 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                       value={form.phoneNumber}
                       onChange={(e) => updateField("phoneNumber", e.target.value)}
                     />
@@ -236,16 +229,16 @@ export function CreateUserContent() {
 
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-gray-500">
                     Username
                   </label>
                   <div className="relative">
-                    <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-500" />
+                    <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-500" />
                     <input
                       required
                       type="text"
                       placeholder="johndoe"
-                      className="w-full rounded-2xl border border-zinc-200 bg-zinc-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-zinc-400 focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-zinc-600"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-gray-400 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                       value={form.username}
                       onChange={(e) => updateField("username", e.target.value)}
                     />
@@ -253,15 +246,15 @@ export function CreateUserContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  <label className="ml-1 text-xs font-bold uppercase tracking-widest text-gray-500">
                     Display Name
                   </label>
                   <div className="relative">
-                    <ShieldCheck className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-500" />
+                    <ShieldCheck className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-500" />
                     <input
                       type="text"
                       placeholder="John Doe"
-                      className="w-full rounded-2xl border border-zinc-200 bg-zinc-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-zinc-400 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-zinc-600"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 py-3.5 pl-12 pr-4 text-sm text-foreground shadow-inner transition-all placeholder:text-gray-400 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                       value={form.displayName}
                       onChange={(e) => updateField("displayName", e.target.value)}
                     />
@@ -270,13 +263,13 @@ export function CreateUserContent() {
 
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
+                    <label className="ml-1 text-xs font-bold uppercase tracking-widest text-gray-500">
                       Company
                     </label>
                     <div className="relative">
                       <Building2 className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-orange-500" />
                       <select
-                        className="w-full appearance-none rounded-2xl border border-zinc-200 bg-zinc-100 py-3.5 pl-12 pr-10 text-sm text-foreground shadow-inner transition-all focus:border-orange-500/50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 dark:border-white/10 dark:bg-[#111216]"
+                        className="w-full appearance-none rounded-xl border border-gray-200 bg-gray-100 py-3.5 pl-12 pr-10 text-sm text-foreground shadow-inner transition-all focus:border-orange-500/50 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                         value={form.companyId}
                         onChange={(e) => updateField("companyId", e.target.value)}
                         disabled={fetchingOptions}
@@ -288,18 +281,18 @@ export function CreateUserContent() {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
+                    <label className="ml-1 text-xs font-bold uppercase tracking-widest text-gray-500">
                       Location
                     </label>
                     <div className="relative">
                       <MapPin className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
                       <select
-                        className="w-full appearance-none rounded-2xl border border-zinc-200 bg-zinc-100 py-3.5 pl-12 pr-10 text-sm text-foreground shadow-inner transition-all focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-white/10 dark:bg-[#111216]"
+                        className="w-full appearance-none rounded-xl border border-gray-200 bg-gray-100 py-3.5 pl-12 pr-10 text-sm text-foreground shadow-inner transition-all focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                         value={form.locationId}
                         onChange={(e) => updateField("locationId", e.target.value)}
                         disabled={fetchingOptions}
@@ -311,7 +304,7 @@ export function CreateUserContent() {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                     </div>
                   </div>
                 </div>
@@ -319,23 +312,23 @@ export function CreateUserContent() {
                 <label className="flex items-center gap-3 pt-2">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 rounded border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5"
+                    className="h-4 w-4 rounded border-gray-200 bg-gray-100"
                     checked={form.loginEnabled}
                     onChange={(e) => updateField("loginEnabled", e.target.checked)}
                   />
-                  <span className="text-sm text-zinc-500 dark:text-zinc-400">Login Enabled</span>
+                  <span className="text-sm text-gray-500">Login Enabled</span>
                 </label>
               </div>
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-zinc-200 bg-white p-8 shadow-2xl dark:border-white/10 dark:bg-[#111216]">
+          <section className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
             <div className="mb-8 flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
                 <Lock className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-500">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-gray-500">
                   Security
                 </p>
                 <h2 className="mt-1 text-xl font-semibold text-foreground">
@@ -346,7 +339,7 @@ export function CreateUserContent() {
 
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
+                <label className="ml-1 text-xs font-bold uppercase tracking-widest text-gray-500">
                   Password
                 </label>
                 <div className="relative">
@@ -355,14 +348,14 @@ export function CreateUserContent() {
                     required
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter password"
-                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-100 py-3.5 pl-12 pr-12 text-sm text-foreground shadow-inner transition-all placeholder:text-zinc-400 focus:border-rose-500/50 focus:outline-none focus:ring-2 focus:ring-rose-500/20 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-zinc-600"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-100 py-3.5 pl-12 pr-12 text-sm text-foreground shadow-inner transition-all placeholder:text-gray-400 focus:border-rose-500/50 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
                     value={form.password}
                     onChange={(e) => updateField("password", e.target.value)}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-foreground dark:hover:text-white"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 transition-colors hover:text-foreground"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -374,19 +367,19 @@ export function CreateUserContent() {
               </div>
 
               <div className="space-y-2">
-                <label className="ml-1 text-xs font-bold uppercase tracking-widest text-zinc-500">
+                <label className="ml-1 text-xs font-bold uppercase tracking-widest text-gray-500">
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-500" />
+                  <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-500" />
                   <input
                     required
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm password"
-                    className={`w-full rounded-2xl bg-zinc-100 py-3.5 pl-12 pr-12 text-sm text-foreground shadow-inner transition-all placeholder:text-zinc-400 focus:outline-none focus:ring-2 dark:bg-white/5 dark:placeholder:text-zinc-600 ${
+                    className={`w-full rounded-xl bg-gray-100 py-3.5 pl-12 pr-12 text-sm text-foreground shadow-inner transition-all placeholder:text-gray-400 focus:outline-none focus:ring-2   ${
                       passwordMismatch
                         ? "border border-rose-500 focus:border-rose-500 focus:ring-rose-500/20"
-                        : "border border-zinc-200 focus:border-violet-500/50 focus:ring-violet-500/20 dark:border-white/10"
+                        : "border border-gray-200 focus:border-blue-500/50 focus:ring-blue-500/20 "
                     }`}
                     value={form.confirmPassword}
                     onChange={(e) =>
@@ -396,7 +389,7 @@ export function CreateUserContent() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors hover:text-foreground dark:hover:text-white"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 transition-colors hover:text-foreground"
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -406,7 +399,7 @@ export function CreateUserContent() {
                   </button>
                 </div>
                 {passwordMismatch ? (
-                  <p className="ml-1 text-xs text-rose-600 dark:text-rose-400">
+                  <p className="ml-1 text-xs text-rose-600">
                     Password and confirm password do not match.
                   </p>
                 ) : null}
@@ -418,7 +411,7 @@ export function CreateUserContent() {
             <button
               type="button"
               onClick={() => router.push("/users")}
-              className="flex items-center gap-2 rounded-2xl border border-zinc-200 bg-zinc-100 px-6 py-3 text-sm font-bold text-zinc-500 shadow-lg transition-all hover:bg-zinc-200 hover:text-foreground active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+              className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-6 py-3 text-sm font-bold text-gray-500 shadow-sm transition-all hover:bg-gray-200 hover:text-foreground active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>
@@ -426,7 +419,7 @@ export function CreateUserContent() {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-3 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.5)] transition-all hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-blue-600 px-8 py-3 text-sm font-bold text-white shadow-sm transition-all hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
             >
               {loading ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -438,6 +431,6 @@ export function CreateUserContent() {
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

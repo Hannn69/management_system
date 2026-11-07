@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
 import { ClientProviders } from "@/components/ClientProviders";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const inter = localFont({
+  src: "../../public/fonts/inter-variable.woff2",
+  variable: "--font-inter",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const krasar = localFont({
+  src: [
+    { path: "../../public/fonts/Krasar-Regular.ttf", weight: "400", style: "normal" },
+    { path: "../../public/fonts/Krasar-Medium.ttf", weight: "500", style: "normal" },
+    { path: "../../public/fonts/Krasar-Bold.ttf", weight: "700", style: "normal" },
+  ],
+  variable: "--font-krasar",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +31,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased overflow-y-scroll`}
+      className={`${inter.variable} ${krasar.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full bg-background text-foreground">

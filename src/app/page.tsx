@@ -1,8 +1,21 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+// Login page modelled on the MOC portal login (demo-nominee.moc.gov.kh/en/portal/login):
+// gradient brand panel on the left, centered "Welcome" form on the right.
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle, Lock, LogIn, Mail, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+const GRID_PATTERN =
+  "url(\"data:image/svg+xml,%3Csvg width='72' height='72' viewBox='0 0 72 72' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23ffffff' fillOpacity='0.04'%3E%3Cpath d='M36 0v72M0 36h72'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")";
+
+const AAS_ERRORS: Record<string, string> = {
+  aas_not_configured: "AAS sign-in is not configured on this server.",
+  aas_unavailable: "Could not reach AAS. Please try again.",
+};
 
 export default function Home() {
   const router = useRouter();
@@ -12,6 +25,16 @@ export default function Home() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // AAS errors come back as /?error=<code>; read them after mount (the page is prerendered).
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("error");
+    if (code && AAS_ERRORS[code]) setError(AAS_ERRORS[code]);
+  }, []);
+
+  const handleAasLogin = () => {
+    window.location.href = "/api/auth/aas/login";
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -40,166 +63,169 @@ export default function Home() {
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Incorrect email or password."
-      );
+      setError(err instanceof Error ? err.message : "Incorrect email or password.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0c141c] px-4 py-10 text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(44,166,164,0.2),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.18),transparent_30%),linear-gradient(180deg,#0a1219_0%,#101a23_52%,#0d151d_100%)]" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+    <main className="relative flex min-h-screen">
+      {/* Brand panel */}
+      <div className="relative hidden overflow-hidden lg:flex lg:w-1/2">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-blue-800 to-blue-600" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(147,197,253,0.18),transparent_34%),radial-gradient(circle_at_25%_75%,rgba(59,130,246,0.16),transparent_40%),radial-gradient(circle_at_85%_25%,rgba(37,99,235,0.18),transparent_34%)]" />
+        <div className="absolute inset-0 opacity-30" style={{ backgroundImage: GRID_PATTERN }} />
 
-      <section className="relative z-10 grid w-full max-w-5xl overflow-hidden rounded-[32px] border border-zinc-200 dark:border-white/10 bg-[#101923]/90 shadow-sm dark:shadow-[0_40px_100px_-35px_rgba(0,0,0,0.9)] backdrop-blur xl:grid-cols-[1.08fr_0.92fr]">
-        <div className="hidden border-r border-white/6 bg-[linear-gradient(160deg,rgba(20,39,55,0.98)_0%,rgba(25,56,79,0.96)_52%,rgba(31,89,98,0.92)_100%)] p-10 xl:flex xl:flex-col xl:justify-between">
-          <div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/12 text-sm font-black tracking-[0.24em] text-zinc-900 dark:text-white">
-              MS
+        <div className="relative z-10 flex h-full flex-col px-12 py-16 text-white">
+          <div className="flex items-center gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/moc-logo.png"
+              alt="Ministry of Commerce"
+              width={120}
+              height={120}
+              className="object-contain"
+            />
+            <div>
+              <h1 className="text-4xl font-extrabold leading-tight">ក្រសួងពាណិជ្ជកម្ម</h1>
+              <p className="mt-1 text-lg font-semibold text-blue-100">Ministry Of Commerce</p>
             </div>
-            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.34em] text-zinc-600 dark:text-white/62">
-              Asset Control
-            </p>
-            <h1 className="mt-4 max-w-md text-4xl font-semibold leading-tight text-zinc-900 dark:text-white">
-              Secure access to your management workspace.
-            </h1>
-            <p className="mt-5 max-w-md text-sm leading-7 text-zinc-600 dark:text-white/76">
-              Track inventory, manage requests, and stay on top of operations
-              from one focused command center.
-            </p>
           </div>
 
-          <div className="grid gap-4">
-            <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-black/10 px-5 py-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-zinc-600 dark:text-white/50">
-                Live Overview
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">Unified Asset Visibility</p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white/6 px-5 py-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-zinc-400 dark:text-white/45">Monitoring</p>
-                <p className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white">Devices, licenses, teams</p>
-              </div>
-              <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white/6 px-5 py-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-zinc-400 dark:text-white/45">Security</p>
-                <p className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white">Cookie-based session auth</p>
-              </div>
-            </div>
-          </div>
+          <h2 className="mt-10 text-4xl font-semibold leading-relaxed">
+            Asset, Inventory and Operations Management System
+          </h2>
+
+          <p className="mt-auto text-sm text-blue-200/70">
+            © 2026 Ministry of Commerce. All rights reserved by Ministry of Commerce
+          </p>
         </div>
 
-        <div className="flex items-center justify-center px-6 py-8 sm:px-10 sm:py-12">
-          <div className="w-full max-w-md">
-            <div className="xl:hidden">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1f5962] text-sm font-black tracking-[0.24em] text-white">
-                MS
-              </div>
-              <h1 className="mt-6 text-3xl font-semibold text-zinc-900 dark:text-white">
-                Sign in to Management System
-              </h1>
-              <p className="mt-3 text-sm leading-6 text-[#89a2b1]">
-                Use your workspace credentials to continue to the dashboard.
-              </p>
-            </div>
+        <div className="absolute -top-16 -right-10 h-48 w-48 rounded-full bg-blue-400/10 blur-3xl" />
+        <div className="absolute -bottom-16 left-8 h-56 w-56 rounded-full bg-blue-500/10 blur-3xl" />
+      </div>
 
-            <div className="hidden xl:block">
-              <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[#6f8a9a]">
-                Welcome Back
-              </p>
-              <h2 className="mt-4 text-3xl font-semibold text-zinc-900 dark:text-white">Sign in</h2>
-              <p className="mt-3 text-sm leading-6 text-[#89a2b1]">
-                Enter your email and password to access the asset management dashboard.
-              </p>
-            </div>
-
-            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[#c7d4dc]">Email</span>
-                <div className="flex items-center gap-3 rounded-[20px] border border-zinc-200 dark:border-white/10 bg-[#16232d] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition focus-within:border-[#43d3cf]/70 focus-within:ring-2 focus-within:ring-[#43d3cf]/20">
-                  <Mail className="h-4 w-4 text-[#6f8a9a]" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-transparent text-sm text-zinc-900 dark:text-white outline-none placeholder:text-[#6f8a9a]"
-                    placeholder="you@company.com"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-              </label>
-
-              <label className="block">
-                <div className="mb-2 flex items-center justify-between gap-4">
-                  <span className="text-sm font-medium text-[#c7d4dc]">Password</span>
-                </div>
-                <div className="flex items-center gap-3 rounded-[20px] border border-zinc-200 dark:border-white/10 bg-[#16232d] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition focus-within:border-[#43d3cf]/70 focus-within:ring-2 focus-within:ring-[#43d3cf]/20">
-                  <LockKeyhole className="h-4 w-4 text-[#6f8a9a]" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-transparent text-sm text-zinc-900 dark:text-white outline-none placeholder:text-[#6f8a9a]"
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="rounded-full p-1 text-[#7b95a5] transition hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-                <div className="mt-3 flex items-center justify-between gap-4">
-                  <label className="inline-flex cursor-pointer items-center gap-3 text-sm text-[#c7d4dc]">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="h-4 w-4 rounded border-white/10 bg-[#16232d] text-[#2ca6a4] focus:ring-2 focus:ring-[#43d3cf]/35"
-                    />
-                    <span>Remember me</span>
-                  </label>
-                  <button
-                    type="button"
-                    disabled
-                    className="text-sm font-medium text-[#43d3cf]/60"
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
-              </label>
-
-              {error ? (
-                <div className="rounded-[20px] border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
-                  {error}
-                </div>
-              ) : null}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-[20px] bg-[#2ca6a4] px-4 py-3.5 text-sm font-bold text-white shadow-[0_18px_40px_-18px_rgba(44,166,164,0.75)] transition hover:bg-[#258e8c] disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {loading ? (
-                  <>
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                    Signing In...
-                  </>
-                ) : (
-                  "Sign In"
-                )}
-              </button>
-            </form>
+      {/* Form */}
+      <div className="flex flex-1 items-center justify-center p-8">
+        <div className="w-full max-w-md">
+          <div className="mb-8 flex flex-col items-center text-center lg:hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/moc-logo.png"
+              alt="Ministry of Commerce"
+              width={72}
+              height={72}
+              className="mb-3 object-contain"
+            />
+            <p className="text-lg font-bold text-slate-900">ក្រសួងពាណិជ្ជកម្ម</p>
+            <p className="text-sm font-semibold text-slate-600">Ministry Of Commerce</p>
           </div>
+
+          <div className="mb-8 text-center">
+            <h2 className="mb-2 text-3xl font-bold text-slate-900">Welcome</h2>
+            <p className="text-slate-600">Logon to the Asset, Inventory and Operations Management System</p>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="mb-6 w-full border-slate-300"
+            onClick={handleAasLogin}
+            disabled={loading}
+          >
+            <ShieldCheck className="h-4 w-4" />
+            Login with AAS Officer Account
+          </Button>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-slate-500">Or continue with email</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error ? (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
+
+            <div>
+              <Label htmlFor="email">Email address</Label>
+              <div className="relative mt-1">
+                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  placeholder="Enter your email address"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <div className="relative mt-1">
+                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 pr-10"
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+              Remember me
+            </label>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-br from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-600 hover:via-blue-500 hover:to-blue-400"
+            >
+              {loading ? (
+                <>
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                <>
+                  <LogIn className="h-4 w-4" />
+                  Sign In
+                </>
+              )}
+            </Button>
+          </form>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
