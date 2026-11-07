@@ -2,30 +2,51 @@
 
 type DashboardHeaderProps = {
   title: string;
+  description?: string;
 };
 
-export function DashboardHeader({ title }: DashboardHeaderProps) {
+const DESCRIPTIONS: Record<string, string> = {
+  Home: "Overview of your assets, requests and activity.",
+  Summary: "Overview of your assets, requests and activity.",
+  Assets: "Browse and manage every asset in the inventory.",
+  "Asset Models": "Models that group assets by manufacturer and category.",
+  Categories: "Categories used to classify assets.",
+  Manufacturers: "Manufacturers of the assets you track.",
+  Suppliers: "Suppliers you purchase assets from.",
+  Departments: "Departments that own or use assets.",
+  Locations: "Sites, buildings and rooms where assets are kept.",
+  Companies: "Companies the assets belong to.",
+  "Status Labels": "Lifecycle states an asset can be in.",
+  Users: "People with access to the management system.",
+  "Role & Permission": "Roles and the permissions assigned to them.",
+  Tasks: "Track and manage work items.",
+  "Deployed Assets": "Assets that are currently checked out.",
+  "Ready to Deploy": "Assets available to be checked out.",
+  "Pending Assets": "Assets awaiting approval or processing.",
+  "Un-deployable Assets": "Assets that cannot be deployed right now.",
+  "BYOD Assets": "Bring-your-own-device assets.",
+  "Requestable Assets": "Assets users can request.",
+  Archive: "Archived and retired assets.",
+  "Due for Audit": "Assets that are due for an audit.",
+  "Due for Checkin": "Assets that are due to be checked back in.",
+};
+
+function describe(title: string) {
+  if (DESCRIPTIONS[title]) return DESCRIPTIONS[title];
+  if (title.startsWith("Create ")) return `Add a new ${title.slice(7).toLowerCase()}.`;
+  if (title.startsWith("Update ") || title.startsWith("Edit "))
+    return `Change the details of this ${title.slice(title.indexOf(" ") + 1).toLowerCase()}.`;
+  if (title.endsWith(" Details")) return `Full details of this ${title.slice(0, -8).toLowerCase()}.`;
+  return undefined;
+}
+
+export function DashboardHeader({ title, description }: DashboardHeaderProps) {
+  const subtitle = description ?? describe(title);
 
   return (
-    <header className="px-6 pt-6">
-      <div className="mx-auto w-full max-w-[1380px]">
-        <div className="rounded-[28px] border border-zinc-200 dark:border-white/8 bg-white dark:bg-[#121e28] px-6 py-5 shadow-sm dark:shadow-[0_30px_70px_-38px_rgba(0,0,0,0.78)]">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500 dark:text-[#6f8c9c]">
-                Control Center
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold text-foreground">
-                {title}
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-[#7d97a6]">
-                Track operational status, recent requests, and resource health
-                from one shared workspace.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <header className="mb-6">
+      <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
+      {subtitle ? <p className="text-sm text-gray-500">{subtitle}</p> : null}
     </header>
   );
 }

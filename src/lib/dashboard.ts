@@ -36,25 +36,25 @@ export function buildSummaryCards(summary: DashboardSummary) {
       label: "Inventory Tracked",
       value: summary.inventoryTracked.toLocaleString(),
       detail: `${summary.addedThisMonth.toLocaleString()} added this month`,
-      accent: "text-emerald-600 dark:text-[#43d3cf]",
+      accent: "text-emerald-600",
     },
     {
       label: "Deployed",
       value: summary.deployed.toLocaleString(),
       detail: `${summary.readyToDeploy.toLocaleString()} ready to deploy`,
-      accent: "text-rose-600 dark:text-[#ff5b9a]",
+      accent: "text-rose-600",
     },
     {
       label: "Due for Audit",
       value: summary.dueForAudit.toLocaleString(),
       detail: `${plural(summary.overdueCheckin, "overdue check-in")}`,
-      accent: "text-amber-600 dark:text-[#ffb24d]",
+      accent: "text-amber-600",
     },
     {
       label: "Un-deployable",
       value: summary.undeployable.toLocaleString(),
       detail: `${summary.pending.toLocaleString()} pending`,
-      accent: "text-indigo-600 dark:text-[#9c8cff]",
+      accent: "text-indigo-600",
     },
   ];
 }

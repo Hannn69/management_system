@@ -1,8 +1,6 @@
 "use client";
 
 import type { ApiRecord } from "@/lib/types";
-import { AutoFillButton } from "@/components/ui/AutoFillButton";
-import { sample } from "@/lib/sample-data";
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
@@ -118,10 +116,6 @@ function CreateLocationContentInner() {
     setActiveCurrency(newCurrency);
   };
 
-  const autoFill = () => {
-    setForm((prev) => ({ ...prev, ...sample.location({ companies }) }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -162,30 +156,29 @@ function CreateLocationContentInner() {
   };
 
   return (
-    <main className="px-6 pb-6 pt-5">
+    <div className="space-y-6">
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
+          <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 pb-12">
-          <AutoFillButton onClick={autoFill} />
-          <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
+          <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
               {/* Left Column */}
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Location Name</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Location Name</label>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
                     <input 
                       required
                       type="text" 
                       placeholder="e.g. Headquarters"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
@@ -193,24 +186,24 @@ function CreateLocationContentInner() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Parent Location</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Parent Location</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 dark:text-zinc-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500/50" />
                       <select 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner appearance-none"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner appearance-none"
                         value={form.parentId}
                         onChange={(e) => setForm({ ...form, parentId: e.target.value })}
                       >
-                        <option value="" className="bg-white dark:bg-[#111216]">Select Parent Location</option>
-                        {parentLocations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
+                        <option value="" className="bg-white">Select Parent Location</option>
+                        {parentLocations.map(l => <option key={l.id} value={l.id} className="bg-white">{l.name}</option>)}
                       </select>
                     </div>
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-xl bg-emerald-600/10 text-emerald-600 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-sm active:scale-95"
                       title="New Location"
                     >
                       <Plus className="h-5 w-5" />
@@ -219,19 +212,19 @@ function CreateLocationContentInner() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Manager</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Manager</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 dark:text-zinc-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
                       <select 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/50 transition-all shadow-inner appearance-none"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/50 transition-all shadow-inner appearance-none"
                         value={form.managerId}
                         onChange={(e) => setForm({ ...form, managerId: e.target.value })}
                       >
-                        <option value="" className="bg-white dark:bg-[#111216]">Select Manager</option>
+                        <option value="" className="bg-white">Select Manager</option>
                         {managers.map(m => (
-                          <option key={m.id} value={m.id} className="bg-white dark:bg-[#111216]">
+                          <option key={m.id} value={m.id} className="bg-white">
                             {m.firstName || m.username || m.email} {m.lastName || ""}
                           </option>
                         ))}
@@ -240,7 +233,7 @@ function CreateLocationContentInner() {
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateUserOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-orange-600/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-xl bg-orange-600/10 text-orange-600 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-sm active:scale-95"
                       title="New Manager"
                     >
                       <Plus className="h-5 w-5" />
@@ -249,29 +242,29 @@ function CreateLocationContentInner() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Company</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Company</label>
                   <div className="relative">
                     <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                     <select 
                       required
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner appearance-none"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner appearance-none"
                       value={form.companyId}
                       onChange={(e) => setForm({ ...form, companyId: e.target.value })}
                     >
-                      <option value="" className="bg-white dark:bg-[#111216]">Select Company</option>
-                      {companies.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#111216]">{c.name}</option>)}
+                      <option value="" className="bg-white">Select Company</option>
+                      {companies.map(c => <option key={c.id} value={c.id} className="bg-white">{c.name}</option>)}
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Phone</label>
                   <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                     <input 
                       type="tel" 
                       placeholder="Site phone"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
                     />
@@ -279,13 +272,13 @@ function CreateLocationContentInner() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Currency</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Currency</label>
                   <div className="space-y-3">
                     <div className="relative">
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 dark:text-zinc-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
                       <Coins className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500/50" />
                       <select 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner appearance-none"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner appearance-none"
                         value={activeCurrency}
                         onChange={(e) => handleCurrencySelection(e.target.value)}
                       >
@@ -300,7 +293,7 @@ function CreateLocationContentInner() {
                       <input 
                         type="text" 
                         placeholder={currencyPlaceholder}
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-12 py-3.5 text-sm text-foreground placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-12 py-3.5 text-sm text-foreground placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner"
                         value={form.currency}
                         onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })}
                       />
@@ -317,14 +310,14 @@ function CreateLocationContentInner() {
               {/* Right Column */}
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Address</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Address</label>
                   <div className="space-y-3">
                     <div className="relative">
                       <Home className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
                       <input 
                         type="text" 
                         placeholder="Address Line 1"
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
                         value={form.address}
                         onChange={(e) => setForm({ ...form, address: e.target.value })}
                       />
@@ -336,7 +329,7 @@ function CreateLocationContentInner() {
                       <input 
                         type="text" 
                         placeholder="Address Line 2"
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
                         value={form.address2}
                         onChange={(e) => setForm({ ...form, address2: e.target.value })}
                       />
@@ -346,26 +339,26 @@ function CreateLocationContentInner() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">City</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">City</label>
                     <div className="relative">
-                      <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-violet-500" />
+                      <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                       <input 
                         type="text" 
                         placeholder="e.g. Phnom Penh"
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
                         value={form.city}
                         onChange={(e) => setForm({ ...form, city: e.target.value })}
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Province</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Province</label>
                     <div className="relative">
                       <Milestone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
                       <input 
                         type="text" 
                         placeholder="Province"
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
                         value={form.state}
                         onChange={(e) => setForm({ ...form, state: e.target.value })}
                       />
@@ -374,13 +367,13 @@ function CreateLocationContentInner() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Country</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Country</label>
                   <div className="relative">
-                    <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
+                    <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                     <input 
                       type="text" 
                       placeholder="e.g. Cambodia"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
                       value={form.country}
                       onChange={(e) => setForm({ ...form, country: e.target.value })}
                     />
@@ -388,13 +381,13 @@ function CreateLocationContentInner() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Internal Notes</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Internal Notes</label>
                   <div className="relative">
-                    <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-500" />
+                    <FileText className="absolute left-4 top-4 h-4 w-4 text-gray-500" />
                     <textarea 
                       placeholder="Any additional information..."
                       rows={3}
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500/20 focus:border-zinc-500/50 transition-all shadow-inner resize-none"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500/20 focus:border-gray-500/50 transition-all shadow-inner resize-none"
                       value={form.notes}
                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
                     />
@@ -402,7 +395,7 @@ function CreateLocationContentInner() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Location Image</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Location Image</label>
                   <ImageUpload 
                     value={form.image}
                     onChange={(url) => setForm({ ...form, image: url })}
@@ -416,7 +409,7 @@ function CreateLocationContentInner() {
             <button 
               type="button"
               onClick={handleBack}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 bg-gray-100 text-sm font-bold text-gray-500 hover:bg-gray-200 hover:text-foreground transition-all shadow-sm active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>
@@ -424,7 +417,7 @@ function CreateLocationContentInner() {
             <button 
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.5)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+              className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-blue-600 text-sm font-bold text-white shadow-sm hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
             >
               {loading ? (
                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -457,7 +450,7 @@ function CreateLocationContentInner() {
           }}
         />
       </div>
-    </main>
+    </div>
   );
 }
 

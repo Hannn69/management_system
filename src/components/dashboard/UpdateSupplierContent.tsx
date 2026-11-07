@@ -116,35 +116,35 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
   }
 
   return (
-    <main className="px-6 pb-6 pt-5">
+    <div className="space-y-6">
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/suppliers")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
+            className="p-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-foreground transition-all shadow-sm active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
             <h2 className="text-2xl font-bold text-foreground tracking-tight">Update Supplier</h2>
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Modify information for {form.name}.</p>
+            <p className="text-gray-500 text-sm">Modify information for {form.name}.</p>
           </div>
         </div>
 
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
+          <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 pb-12">
-          <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
+          <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
               {/* Left Column: Primary Details */}
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Supplier Name</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Supplier Name</label>
                   <div className="relative">
                     <Truck className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
                     <input 
@@ -154,28 +154,28 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
                       value={form.name}
                       onChange={handleChange}
                       placeholder="e.g. Amazon Business, CDW"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Contact Name</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Contact Name</label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                     <input 
                       type="text" 
                       name="contactName"
                       value={form.contactName}
                       onChange={handleChange}
                       placeholder="Primary contact person"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Phone</label>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                     <input 
@@ -184,13 +184,13 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
                       value={form.phone}
                       onChange={handleChange}
                       placeholder="Business phone"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Email Address</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Email Address</label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
                     <input 
@@ -199,13 +199,13 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
                       value={form.email}
                       onChange={handleChange}
                       placeholder="sales@supplier.com"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 transition-all shadow-inner"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Website URL</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Website URL</label>
                   <div className="relative">
                     <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
                     <input 
@@ -214,7 +214,7 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
                       value={form.url}
                       onChange={handleChange}
                       placeholder="https://www.supplier.com"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner"
                     />
                   </div>
                 </div>
@@ -223,37 +223,37 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
               {/* Right Column: Address & Media */}
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Address</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Address</label>
                   <div className="relative">
-                    <MapPin className="absolute left-4 top-4 h-4 w-4 text-zinc-500" />
+                    <MapPin className="absolute left-4 top-4 h-4 w-4 text-gray-500" />
                     <textarea 
                       rows={2}
                       name="address"
                       value={form.address}
                       onChange={handleChange}
                       placeholder="Street address..."
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
                     ></textarea>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">City</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">City</label>
                     <div className="relative">
-                      <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-violet-500" />
+                      <Globe2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                       <input 
                         type="text" 
                         name="city"
                         value={form.city}
                         onChange={handleChange}
                         placeholder="e.g. Phnom Penh"
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/50 transition-all shadow-inner"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Province</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Province</label>
                     <div className="relative">
                       <Milestone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
                       <input 
@@ -262,23 +262,23 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
                         value={form.state}
                         onChange={handleChange}
                         placeholder="Province"
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Internal Notes</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Internal Notes</label>
                   <div className="relative">
-                    <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-500" />
+                    <FileText className="absolute left-4 top-4 h-4 w-4 text-gray-500" />
                     <textarea 
                       rows={3}
                       name="notes"
                       value={form.notes}
                       onChange={handleChange}
                       placeholder="Additional information about the supplier..."
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
                     ></textarea>
                   </div>
                 </div>
@@ -296,7 +296,7 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
             <button 
               type="button"
               onClick={() => router.push("/suppliers")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-90"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 bg-gray-100 text-sm font-bold text-gray-500 hover:bg-gray-200 hover:text-foreground transition-all shadow-sm active:scale-90"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>
@@ -304,7 +304,7 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
             <button 
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.5)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+              className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-blue-600 text-sm font-bold text-white shadow-sm hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
             >
               {loading ? (
                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -316,6 +316,6 @@ export function UpdateSupplierContent({ slug }: UpdateSupplierContentProps) {
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

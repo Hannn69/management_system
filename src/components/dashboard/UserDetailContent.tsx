@@ -63,28 +63,28 @@ export function UserDetailContent() {
   if (loading) {
     return (
       <div className="flex h-[420px] w-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
       </div>
     );
   }
 
   if (error || !record) {
     return (
-      <main className="px-6 pb-6 pt-5">
+      <div className="space-y-6">
         <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-6">
           <button
             type="button"
             onClick={() => router.push("/users")}
-            className="inline-flex w-fit items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white"
+            className="inline-flex w-fit items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-200 hover:text-gray-900"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Users
           </button>
-          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-6 text-sm text-rose-700 dark:text-rose-300">
+          <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-6 text-sm text-rose-700">
             {error || "User not found."}
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -98,13 +98,13 @@ export function UserDetailContent() {
       : record.location?.name || "Not assigned";
 
   return (
-    <main className="px-6 pb-6 pt-5">
+    <div className="space-y-6">
       <div className="mx-auto flex w-full max-w-[1380px] flex-col gap-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
             onClick={() => router.push("/users")}
-            className="inline-flex w-fit items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white"
+            className="inline-flex w-fit items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-200 hover:text-gray-900"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Users
@@ -119,27 +119,27 @@ export function UserDetailContent() {
           </button>
         </div>
 
-        <section className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-sm dark:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
+        <section className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-cyan-400 to-blue-500 text-black shadow-lg">
+              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-500 text-black shadow-sm">
                 <User className="h-8 w-8" />
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.28em] text-zinc-500">
+                <p className="text-xs font-bold uppercase tracking-[0.28em] text-gray-500">
                   User Profile
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">
+                <h2 className="mt-2 text-2xl font-semibold text-gray-900">
                   {getUserFullName(record)}
                 </h2>
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">@{record.username}</p>
+                <p className="mt-1 text-sm text-gray-500">@{record.username}</p>
               </div>
             </div>
             <span
               className={`inline-flex w-fit items-center rounded-xl border px-3 py-1.5 text-xs font-bold ${
                 record.loginEnabled
                   ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                  : "border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
+                  : "border-gray-500/20 bg-gray-500/10 text-gray-400"
               }`}
             >
               <ShieldCheck className="mr-1.5 h-4 w-4" />
@@ -181,7 +181,7 @@ export function UserDetailContent() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -195,12 +195,12 @@ function DetailCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03] p-5">
-      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-zinc-500">
-        <span className="text-cyan-600 dark:text-cyan-400">{icon}</span>
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-gray-500">
+        <span className="text-blue-600">{icon}</span>
         {label}
       </div>
-      <p className="mt-3 break-words text-sm font-medium text-zinc-900 dark:text-zinc-100">
+      <p className="mt-3 break-words text-sm font-medium text-gray-900">
         {value}
       </p>
     </div>

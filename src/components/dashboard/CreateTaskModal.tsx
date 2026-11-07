@@ -167,27 +167,27 @@ function CreateTaskModalInner({
     >
       <DialogContent className="max-h-[80vh] max-w-3xl overflow-hidden p-0">
         <div className="flex flex-col">
-          <DialogHeader className="border-b border-zinc-200 dark:border-white/10 px-5 py-4">
+          <DialogHeader className="border-b border-gray-200 px-5 py-4">
             <DialogTitle>Create Task</DialogTitle>
             <DialogDescription>
               Required fields are marked with an asterisk{" "}
-              <span className="text-rose-700 dark:text-rose-300">*</span>
+              <span className="text-rose-700">*</span>
             </DialogDescription>
           </DialogHeader>
 
           <div className="max-h-[60vh] overflow-y-auto px-5 py-4">
             <div className="flex flex-col gap-5">
               <div>
-                <label className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Space <span className="text-rose-700 dark:text-rose-300">*</span>
+                <label className="text-xs text-gray-500">
+                  Space <span className="text-rose-700">*</span>
                 </label>
                 {lockSpace ? (
-                  <div className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-800 dark:text-zinc-200">
+                  <div className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-800">
                     {form.space}
                   </div>
                 ) : (
                   <select
-                    className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                     value={form.space}
                     onChange={(event) => {
                       setSpaceTouched(true);
@@ -204,11 +204,11 @@ function CreateTaskModalInner({
               </div>
 
               <div>
-                <label className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Work type <span className="text-rose-700 dark:text-rose-300">*</span>
+                <label className="text-xs text-gray-500">
+                  Work type <span className="text-rose-700">*</span>
                 </label>
                 <select
-                  className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                  className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                   value={form.workType}
                   onChange={(event) =>
                     updateForm("workType", event.target.value)
@@ -218,15 +218,15 @@ function CreateTaskModalInner({
                   <option>Bug</option>
                   <option>Story</option>
                 </select>
-                <p className="mt-1 text-[11px] text-blue-700 dark:text-blue-300">
+                <p className="mt-1 text-[11px] text-blue-700">
                   Learn about work types
                 </p>
               </div>
 
               <div>
-                <label className="text-xs text-zinc-500 dark:text-zinc-400">Status</label>
+                <label className="text-xs text-gray-500">Status</label>
                 <select
-                  className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                  className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                   value={form.status}
                   onChange={(event) => updateForm("status", event.target.value)}
                 >
@@ -234,17 +234,17 @@ function CreateTaskModalInner({
                   <option>In progress</option>
                   <option>Done</option>
                 </select>
-                <p className="mt-1 text-[11px] text-zinc-500">
+                <p className="mt-1 text-[11px] text-gray-500">
                   This is the initial status upon creation.
                 </p>
               </div>
 
               <div>
-                <label className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Summary <span className="text-rose-700 dark:text-rose-300">*</span>
+                <label className="text-xs text-gray-500">
+                  Summary <span className="text-rose-700">*</span>
                 </label>
                 <input
-                  className="mt-2 w-full rounded-xl border border-rose-400/60 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                  className="mt-2 w-full rounded-xl border border-rose-400/60 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                   placeholder="Summary is required"
                   type="text"
                   value={form.summary}
@@ -255,20 +255,20 @@ function CreateTaskModalInner({
               </div>
 
               <div>
-                <label className="text-xs text-zinc-500 dark:text-zinc-400">Description</label>
-                <div className="mt-2 overflow-hidden rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a]">
-                  <div className="flex flex-wrap gap-2 border-b border-zinc-200 dark:border-white/10 px-3 py-2 text-xs text-zinc-500 dark:text-zinc-400">
+                <label className="text-xs text-gray-500">Description</label>
+                <div className="mt-2 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+                  <div className="flex flex-wrap gap-2 border-b border-gray-200 px-3 py-2 text-xs text-gray-500">
                     {["T", "B", "I", "•", "1.", "@", "😊"].map((item) => (
                       <span
                         key={item}
-                        className="rounded border border-zinc-200 dark:border-white/10 px-2 py-1"
+                        className="rounded border border-gray-200 px-2 py-1"
                       >
                         {item}
                       </span>
                     ))}
                   </div>
                   <textarea
-                    className="min-h-[140px] w-full bg-transparent px-3 py-3 text-sm text-zinc-800 dark:text-zinc-200 outline-none"
+                    className="min-h-[140px] w-full bg-transparent px-3 py-3 text-sm text-gray-800 outline-none"
                     placeholder="Add a description…"
                     value={form.description}
                     onChange={(event) =>
@@ -280,9 +280,9 @@ function CreateTaskModalInner({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-xs text-zinc-500 dark:text-zinc-400">Assignee</label>
+                  <label className="text-xs text-gray-500">Assignee</label>
                   <input
-                    className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                     placeholder="Automatic"
                     value={form.assignee}
                     onChange={(event) =>
@@ -291,11 +291,11 @@ function CreateTaskModalInner({
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Reporter <span className="text-rose-700 dark:text-rose-300">*</span>
+                  <label className="text-xs text-gray-500">
+                    Reporter <span className="text-rose-700">*</span>
                   </label>
                   <input
-                    className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                     placeholder="Defaults to you"
                     value={form.reporter}
                     onChange={(event) =>
@@ -307,9 +307,9 @@ function CreateTaskModalInner({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-xs text-zinc-500 dark:text-zinc-400">Priority</label>
+                  <label className="text-xs text-gray-500">Priority</label>
                 <select
-                  className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                  className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                   value={form.priority}
                   onChange={(event) =>
                     updateForm("priority", event.target.value)
@@ -321,9 +321,9 @@ function CreateTaskModalInner({
                 </select>
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-500 dark:text-zinc-400">Labels</label>
+                  <label className="text-xs text-gray-500">Labels</label>
                   <input
-                    className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                     placeholder="Select label"
                     value={form.labels}
                     onChange={(event) =>
@@ -335,9 +335,9 @@ function CreateTaskModalInner({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-xs text-zinc-500 dark:text-zinc-400">Due date</label>
+                  <label className="text-xs text-gray-500">Due date</label>
                   <input
-                    className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                     placeholder="Select date"
                     type="date"
                     value={form.dueDate}
@@ -347,10 +347,10 @@ function CreateTaskModalInner({
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-500 dark:text-zinc-400">Attachment</label>
-                  <div className="mt-2 flex items-center justify-center rounded-xl border border-dashed border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-6 text-xs text-zinc-500">
+                  <label className="text-xs text-gray-500">Attachment</label>
+                  <div className="mt-2 flex items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-100 px-3 py-6 text-xs text-gray-500">
                     Drop files to attach or{" "}
-                    <span className="ml-1 rounded-md border border-zinc-200 dark:border-white/10 px-2 py-1 text-zinc-600 dark:text-zinc-300">
+                    <span className="ml-1 rounded-md border border-gray-200 px-2 py-1 text-gray-600">
                       Browse
                     </span>
                   </div>
@@ -359,9 +359,9 @@ function CreateTaskModalInner({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-xs text-zinc-500 dark:text-zinc-400">Start date</label>
+                  <label className="text-xs text-gray-500">Start date</label>
                   <input
-                    className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                     placeholder="Select date"
                     type="date"
                     value={form.startDate}
@@ -371,9 +371,9 @@ function CreateTaskModalInner({
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-500 dark:text-zinc-400">Category</label>
+                  <label className="text-xs text-gray-500">Category</label>
                   <select
-                    className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                    className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                     value={form.category}
                     onChange={(event) =>
                       updateForm("category", event.target.value)
@@ -387,21 +387,21 @@ function CreateTaskModalInner({
               </div>
 
               <div>
-                <label className="text-xs text-zinc-500 dark:text-zinc-400">Team</label>
+                <label className="text-xs text-gray-500">Team</label>
               <input
-                className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+                className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
                 placeholder="Choose a team"
                 value={form.team}
                 onChange={(event) => updateForm("team", event.target.value)}
               />
             </div>
             {error ? (
-              <p className="text-sm text-rose-700 dark:text-rose-300">{error}</p>
+              <p className="text-sm text-rose-700">{error}</p>
             ) : null}
           </div>
         </div>
 
-        <DialogFooter className="border-t border-zinc-200 dark:border-white/10 px-5 py-4 text-xs text-zinc-500 dark:text-zinc-400 sm:items-center sm:justify-between">
+        <DialogFooter className="border-t border-gray-200 px-5 py-4 text-xs text-gray-500 sm:items-center sm:justify-between">
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -415,7 +415,7 @@ function CreateTaskModalInner({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-zinc-200 dark:border-white/10 px-4 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/10"
+              className="rounded-full border border-gray-200 px-4 py-2 text-xs text-gray-600 hover:bg-gray-200"
               disabled={submitting}
             >
               Cancel

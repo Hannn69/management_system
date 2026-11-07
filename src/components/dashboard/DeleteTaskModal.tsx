@@ -92,40 +92,40 @@ export function DeleteTaskModal({
     >
       <DialogContent className="max-w-md p-0">
         <div className="flex flex-col">
-          <DialogHeader className="border-b border-zinc-200 dark:border-white/10 px-5 py-4">
+          <DialogHeader className="border-b border-gray-200 px-5 py-4">
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500/15 text-rose-700">
                 <AlertTriangle className="h-4 w-4" />
               </span>
               <DialogTitle>
                 Delete {task?.key ?? "task"}?
               </DialogTitle>
             </div>
-            <DialogDescription className="mt-2 text-zinc-500 dark:text-zinc-400">
+            <DialogDescription className="mt-2 text-gray-500">
               Deleting is irreversible. It permanently removes this task and
               all of its subtasks.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="px-5 py-4 text-sm text-zinc-600 dark:text-zinc-300">
-            <label className="text-xs text-zinc-500 dark:text-zinc-400">
-              Type <span className="font-semibold text-zinc-800 dark:text-zinc-200">delete</span>{" "}
+          <div className="px-5 py-4 text-sm text-gray-600">
+            <label className="text-xs text-gray-500">
+              Type <span className="font-semibold text-gray-800">delete</span>{" "}
               to continue
             </label>
             <input
-              className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#23252a] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100"
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-900"
               value={confirmText}
               onChange={(event) => setConfirmText(event.target.value)}
               placeholder="delete"
             />
-            {error ? <p className="mt-2 text-xs text-rose-700 dark:text-rose-300">{error}</p> : null}
+            {error ? <p className="mt-2 text-xs text-rose-700">{error}</p> : null}
           </div>
 
-          <DialogFooter className="border-t border-zinc-200 dark:border-white/10 px-5 py-4 text-xs text-zinc-500 dark:text-zinc-400 sm:items-center sm:justify-end">
+          <DialogFooter className="border-t border-gray-200 px-5 py-4 text-xs text-gray-500 sm:items-center sm:justify-end">
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="rounded-full border border-zinc-200 dark:border-white/10 px-4 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/10"
+                className="rounded-full border border-gray-200 px-4 py-2 text-xs text-gray-600 hover:bg-gray-200"
                 onClick={onClose}
                 disabled={submitting}
               >
@@ -137,7 +137,7 @@ export function DeleteTaskModal({
                 className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
                   isConfirmValid && !submitting
                     ? "bg-rose-500 text-white hover:bg-rose-400"
-                    : "cursor-not-allowed bg-rose-500/30 text-rose-700/60 dark:text-rose-200/60"
+                    : "cursor-not-allowed bg-rose-500/30 text-rose-700/60 "
                 }`}
                 onClick={handleDelete}
               >

@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { TopBar } from "@/components/TopBar";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import Layout from "@/components/layout/layout";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isAuthPage = pathname === "/";
+  const isAuthPage = pathname === "/" || pathname.startsWith("/auth/");
   const [checkingSession, setCheckingSession] = useState(!isAuthPage);
 
   useEffect(() => {
@@ -61,18 +60,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (checkingSession) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
       </div>
     );
   }
 
-  return (
-    <div className="flex min-h-screen">
-      <DashboardSidebar />
-      <div className="flex min-w-0 flex-1 flex-col lg:ml-[280px]">
-        <TopBar />
-        <main className="flex-1">{children}</main>
-      </div>
-    </div>
-  );
+  return <Layout>{children}</Layout>;
 }

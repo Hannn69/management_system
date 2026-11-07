@@ -90,7 +90,7 @@ export function AssetCheckoutDialog({
   return (
     <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
       <DialogContent className="max-w-md p-0">
-        <DialogHeader className="border-b border-zinc-200 dark:border-white/10 px-5 py-4">
+        <DialogHeader className="border-b border-gray-200 px-5 py-4">
           <DialogTitle>
             {mode === "checkout" ? "Check out" : "Check in"} {asset?.assetTag}
           </DialogTitle>
@@ -103,13 +103,13 @@ export function AssetCheckoutDialog({
 
         {mode === "checkout" && (
           <div className="px-5 py-4">
-            <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
               Check out to
             </label>
             <select
               value={userId}
               onChange={(event) => setUserId(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-sm text-foreground"
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm text-foreground"
             >
               <option value="">Select user</option>
               {users.map((user) => (
@@ -122,15 +122,15 @@ export function AssetCheckoutDialog({
         )}
 
         {error && (
-          <p className="px-5 pb-2 text-sm text-rose-600 dark:text-rose-300">{error}</p>
+          <p className="px-5 pb-2 text-sm text-rose-600">{error}</p>
         )}
 
-        <DialogFooter className="border-t border-zinc-200 dark:border-white/10 px-5 py-4">
+        <DialogFooter className="border-t border-gray-200 px-5 py-4">
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="rounded-xl border border-zinc-200 dark:border-white/10 px-4 py-2 text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/10"
+            className="rounded-xl border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100"
           >
             Cancel
           </button>

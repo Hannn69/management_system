@@ -17,7 +17,7 @@ export default function TaskManagementPage() {
           <button
             type="button"
             onClick={() => setCreateOpen(true)}
-            className="flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-[0_20px_40px_-10px_rgba(16,185,129,0.3)] transition-all hover:bg-emerald-500 active:scale-95"
+            className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-500 active:scale-95"
           >
             <Plus className="h-4 w-4" />
             New task

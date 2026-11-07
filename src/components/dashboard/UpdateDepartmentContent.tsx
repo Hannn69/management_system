@@ -131,41 +131,41 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
   }
 
   return (
-    <main className="px-6 pb-6 pt-5">
+    <div className="space-y-6">
       <div className="mx-auto w-full max-w-[1380px] flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => router.push("/departments")}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
+            className="p-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-foreground transition-all shadow-sm active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
             <h2 className="text-2xl font-bold text-foreground tracking-tight">Update Department</h2>
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Modify existing department details for {form.name}.</p>
+            <p className="text-gray-500 text-sm">Modify existing department details for {form.name}.</p>
           </div>
         </div>
 
         {error && (
-          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
+          <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="rounded-[28px] border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] p-8 shadow-2xl">
+          <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Department Name</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Department Name</label>
                   <div className="relative">
                     <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
                     <input 
                       required
                       type="text" 
                       placeholder="e.g. Engineering, Sales"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
@@ -173,41 +173,41 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Company</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Company</label>
                   <div className="relative">
                     <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                     <select 
                       required
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner appearance-none"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner appearance-none"
                       value={form.companyId}
                       onChange={(e) => setForm({ ...form, companyId: e.target.value })}
                     >
-                      <option value="" className="bg-white dark:bg-[#111216]">Select company</option>
-                      {companies.map(c => <option key={c.id} value={c.id} className="bg-white dark:bg-[#111216]">{c.name}</option>)}
+                      <option value="" className="bg-white">Select company</option>
+                      {companies.map(c => <option key={c.id} value={c.id} className="bg-white">{c.name}</option>)}
                     </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Location</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Location</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
                       <select 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner appearance-none"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all shadow-inner appearance-none"
                         value={form.locationId}
                         onChange={(e) => setForm({ ...form, locationId: e.target.value })}
                       >
-                        <option value="" className="bg-white dark:bg-[#111216]">Select location</option>
-                        {locations.map(l => <option key={l.id} value={l.id} className="bg-white dark:bg-[#111216]">{l.name}</option>)}
+                        <option value="" className="bg-white">Select location</option>
+                        {locations.map(l => <option key={l.id} value={l.id} className="bg-white">{l.name}</option>)}
                       </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
                     </div>
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateLocationOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-xl bg-emerald-600/10 text-emerald-600 border border-emerald-500/20 hover:bg-emerald-600/20 transition-all shadow-sm active:scale-95"
                     >
                       <Plus className="h-5 w-5" />
                     </button>
@@ -215,28 +215,28 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Department Manager</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Department Manager</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500" />
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
                       <select 
-                        className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-[#111216] pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all shadow-inner appearance-none"
+                        className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-10 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner appearance-none"
                         value={form.managerId}
                         onChange={(e) => setForm({ ...form, managerId: e.target.value })}
                       >
-                        <option value="" className="bg-white dark:bg-[#111216]">Select manager</option>
+                        <option value="" className="bg-white">Select manager</option>
                         {managers.map(m => (
-                          <option key={m.id} value={m.id} className="bg-white dark:bg-[#111216]">
+                          <option key={m.id} value={m.id} className="bg-white">
                             {m.firstName || m.username || m.email} {m.lastName || ""}
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
                     </div>
                     <button 
                       type="button" 
                       onClick={() => setQuickCreateUserOpen(true)}
-                      className="flex items-center justify-center p-3.5 rounded-2xl bg-orange-600/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-lg active:scale-95"
+                      className="flex items-center justify-center p-3.5 rounded-xl bg-orange-600/10 text-orange-600 border border-orange-500/20 hover:bg-orange-600/20 transition-all shadow-sm active:scale-95"
                     >
                       <Plus className="h-5 w-5" />
                     </button>
@@ -246,13 +246,13 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
 
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone Number</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Phone Number</label>
                   <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                     <input 
                       type="tel" 
                       placeholder="Direct phone line"
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all shadow-inner"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all shadow-inner"
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
                     />
@@ -260,13 +260,13 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Notes</label>
                   <div className="relative">
-                    <FileText className="absolute left-4 top-4 h-4 w-4 text-zinc-500" />
+                    <FileText className="absolute left-4 top-4 h-4 w-4 text-gray-500" />
                     <textarea 
                       rows={4}
                       placeholder="Additional information about the department..."
-                      className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-100 pl-12 pr-4 py-3.5 text-sm text-foreground placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all shadow-inner resize-none"
                       value={form.notes}
                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
                     ></textarea>
@@ -286,7 +286,7 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
             <button 
               type="button"
               onClick={() => router.push("/departments")}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-sm font-bold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-foreground transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 bg-gray-100 text-sm font-bold text-gray-500 hover:bg-gray-200 hover:text-foreground transition-all shadow-sm active:scale-95"
             >
               <X className="h-4 w-4" />
               <span>Cancel</span>
@@ -294,7 +294,7 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
             <button 
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-sm font-bold text-white shadow-[0_15px_35px_-10px_rgba(16,185,129,0.5)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+              className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-blue-600 text-sm font-bold text-white shadow-sm hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
             >
               {loading ? (
                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -327,6 +327,6 @@ export function UpdateDepartmentContent({ slug }: UpdateDepartmentContentProps) 
           }}
         />
       </div>
-    </main>
+    </div>
   );
 }

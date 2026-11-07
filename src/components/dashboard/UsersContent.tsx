@@ -12,23 +12,33 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
+import { RecordGrid, display } from "@/components/admin/RecordGrid";
+import { ListFilters, type FilterField, type FilterValues } from "@/components/admin/ListFilters";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { Edit2, Eye, Mail, ShieldCheck, Trash, User } from "lucide-react";
 import { ApiUserRecord, getUserFullName } from "@/lib/users";
 
 const accentClasses = [
-  "from-cyan-400 to-sky-500",
-  "from-emerald-400 to-teal-500",
-  "from-indigo-400 to-blue-500",
+  "from-blue-400 to-blue-500",
+  "from-emerald-400 to-blue-500",
+  "from-blue-400 to-blue-500",
   "from-amber-400 to-orange-500",
 ];
 
 type SortKey = "firstName" | "email" | "createdAt";
 
+const FILTER_FIELDS: FilterField[] = [
+  { key: "roleId", label: "Role", source: "roles" },
+  { key: "companyId", label: "Company", source: "companies" },
+  { key: "locationId", label: "Location", source: "locations" },
+  { key: "loginEnabled", label: "Login", options: [{ value: "true", label: "Enabled" }, { value: "false", label: "Disabled" }] },
+];
+
 export function UsersContent() {
   const router = useRouter();
   const { push } = useToast();
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<FilterValues>({});
   const [records, setRecords] = useState<ApiUserRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -63,6 +73,9 @@ export function UsersContent() {
         search,
       });
 
+      Object.entries(filters).forEach(([key, value]) => value && params.set(key, value));
+
+
       const res = await fetch(`/api/users?${params.toString()}`, {
         credentials: "include",
         cache: "no-store",
@@ -85,7 +98,7 @@ export function UsersContent() {
     } finally {
       setLoading(false);
     }
-  }, [limit, order, page, search, sort]);
+  }, [limit, order, page, search, sort, filters]);
 
   useEffect(() => {
     loadUsers();
@@ -129,7 +142,7 @@ export function UsersContent() {
   }, [itemToDelete, loadUsers, page, push, records.length]);
 
   return (
-    <main className="px-6 pb-6 pt-5">
+    <div className="space-y-6">
       <div className="mx-auto flex w-full max-w-full flex-1 flex-col gap-6">
         <DataTableToolbar
           search={search}
@@ -147,121 +160,147 @@ export function UsersContent() {
             setOrder(newOrder);
           }}
         />
+        <ListFilters
+          fields={FILTER_FIELDS}
+          values={filters}
+          onChange={(next) => {
+            setFilters(next);
+            setPage(1);
+          }}
+        />
 
-        <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] shadow-sm dark:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
-          <Table className="min-w-[1200px]">
-            <TableHeader className="sticky top-0 z-10 bg-zinc-100 dark:bg-white/5">
-              <TableRow className="border-zinc-200 dark:border-white/10 hover:bg-transparent">
-                <TableHead
-                  onClick={() => setSort("firstName")}
-                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100 hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  Name
-                </TableHead>
-                <TableHead
-                  onClick={() => setSort("email")}
-                  className="cursor-pointer px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100 hover:text-cyan-600 dark:hover:text-cyan-400"
-                >
-                  Email
-                </TableHead>
-                <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
-                  Username
-                </TableHead>
-                <TableHead className="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
-                  Is Active
-                </TableHead>
-                <TableHead className="w-[150px] px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="divide-y divide-zinc-100 dark:divide-white/5">
-              {decoratedUsers.map((user) => (
-                <TableRow
-                  key={user.id}
-                  className="border-zinc-100 dark:border-white/5 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.03]"
-                >
-                  <TableCell className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${user.accent} text-black shadow-lg`}
-                      >
-                        <User className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                          {getUserFullName(user)}
-                        </p>
-                        <p className="font-mono text-[10px] tracking-tight text-zinc-500">
-                          ID: {user.id}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-3.5 w-3.5 text-zinc-600" />
-                      <span>{user.email}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                    {user.username || "N/A"}
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-center">
-                    <span
-                      className={`inline-flex rounded-lg border px-2.5 py-1 text-xs font-bold ${
-                        user.loginEnabled
-                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                          : "border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
-                      }`}
-                    >
-                      <ShieldCheck className="mr-1 h-3.5 w-3.5" />
-                      {user.loginEnabled ? "Enabled" : "Disabled"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/users/${user.id}`)}
-                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-cyan-500/10 hover:text-cyan-600 dark:hover:text-cyan-400"
-                        title="View"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/users/${user.id}/edit`)}
-                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400"
-                        title="Edit"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setItemToDelete(user)}
-                        className="rounded-xl p-2 text-zinc-500 transition-all active:scale-90 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400"
-                        title="Delete"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {decoratedUsers.length === 0 ? (
-                <TableRow className="border-zinc-200 dark:border-white/10">
-                  <TableCell
-                    className="px-4 py-12 text-center text-sm text-zinc-500"
-                    colSpan={5}
+        {viewType === "grid" ? (
+          <RecordGrid
+            loading={loading}
+            cards={decoratedUsers.map((user) => ({
+              key: user.id,
+              title: getUserFullName(user),
+              subtitle: user.email,
+              badge: user.loginEnabled
+                ? { label: "Login enabled", className: "bg-green-100 text-green-700 hover:bg-green-100" }
+                : { label: "Login disabled", className: "bg-gray-100 text-gray-700 hover:bg-gray-100" },
+              stats: [{ label: "Username", value: display(user.username) }],
+              onView: () => router.push(`/users/${user.id}`),
+              onEdit: () => router.push(`/users/${user.id}/edit`),
+              onDelete: () => setItemToDelete(user),
+            }))}
+          />
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+            <Table className="min-w-[1200px]">
+              <TableHeader className="sticky top-0 z-10 bg-gray-50">
+                <TableRow className="border-gray-200 hover:bg-transparent">
+                  <TableHead
+                    onClick={() => setSort("firstName")}
+                    className="cursor-pointer px-4 py-3 text-xs font-semibold text-gray-500 hover:text-blue-600"
                   >
-                    {loading ? "Loading users..." : "No users found."}
-                  </TableCell>
+                    Name
+                  </TableHead>
+                  <TableHead
+                    onClick={() => setSort("email")}
+                    className="cursor-pointer px-4 py-3 text-xs font-semibold text-gray-500 hover:text-blue-600"
+                  >
+                    Email
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-center text-xs font-semibold text-gray-500">
+                    Username
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-center text-xs font-semibold text-gray-500">
+                    Is Active
+                  </TableHead>
+                  <TableHead className="w-[150px] px-4 py-3 text-right text-xs font-semibold text-gray-500">
+                    Actions
+                  </TableHead>
                 </TableRow>
-              ) : null}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody className="divide-y divide-gray-100">
+                {decoratedUsers.map((user) => (
+                  <TableRow
+                    key={user.id}
+                    className="border-gray-100 transition-colors hover:bg-gray-50"
+                  >
+                    <TableCell className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${user.accent} text-black shadow-sm`}
+                        >
+                          <User className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">
+                            {getUserFullName(user)}
+                          </p>
+                          <p className="font-mono text-[10px] tracking-tight text-gray-500">
+                            ID: {user.id}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-xs text-gray-500">
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-3.5 w-3.5 text-gray-600" />
+                        <span>{user.email}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-center text-xs text-gray-500">
+                      {user.username || "N/A"}
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-center">
+                      <span
+                        className={`inline-flex rounded-lg border px-2.5 py-1 text-xs font-bold ${
+                          user.loginEnabled
+                            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                            : "border-gray-500/20 bg-gray-500/10 text-gray-400"
+                        }`}
+                      >
+                        <ShieldCheck className="mr-1 h-3.5 w-3.5" />
+                        {user.loginEnabled ? "Enabled" : "Disabled"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/users/${user.id}`)}
+                          className="rounded-xl p-2 text-gray-500 transition-all active:scale-90 hover:bg-blue-500/10 hover:text-blue-600"
+                          title="View"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/users/${user.id}/edit`)}
+                          className="rounded-xl p-2 text-gray-500 transition-all active:scale-90 hover:bg-emerald-500/10 hover:text-emerald-600"
+                          title="Edit"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setItemToDelete(user)}
+                          className="rounded-xl p-2 text-gray-500 transition-all active:scale-90 hover:bg-rose-500/10 hover:text-rose-600"
+                          title="Delete"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {decoratedUsers.length === 0 ? (
+                  <TableRow className="border-gray-200">
+                    <TableCell
+                      className="px-4 py-12 text-center text-sm text-gray-500"
+                      colSpan={5}
+                    >
+                      {loading ? "Loading users..." : "No users found."}
+                    </TableCell>
+                  </TableRow>
+                ) : null}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
         <DeleteConfirmDialog
           open={!!itemToDelete}
@@ -272,11 +311,11 @@ export function UsersContent() {
           loading={deleteLoading}
         />
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-xs text-gray-600 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500 dark:text-zinc-400">Rows per page</span>
+            <span className="text-gray-500">Rows per page</span>
             <select
-              className="rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-1 text-xs text-zinc-800 dark:text-zinc-200"
+              className="rounded-full border border-gray-200 bg-gray-100 px-2 py-1 text-xs text-gray-800"
               value={limit}
               onChange={(e) => {
                 setPage(1);
@@ -291,7 +330,7 @@ export function UsersContent() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-zinc-500 dark:text-zinc-400">
+            <span className="text-gray-500">
               {total === 0
                 ? "0-0"
                 : `${(page - 1) * limit + 1}-${Math.min(page * limit, total)}`}{" "}
@@ -299,17 +338,17 @@ export function UsersContent() {
             </span>
             <div className="flex items-center gap-1">
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-500 disabled:opacity-30"
                 disabled={page === 1}
                 onClick={() => setPage((prev) => prev - 1)}
               >
                 &lt;
               </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-600 text-white shadow-lg">
+              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm">
                 {page}
               </button>
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-800 disabled:opacity-30"
                 disabled={page * limit >= total}
                 onClick={() => setPage((prev) => prev + 1)}
               >
@@ -320,11 +359,11 @@ export function UsersContent() {
         </div>
 
         {error ? (
-          <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-center text-xs text-rose-700 dark:text-rose-300">
+          <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-center text-xs text-rose-700">
             {error}
           </p>
         ) : null}
       </div>
-    </main>
+    </div>
   );
 }

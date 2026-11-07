@@ -13,14 +13,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTableToolbar } from "@/components/admin/DataTableToolbar";
+import { RecordGrid, display } from "@/components/admin/RecordGrid";
+import { ListFilters, type FilterField, type FilterValues } from "@/components/admin/ListFilters";
 import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { ChevronDown, MoreHorizontal, Search, MapPin, Copy, Edit2, Trash, Eye, Image as ImageIcon, Check } from "lucide-react";
 
 const accentClasses = [
-  "from-cyan-400 to-teal-500",
-  "from-teal-400 to-emerald-500",
+  "from-blue-400 to-blue-500",
+  "from-blue-400 to-emerald-500",
   "from-emerald-400 to-green-500",
-  "from-sky-400 to-cyan-500",
+  "from-blue-400 to-blue-500",
+];
+
+const FILTER_FIELDS: FilterField[] = [
+  { key: "companyId", label: "Company", source: "companies" },
+  { key: "parentId", label: "Parent location", source: "locations" },
 ];
 
 export function LocationsContent() {
@@ -28,6 +35,7 @@ export function LocationsContent() {
   const { push } = useToast();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<FilterValues>({});
   const [records, setRecords] = useState<ApiRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -91,6 +99,9 @@ export function LocationsContent() {
         search,
       });
 
+      Object.entries(filters).forEach(([key, value]) => value && params.set(key, value));
+
+
       const res = await fetch(`${apiBase}/locations?${params}`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch data");
       const data = await res.json();
@@ -104,14 +115,14 @@ export function LocationsContent() {
     } finally {
       setLoading(false);
     }
-  }, [apiBase, page, limit, sort, order, search]);
+  }, [apiBase, page, limit, sort, order, search, filters]);
 
   useEffect(() => {
     loadRecords();
   }, [loadRecords]);
 
   return (
-    <main className="px-6 pb-6 pt-5">
+    <div className="space-y-6">
       <div className="mx-auto w-full max-w-full flex flex-1 flex-col gap-6">
         <DataTableToolbar 
           search={search}
@@ -126,102 +137,130 @@ export function LocationsContent() {
             setOrder(newOrder);
           }}
         />
+        <ListFilters
+          fields={FILTER_FIELDS}
+          values={filters}
+          onChange={(next) => {
+            setFilters(next);
+            setPage(1);
+          }}
+        />
 
-        <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#111216] shadow-sm dark:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)]">
-          <Table className="min-w-[2000px]">
-            <TableHeader className="bg-zinc-100 dark:bg-white/5 sticky top-0 z-10">
-              <TableRow className="border-zinc-200 dark:border-white/10 hover:bg-transparent">
-                <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500">Name</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Image</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Parent</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Currency</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">People</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Assets</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Accessories</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Components</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Consumables</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Address</TableHead>
-                <TableHead onClick={() => setSort("city")} className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px] cursor-pointer hover:text-cyan-500">City</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Province</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Country</TableHead>
-                <TableHead className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Zip</TableHead>
-                <TableHead className="w-[100px] px-4 py-3 text-right text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-widest text-[10px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="divide-y divide-zinc-100 dark:divide-white/5">
-              {decoratedRecords.map((record) => (
-                  <TableRow 
-                    key={record.id} 
-                    className="border-zinc-100 dark:border-white/5 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.03]"
-                  >
-                    <TableCell className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${record.accent} text-black shadow-sm dark:shadow-[0_10px_20px_-5px_rgba(0,0,0,0.5)]`}>
-                          <MapPin className="h-5 w-5" />
+        {viewType === "grid" ? (
+          <RecordGrid
+            loading={loading}
+            cards={decoratedRecords.map((record) => ({
+              key: record.id,
+              title: record.name,
+              subtitle: display(record.parent, ""),
+              image: record.image,
+              stats: [
+                { label: "City", value: display(record.city) },
+                { label: "Country", value: display(record.country) },
+                { label: "People", value: display(record.people, "0") },
+                { label: "Assets", value: display(record.assets, "0") },
+              ],
+              onEdit: () => router.push(`/locations/${record.id}/edit`),
+              onDelete: () => setItemToDelete(record),
+            }))}
+          />
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+            <Table className="min-w-[2000px]">
+              <TableHeader className="bg-gray-50 sticky top-0 z-10">
+                <TableRow className="border-gray-200 hover:bg-transparent">
+                  <TableHead onClick={() => setSort("name")} className="px-4 py-3 text-gray-500 text-xs font-semibold cursor-pointer hover:text-blue-600">Name</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Image</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Parent</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Currency</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">People</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Assets</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Accessories</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Components</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Consumables</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Address</TableHead>
+                  <TableHead onClick={() => setSort("city")} className="px-4 py-3 text-gray-500 text-xs font-semibold cursor-pointer hover:text-blue-600">City</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Province</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Country</TableHead>
+                  <TableHead className="px-4 py-3 text-gray-500 text-xs font-semibold">Zip</TableHead>
+                  <TableHead className="w-[100px] px-4 py-3 text-right text-gray-500 text-xs font-semibold">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="divide-y divide-gray-100">
+                {decoratedRecords.map((record) => (
+                    <TableRow 
+                      key={record.id} 
+                      className="border-gray-100 transition-colors hover:bg-gray-50"
+                    >
+                      <TableCell className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${record.accent} text-black shadow-sm`}>
+                            <MapPin className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">{record.name}</p>
+                            <p className="text-[10px] text-gray-500 font-mono tracking-tight">{record.slug}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{record.name}</p>
-                          <p className="text-[10px] text-zinc-500 font-mono tracking-tight">{record.slug}</p>
+                      </TableCell>
+                      <TableCell className="px-4 py-4">
+                        {record.image ? (
+                          <img src={record.image} alt="" className="h-10 w-10 rounded-xl object-cover border border-gray-200 shadow-sm" />
+                        ) : (
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 border border-dashed border-gray-200">
+                            <ImageIcon className="h-4 w-4 text-gray-600" />
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="px-4 py-4">
+                        {record.parent ? (
+                          <span className="text-xs text-emerald-600 font-medium">{record.parent.name}</span>
+                        ) : (
+                          <span className="text-xs text-gray-600">Root</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500 font-mono uppercase">{record.currency || "USD"}</TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500">{record.people || 0}</TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500">{record.assignAsset || 0}</TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500">{record.accessories || 0}</TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500">{record.components || 0}</TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500">{record.consumables || 0}</TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500 italic max-w-[200px] truncate">{record.address}</TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500">{record.city}</TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500">{record.state}</TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500">{record.country}</TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-gray-500">{record.zip}</TableCell>
+                      <TableCell className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button 
+                            onClick={() => router.push(`/locations/${record.id}/edit`)}
+                            className="p-2 rounded-xl text-gray-500 hover:bg-emerald-500/10 hover:text-emerald-600 transition-all active:scale-90" 
+                            title="Edit"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => setItemToDelete(record)}
+                            className="p-2 rounded-xl text-gray-500 hover:bg-rose-500/10 hover:text-rose-600 transition-all active:scale-90" 
+                            title="Delete"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </button>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-4 py-4">
-                      {record.image ? (
-                        <img src={record.image} alt="" className="h-10 w-10 rounded-xl object-cover border border-zinc-200 dark:border-white/10 shadow-lg" />
-                      ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 border border-dashed border-zinc-200 dark:border-white/10">
-                          <ImageIcon className="h-4 w-4 text-zinc-600" />
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="px-4 py-4">
-                      {record.parent ? (
-                        <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{record.parent.name}</span>
-                      ) : (
-                        <span className="text-xs text-zinc-600">Root</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400 font-mono uppercase">{record.currency || "USD"}</TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">{record.people || 0}</TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">{record.assignAsset || 0}</TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">{record.accessories || 0}</TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">{record.components || 0}</TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">{record.consumables || 0}</TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 italic max-w-[200px] truncate">{record.address}</TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">{record.city}</TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">{record.state}</TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">{record.country}</TableCell>
-                    <TableCell className="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400">{record.zip}</TableCell>
-                    <TableCell className="px-4 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button 
-                          onClick={() => router.push(`/locations/${record.id}/edit`)}
-                          className="p-2 rounded-xl text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all active:scale-90" 
-                          title="Edit"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </button>
-                        <button 
-                          onClick={() => setItemToDelete(record)}
-                          className="p-2 rounded-xl text-zinc-500 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all active:scale-90" 
-                          title="Delete"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </button>
-                      </div>
+                      </TableCell>
+                    </TableRow>
+                ))}
+                {records.length === 0 && (
+                  <TableRow className="border-gray-200">
+                    <TableCell className="px-4 py-12 text-center text-sm text-gray-500" colSpan={15}>
+                      {loading ? "Loading..." : "No locations found."}
                     </TableCell>
                   </TableRow>
-              ))}
-              {records.length === 0 && (
-                <TableRow className="border-zinc-200 dark:border-white/10">
-                  <TableCell className="px-4 py-12 text-center text-sm text-zinc-500" colSpan={15}>
-                    {loading ? "Loading..." : "No locations found."}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
         <DeleteConfirmDialog 
           open={!!itemToDelete}
@@ -232,11 +271,11 @@ export function LocationsContent() {
           loading={deleteLoading}
         />
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-xs text-gray-600 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-500 dark:text-zinc-400">Rows per page</span>
+            <span className="text-gray-500">Rows per page</span>
             <select
-              className="rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2 py-1 text-xs text-zinc-800 dark:text-zinc-200"
+              className="rounded-full border border-gray-200 bg-gray-100 px-2 py-1 text-xs text-gray-800"
               value={limit}
               onChange={(e) => { setPage(1); setLimit(Number(e.target.value)); }}
             >
@@ -244,22 +283,22 @@ export function LocationsContent() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-zinc-500 dark:text-zinc-400">
+            <span className="text-gray-500">
               {total === 0 ? "0-0" : `${(page - 1) * limit + 1}-${Math.min(page * limit, total)}`} of {total}
             </span>
             <div className="flex items-center gap-1">
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-500 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-500 disabled:opacity-30"
                 disabled={page === 1}
                 onClick={() => setPage(p => p - 1)}
               >
                 &lt;
               </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-600 text-white shadow-lg">
+              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm">
                 {page}
               </button>
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200 disabled:opacity-30"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-800 disabled:opacity-30"
                 disabled={page * limit >= total}
                 onClick={() => setPage(p => p + 1)}
               >
@@ -268,8 +307,8 @@ export function LocationsContent() {
             </div>
           </div>
         </div>
-        {error && <p className="rounded-lg bg-rose-500/10 p-3 text-center text-xs text-rose-700 dark:text-rose-300 border border-rose-500/20">{error}</p>}
+        {error && <p className="rounded-lg bg-rose-500/10 p-3 text-center text-xs text-rose-700 border border-rose-500/20">{error}</p>}
       </div>
-    </main>
+    </div>
   );
 }
